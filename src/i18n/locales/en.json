@@ -1,0 +1,17 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "empty": "No data available"
+  },
+  "navigation": {
+    "home": "Home",
+    "doctors": "Doctors",
+    "reports": "Reports",
+    "hospitals": "Hospitals",
+    "aiChat": "AI Chat"
+  }
+}

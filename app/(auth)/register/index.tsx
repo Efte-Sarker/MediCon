@@ -1,0 +1,236 @@
+// 1. IMPORTS
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Colors, Spacing, BorderRadius, FontFamily, TextStyles, Shadows } from '@theme';
+import { useAuthStore, type UserRole } from '../../../src/store/authStore';
+import { authService } from '../../../src/services/api/authService';
+import {
+  PatientRegistrationForm,
+  type PatientFormData,
+} from '../../../src/components/forms/PatientRegistrationForm';
+import {
+  DoctorRegistrationForm,
+  type DoctorFormData,
+} from '../../../src/components/forms/DoctorRegistrationForm';
+
+// 2. TYPES
+type RegisterStep = 'role_selection' | 'profile_form';
+
+// 3. COMPONENT
+export default function RegisterScreen(): React.JSX.Element {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ phone: string }>();
+  const login = useAuthStore((s) => s.login);
+
+  const [step, setStep] = useState<RegisterStep>('role_selection');
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const phone = params.phone ?? '';
+
+  const handleRoleSelect = (selectedRole: UserRole) => {
+    setRole(selectedRole);
+    setStep('profile_form');
+  };
+
+  const handlePatientSubmit = async (data: PatientFormData) => {
+    if (!role) return;
+    setIsLoading(true);
+    try {
+      const result = await authService.register(phone, role, data);
+      login({
+        token: result.token,
+        role: result.user.role,
+        status: result.user.status,
+        userId: result.user.id,
+      });
+      router.replace('/(app)/(tabs)');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDoctorSubmit = async (data: DoctorFormData) => {
+    if (!role) return;
+    setIsLoading(true);
+    try {
+      const result = await authService.register(phone, role, data);
+      login({
+        token: result.token,
+        role: result.user.role,
+        status: result.user.status,
+        userId: result.user.id,
+      });
+      router.replace('/(app)/(tabs)');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderRoleSelection = () => (
+    <View style={styles.roleContainer}>
+      <Text style={styles.title}>Choose Your Role</Text>
+      <Text style={styles.subtitle}>Select how you will use Medicon.</Text>
+
+      <TouchableOpacity
+        style={styles.roleCard}
+        onPress={() => handleRoleSelect('patient')}
+        activeOpacity={0.8}
+        accessibilityLabel="Register as patient"
+        accessibilityRole="button"
+      >
+        <Text style={styles.roleIcon}>🩺</Text>
+        <View style={styles.roleTextContainer}>
+          <Text style={styles.roleTitle}>Patient</Text>
+          <Text style={styles.roleDescription}>
+            Book appointments, track health records, and get AI-powered insights.
+          </Text>
+        </View>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.roleCard}
+        onPress={() => handleRoleSelect('doctor')}
+        activeOpacity={0.8}
+        accessibilityLabel="Register as doctor"
+        accessibilityRole="button"
+      >
+        <Text style={styles.roleIcon}>👨‍⚕️</Text>
+        <View style={styles.roleTextContainer}>
+          <Text style={styles.roleTitle}>Doctor</Text>
+          <Text style={styles.roleDescription}>
+            Manage consultations, review patient records, and provide care.
+          </Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>Requires verification</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderProfileForm = () => (
+    <View style={styles.formContainer}>
+      <TouchableOpacity
+        onPress={() => {
+          setStep('role_selection');
+          setRole(null);
+        }}
+        style={styles.backButton}
+        accessibilityLabel="Go back to role selection"
+        accessibilityRole="button"
+      >
+        <Text style={styles.backText}>← Back</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>{role === 'patient' ? 'Patient Profile' : 'Doctor Profile'}</Text>
+      <Text style={styles.subtitle}>Complete your profile to get started.</Text>
+
+      {role === 'patient' ? (
+        <PatientRegistrationForm onSubmit={handlePatientSubmit} isLoading={isLoading} />
+      ) : (
+        <DoctorRegistrationForm onSubmit={handleDoctorSubmit} isLoading={isLoading} />
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {step === 'role_selection' ? renderRoleSelection() : renderProfileForm()}
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}
+
+// 4. STYLES
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.background,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  roleContainer: {
+    flex: 1,
+    padding: Spacing.xl,
+    justifyContent: 'center',
+  },
+  formContainer: {
+    flex: 1,
+    padding: Spacing.xl,
+    paddingTop: Spacing.xxxl,
+  },
+  title: {
+    ...TextStyles.h1,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  subtitle: {
+    ...TextStyles.body,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.xxl,
+  },
+  roleCard: {
+    flexDirection: 'row',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.base,
+    alignItems: 'flex-start',
+    gap: Spacing.base,
+    ...Shadows.md,
+  },
+  roleIcon: {
+    fontSize: 36,
+    marginTop: Spacing.xs,
+  },
+  roleTextContainer: {
+    flex: 1,
+  },
+  roleTitle: {
+    ...TextStyles.h4,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.xs,
+  },
+  roleDescription: {
+    ...TextStyles.body,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.tertiary,
+    borderRadius: BorderRadius.xs,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    marginTop: Spacing.sm,
+  },
+  badgeText: {
+    ...TextStyles.caption,
+    color: Colors.secondary,
+    fontFamily: FontFamily.semiBold,
+  },
+  backButton: {
+    marginBottom: Spacing.base,
+    alignSelf: 'flex-start',
+  },
+  backText: {
+    ...TextStyles.body,
+    color: Colors.primary,
+    fontFamily: FontFamily.semiBold,
+  },
+});

@@ -1,0 +1,57 @@
+{
+  "name": "temp_expo",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@tanstack/react-query": "^5.101.2",
+    "expo": "~56.0.12",
+    "expo-constants": "~56.0.18",
+    "expo-dev-client": "~56.0.20",
+    "expo-linking": "~56.0.14",
+    "expo-router": "~56.2.11",
+    "expo-secure-store": "~56.0.4",
+    "expo-status-bar": "~56.0.4",
+    "i18next": "^26.3.3",
+    "react": "19.2.3",
+    "react-i18next": "^17.0.8",
+    "react-native": "0.85.3",
+    "react-native-mmkv": "^4.3.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "4.25.2",
+    "zustand": "^5.0.14"
+  },
+  "//overrides_note": "WARNING: react-native-worklets@0.8.3 is an unverified forced resolution against reanimated@4.5.0. Compatibility MUST be re-checked before any milestone uses @expo/ui components, drawer-based navigation, or anything reanimated-powered.",
+  "overrides": {
+    "react-dom": "19.2.3",
+    "react-native-worklets": "0.8.3"
+  },
+  "devDependencies": {
+    "@react-native/jest-preset": "^0.85.0",
+    "@testing-library/react-native": "^14.0.1",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.2",
+    "babel-plugin-module-resolver": "^5.0.3",
+    "babel-preset-expo": "^56.0.15",
+    "eslint": "^8.57.1",
+    "eslint-config-expo": "^56.0.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "jest": "^29.7.0",
+    "jest-expo": "^56.0.5",
+    "prettier": "^3.9.3",
+    "react-test-renderer": "19.2.3",
+    "test-renderer": "^1.2.0",
+    "typescript": "~6.0.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "test": "jest"
+  },
+  "private": true
+}
