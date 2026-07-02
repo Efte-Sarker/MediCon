@@ -23,10 +23,9 @@
     "react-native-screens": "4.25.2",
     "zustand": "^5.0.14"
   },
-  "//overrides_note": "WARNING: react-native-worklets@0.8.3 is an unverified forced resolution against reanimated@4.5.0. Compatibility MUST be re-checked before any milestone uses @expo/ui components, drawer-based navigation, or anything reanimated-powered.",
   "overrides": {
     "react-dom": "19.2.3",
-    "react-native-worklets": "0.8.3"
+    "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
     "@react-native/jest-preset": "^0.85.0",

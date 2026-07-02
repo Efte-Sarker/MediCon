@@ -28,7 +28,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   plugins: ['expo-router'],
   extra: {
     eas: {
-      projectId: "fc59c36e-7707-4744-924a-aad648c925c8"
-    }
-  }
+      projectId: 'fc59c36e-7707-4744-924a-aad648c925c8',
+    },
+  },
 });
