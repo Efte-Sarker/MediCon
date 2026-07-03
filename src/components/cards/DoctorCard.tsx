@@ -4,17 +4,22 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { DashboardDoctor } from '../../hooks/usePatientDashboard';
+import type { Doctor } from '../../services/api/doctorsService';
 import { Card } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
 
-// 2. TYPES
 export interface DoctorCardProps {
-  doctor: DashboardDoctor | null;
+  doctor: DashboardDoctor | Doctor | null;
   onPress?: () => void;
+  hideSectionLabel?: boolean;
 }
 
 // 3. COMPONENT
-export const DoctorCard = ({ doctor, onPress }: DoctorCardProps): React.JSX.Element => {
+export const DoctorCard = ({
+  doctor,
+  onPress,
+  hideSectionLabel = false,
+}: DoctorCardProps): React.JSX.Element => {
   if (!doctor) {
     return (
       <Card accessibilityLabel="No recent doctors">
@@ -27,18 +32,26 @@ export const DoctorCard = ({ doctor, onPress }: DoctorCardProps): React.JSX.Elem
     );
   }
 
+  const isDashboard = 'name' in doctor;
+  const displayName = isDashboard ? doctor.name : doctor.fullName;
+  const displaySpecialty = isDashboard ? doctor.specialty : doctor.department;
+  const isOnline = !isDashboard && 'isOnline' in doctor ? doctor.isOnline : false;
+
   return (
     <Card
       onPress={onPress}
-      accessibilityLabel={`Recent doctor: ${doctor.name}, ${doctor.specialty}, rated ${doctor.rating} out of 5, ${doctor.experience} experience`}
+      accessibilityLabel={`Doctor: ${displayName}, ${displaySpecialty}, rated ${doctor.rating} out of 5`}
     >
-      <Text style={styles.sectionLabel}>Recent Doctor</Text>
+      {!hideSectionLabel && <Text style={styles.sectionLabel}>Recent Doctor</Text>}
 
       <View style={styles.body}>
-        <Avatar name={doctor.name} size={48} />
+        <View>
+          <Avatar name={displayName} size={48} />
+          {isOnline && <View style={styles.onlineBadge} />}
+        </View>
         <View style={styles.details}>
-          <Text style={styles.doctorName}>{doctor.name}</Text>
-          <Text style={styles.specialty}>{doctor.specialty}</Text>
+          <Text style={styles.doctorName}>{displayName}</Text>
+          <Text style={styles.specialty}>{displaySpecialty}</Text>
         </View>
       </View>
 
@@ -124,5 +137,16 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: Colors.success,
+    borderWidth: 2,
+    borderColor: Colors.surface,
   },
 });

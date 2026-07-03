@@ -86,7 +86,7 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(app)/(tabs)/index.tsx` (Patient), `src/components/cards/{AppointmentCard,DoctorCard,MedicationCard}.tsx`, `src/hooks/usePatientDashboard.ts`
 **DoD:** Empty state (not an error) for a brand-new patient with no appointments/medicines.
 
-# 1.12 — Doctor Home & Appointment Queue
+# 1.12 — Doctor Home & Appointment Queue ✅ DONE
 **Prerequisites:** `1.11`
 **Deliverables:** Role-aware home rendering, enforcing `1.6`'s stub for real using `1.9`'s auth role; today's appointment queue (mock) and a quick link into the Q&A inbox (built in `1.21`).
 **Files:** `app/(app)/(tabs)/index.tsx` (Doctor), `src/components/cards/AppointmentQueueCard.tsx`, `src/hooks/useDoctorDashboard.ts`
