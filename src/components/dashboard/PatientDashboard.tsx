@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: Spacing.base,
-    paddingBottom: Layout.tabBarHeight + Spacing.xl,
+    paddingBottom: Layout.tabBarHeight + Spacing.base,
   },
   sosButton: {
     flexDirection: 'row',
