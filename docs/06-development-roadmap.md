@@ -92,7 +92,7 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(app)/(tabs)/index.tsx` (Doctor), `src/components/cards/AppointmentQueueCard.tsx`, `src/hooks/useDoctorDashboard.ts`
 **DoD:** A Patient session can never render this screen and vice versa.
 
-# 1.13 — Doctors Board & Directory
+# 1.13 — Doctors Board & Directory ✅ DONE
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** Category grid by department/symptom; doctor list with mock online status; consultation history; doctor detail screen.
 **Files:** `app/(app)/doctors/*`, `src/components/cards/DoctorCard.tsx`, `src/services/api/doctorsService.ts` (mock)

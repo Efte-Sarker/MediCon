@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   statusCompleted: {
-    backgroundColor: Colors.success + '20', // 20% opacity
+    backgroundColor: '#28a74520', // 20% opacity of #28a745
   },
   statusOther: {
     backgroundColor: Colors.tertiary,
