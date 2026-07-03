@@ -25,7 +25,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     favicon: './assets/favicon.png',
   },
   scheme: 'medicon',
-  plugins: ['expo-router'],
+  plugins: [
+    'expo-router',
+    [
+      'expo-location',
+      {
+        locationAlwaysAndWhenInUsePermission:
+          'Allow $(PRODUCT_NAME) to use your location to find nearby hospitals.',
+      },
+    ],
+  ],
   extra: {
     eas: {
       projectId: 'fc59c36e-7707-4744-924a-aad648c925c8',

@@ -24,7 +24,7 @@ const MOCK_CATEGORIES = [
   { id: 'cat-6', name: 'Psychiatry', icon: 'head-lightbulb-outline' },
 ];
 
-const MOCK_DOCTORS: Doctor[] = [
+export const MOCK_DOCTORS: Doctor[] = [
   {
     id: 'doc-1',
     userId: 'u-doc-1',

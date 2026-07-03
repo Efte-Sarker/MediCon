@@ -105,3 +105,17 @@ export interface VitalReading {
   unit: string;
   recordedAt: string; // ISO 8601
 }
+
+export interface Hospital {
+  id: string;
+  name: string;
+  address: string;
+  latitude: number;
+  longitude: number;
+  contactNumber: string;
+  emergencyNumber?: string;
+  hasEmergencyRoom: boolean;
+  distanceKm?: number;
+  isOpen24x7: boolean;
+  imageUrl?: string;
+}
