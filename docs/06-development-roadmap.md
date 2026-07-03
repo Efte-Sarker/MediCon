@@ -98,7 +98,7 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(app)/doctors/*`, `src/components/cards/DoctorCard.tsx`, `src/services/api/doctorsService.ts` (mock)
 **DoD:** List uses `FlashList`; empty-history case handled for a new user.
 
-# 1.14 — Nearby Hospitals (Map)
+# 1.14 — Nearby Hospitals (Map) ✅ DONE
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** `react-native-maps` view with mock hospital pins; hospital detail listing affiliated doctors; offline message (Tier 3) when maps/location unavailable.
 **Files:** `app/(app)/(tabs)/hospitals.tsx`, `app/(app)/doctors/hospital/[id].tsx`, `src/components/cards/HospitalCard.tsx`, `src/services/api/hospitalsService.ts` (mock)

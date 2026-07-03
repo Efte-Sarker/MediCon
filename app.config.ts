@@ -20,6 +20,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       monochromeImage: './assets/android-icon-monochrome.png',
     },
     predictiveBackGestureEnabled: false,
+    config: {
+      googleMaps: {
+        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || 'dummy_api_key_for_development',
+      },
+    },
   },
   web: {
     favicon: './assets/favicon.png',
