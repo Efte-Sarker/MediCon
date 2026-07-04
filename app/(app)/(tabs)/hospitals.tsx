@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  ImageBackground,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { Colors, Spacing, FontFamily, FontSize, BorderRadius, Layout } from '../../../src/theme';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { hospitalsService } from '../../../src/services/api/hospitalsService';
 import { Hospital } from '../../../src/types/medical.types';
 import { HospitalCard } from '../../../src/components/cards/HospitalCard';
+
+const USE_MOCK_MAP = true; // Temporary flag for Phase 1 without a real API key
 
 export default function HospitalsScreen() {
   const router = useRouter();
@@ -75,8 +84,42 @@ export default function HospitalsScreen() {
     );
   }
 
-  return (
-    <View style={styles.container}>
+  const renderMap = () => {
+    if (USE_MOCK_MAP) {
+      return (
+        <ImageBackground
+          source={require('../../../assets/images/map_placeholder.png')}
+          style={styles.map}
+          resizeMode="cover"
+        >
+          {hospitals.map((hospital, index) => {
+            const topPositions = ['25%', '45%', '65%'];
+            const leftPositions = ['40%', '60%', '20%'];
+
+            return (
+              <TouchableOpacity
+                key={hospital.id}
+                style={[
+                  styles.mockMarker,
+                  { top: topPositions[index % 3] as any, left: leftPositions[index % 3] as any },
+                ]}
+                onPress={() => setSelectedHospital(hospital)}
+              >
+                <View style={styles.markerContainer}>
+                  <MaterialCommunityIcons
+                    name="hospital-marker"
+                    size={42}
+                    color={hospital.hasEmergencyRoom ? Colors.danger : Colors.primary}
+                  />
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ImageBackground>
+      );
+    }
+
+    return (
       <MapView
         style={styles.map}
         provider={PROVIDER_GOOGLE}
@@ -88,7 +131,7 @@ export default function HospitalsScreen() {
         }}
         showsUserLocation={true}
         showsMyLocationButton={true}
-        onPress={() => setSelectedHospital(null)} // Deselect when tapping the map
+        onPress={() => setSelectedHospital(null)}
       >
         {hospitals.map((hospital) => (
           <Marker
@@ -111,6 +154,12 @@ export default function HospitalsScreen() {
           </Marker>
         ))}
       </MapView>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {renderMap()}
 
       {/* Bottom Sheet Overlay for Selected Hospital */}
       {selectedHospital && (
@@ -179,10 +228,21 @@ const styles = StyleSheet.create({
   markerContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: Colors.surface,
+    borderRadius: 24,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  mockMarker: {
+    position: 'absolute',
   },
   bottomOverlay: {
     position: 'absolute',
-    bottom: Spacing.base, // Since tab bar holds safe area, this sits just above the tab bar
+    bottom: Spacing.base,
     left: Spacing.base,
     right: Spacing.base,
   },
