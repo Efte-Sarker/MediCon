@@ -52,14 +52,25 @@ export interface PrescriptionMedicine {
   instructions?: string;
 }
 
+export interface Biomarker {
+  id: string;
+  name: string;
+  value: number;
+  unit: string;
+  referenceRange: string;
+  isFlagged: boolean;
+}
+
 export interface Report {
   id: string;
   patientId: string;
   title: string;
   type: string; // e.g., 'BLOOD_TEST', 'XRAY'
   date: string; // ISO 8601
-  imageUrl: string;
-  extractedBiomarkers?: Record<string, any>;
+  laboratory?: string;
+  imageUrl?: string;
+  fileUri?: string; // For newly uploaded documents/PDFs
+  biomarkers?: Biomarker[];
   aiSummary?: string;
 }
 

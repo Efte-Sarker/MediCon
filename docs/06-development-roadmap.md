@@ -69,7 +69,7 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(auth)/{login,register}/*`, `src/services/api/authService.ts` (mock), `src/store/authStore.ts`, `src/components/forms/*`
 **DoD:** A logged-out user cannot reach any `(app)` route; a mock session persists across restarts.
 
-# 1.10 — Emergency Response Module (Real Implementation)
+# 1.10 — Emergency Response Module (Real Implementation) (COMPLETED)
 **Prerequisites:** `1.5`, `1.6`
 **Deliverables:**
 - Static protocol dataset, bundled JSON, all finalized protocols (CPR, Choking, Severe Bleeding, Burns, Anaphylaxis, Heat Stroke, Heat Exhaustion, Unconscious), transcribed exactly from AHA/Red Cross guidelines.
@@ -80,25 +80,25 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `src/services/protocols/emergency-protocols.data.ts`, `app/(app)/emergency/*`, `app/(app)/pediatric/*`, `src/components/medical/EmergencyStepCard.tsx`
 **DoD:** Airplane-mode pass on all 8 protocols with zero network calls fired; protocol text independently diffed against the approved source by a human reviewer; pediatric variants verified not to fall back to adult defaults; **second independent review pass required**, per the workflow doc's emergency-feature standard.
 
-# 1.11 — Patient Dashboard (Home) ✅ DONE
+# 1.11 — Patient Dashboard (Home) (COMPLETED)
 **Prerequisites:** `1.5`, `1.6`, `1.7`, `1.9`, `1.10`
 **Deliverables:** Dashboard composing cards for next appointment, recent doctor, next medicine; SOS button linking into `1.10`.
 **Files:** `app/(app)/(tabs)/index.tsx` (Patient), `src/components/cards/{AppointmentCard,DoctorCard,MedicationCard}.tsx`, `src/hooks/usePatientDashboard.ts`
 **DoD:** Empty state (not an error) for a brand-new patient with no appointments/medicines.
 
-# 1.12 — Doctor Home & Appointment Queue ✅ DONE
+# 1.12 — Doctor Home & Appointment Queue (COMPLETED)
 **Prerequisites:** `1.11`
 **Deliverables:** Role-aware home rendering, enforcing `1.6`'s stub for real using `1.9`'s auth role; today's appointment queue (mock) and a quick link into the Q&A inbox (built in `1.21`).
 **Files:** `app/(app)/(tabs)/index.tsx` (Doctor), `src/components/cards/AppointmentQueueCard.tsx`, `src/hooks/useDoctorDashboard.ts`
 **DoD:** A Patient session can never render this screen and vice versa.
 
-# 1.13 — Doctors Board & Directory ✅ DONE
+# 1.13 — Doctors Board & Directory (COMPLETED)
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** Category grid by department/symptom; doctor list with mock online status; consultation history; doctor detail screen.
 **Files:** `app/(app)/doctors/*`, `src/components/cards/DoctorCard.tsx`, `src/services/api/doctorsService.ts` (mock)
 **DoD:** List uses `FlashList`; empty-history case handled for a new user.
 
-# 1.14 — Nearby Hospitals (Map) ✅ DONE
+# 1.14 — Nearby Hospitals (Map) (COMPLETED)
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** `react-native-maps` view with mock hospital pins; hospital detail listing affiliated doctors; offline message (Tier 3) when maps/location unavailable.
 **Files:** `app/(app)/(tabs)/hospitals.tsx`, `app/(app)/doctors/hospital/[id].tsx`, `src/components/cards/HospitalCard.tsx`, `src/services/api/hospitalsService.ts` (mock)

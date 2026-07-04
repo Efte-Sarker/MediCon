@@ -39,6 +39,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
           'Allow $(PRODUCT_NAME) to use your location to find nearby hospitals.',
       },
     ],
+    [
+      'expo-image-picker',
+      {
+        photosPermission: 'The app accesses your photos to let you share them with your doctors.',
+        cameraPermission: 'Allow $(PRODUCT_NAME) to access your camera to scan lab reports.',
+      },
+    ],
+    'expo-document-picker',
   ],
   extra: {
     eas: {
