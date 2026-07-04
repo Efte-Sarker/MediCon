@@ -47,6 +47,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       },
     ],
     'expo-document-picker',
+    '@react-native-community/datetimepicker',
   ],
   extra: {
     eas: {

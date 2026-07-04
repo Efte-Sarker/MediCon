@@ -50,6 +50,19 @@ export interface PrescriptionMedicine {
   durationDays: number;
   frequency: string;
   instructions?: string;
+  aiDemystifierSummary?: string; // Mock explanation of the drug
+}
+
+export type AdherenceStatus = 'TAKEN' | 'PENDING' | 'MISSED';
+
+export interface AdherenceRecord {
+  id: string;
+  prescriptionId: string;
+  medicineId: string;
+  date: string; // ISO 8601 (YYYY-MM-DD)
+  status: AdherenceStatus;
+  scheduledTime?: string; // HH:mm format
+  takenTime?: string; // ISO 8601 if taken
 }
 
 export interface Biomarker {

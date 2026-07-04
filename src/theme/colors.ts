@@ -8,4 +8,6 @@ export const Colors = {
   textPrimary: '#1e1e1e',
   textSecondary: '#40566d',
   textTertiary: '#95a2b2',
+  success: '#10B981',
+  warning: '#F59E0B',
 };
