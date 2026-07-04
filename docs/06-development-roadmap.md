@@ -104,7 +104,7 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(app)/(tabs)/hospitals.tsx`, `app/(app)/doctors/hospital/[id].tsx`, `src/components/cards/HospitalCard.tsx`, `src/services/api/hospitalsService.ts` (mock)
 **DoD:** Graceful degradation (no crash/blank map) with location denied and with network disabled.
 
-# 1.15 — Lab Report Interpreter UI
+# 1.15 — Lab Report Interpreter UI ✅ DONE
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** Clinical Report Repository (by date/test type); upload/scan entry screen (camera/picker wired, OCR result mocked); flagged-value display with mock plain-language summaries (AI Safety Convention applies).
 **Files:** `app/(app)/report/*`, `src/components/medical/{ReportCard,BiomarkerRow,AIDisclaimer}.tsx`, `src/services/api/reportsService.ts` (mock)

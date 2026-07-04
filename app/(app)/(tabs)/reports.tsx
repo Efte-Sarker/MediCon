@@ -23,26 +23,34 @@ export default function ReportsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchReports = async () => {
+  const loadReports = async () => {
     try {
       const data = await reportsService.getReports();
       setReports(data);
     } catch (error) {
       console.error('Failed to load reports', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchReports();
+    let isMounted = true;
+    (async () => {
+      setLoading(true);
+      await loadReports();
+      if (isMounted) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    fetchReports();
+    await loadReports();
+    setRefreshing(false);
   };
 
   const renderEmptyComponent = () => {
