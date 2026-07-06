@@ -17,12 +17,14 @@ import { useAuthStore } from '../../../src/store/authStore';
 import { authService } from '../../../src/services/api/authService';
 import { AuthPhoneForm } from '../../../src/components/forms/AuthPhoneForm';
 import { AuthOTPForm } from '../../../src/components/forms/AuthOTPForm';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 type LoginStep = 'phone_entry' | 'otp_entry';
 
 // 3. COMPONENT
 export default function LoginScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
   const setHasSeenOnboarding = useOnboardingStore((s) => s.setHasSeenOnboarding);
@@ -140,7 +142,9 @@ export default function LoginScreen(): React.JSX.Element {
                 setError(undefined);
               }}
             >
-              <Text style={styles.backLink}>← Change phone number</Text>
+              <Text style={styles.backLink}>
+                {t('login.change_phone_number') || '← Change phone number'}
+              </Text>
             </Pressable>
           )}
         </View>

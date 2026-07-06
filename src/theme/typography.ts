@@ -1,9 +1,9 @@
 export const FontFamily = {
-  regular: 'PlusJakartaSans_400Regular',
-  medium: 'PlusJakartaSans_500Medium',
-  semiBold: 'PlusJakartaSans_600SemiBold',
-  bold: 'PlusJakartaSans_700Bold',
-  extraBold: 'PlusJakartaSans_800ExtraBold',
+  regular: undefined,
+  medium: undefined,
+  semiBold: undefined,
+  bold: undefined,
+  extraBold: undefined,
 };
 
 export const FontSize = {

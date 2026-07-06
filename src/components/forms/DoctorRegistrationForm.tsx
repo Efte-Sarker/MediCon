@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, TextStyles, Layout } from '@theme';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 export interface DoctorFormData {
@@ -20,6 +21,7 @@ export const DoctorRegistrationForm = ({
   onSubmit,
   isLoading,
 }: DoctorRegistrationFormProps): React.JSX.Element => {
+  const { t } = useTranslation();
   const [form, setForm] = useState<DoctorFormData>({
     fullName: '',
     department: '',
@@ -92,8 +94,9 @@ export const DoctorRegistrationForm = ({
       <View style={styles.notice}>
         <Text style={styles.noticeIcon}>ℹ️</Text>
         <Text style={styles.noticeText}>
-          Doctor accounts require verification. Your account will be pending until credentials are
-          reviewed.
+          {t('doctorregistrationform.doctor_accounts_require_verifi') ||
+            `Doctor accounts require verification. Your account will be pending until credentials are
+                            reviewed.`}
         </Text>
       </View>
 

@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import type { DoctorQueueAppointment } from '../../hooks/useDoctorDashboard';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 export interface AppointmentQueueCardProps {
@@ -18,6 +19,7 @@ export const AppointmentQueueCard = ({
   appointment,
   onPress,
 }: AppointmentQueueCardProps): React.JSX.Element => {
+  const { t } = useTranslation();
   const date = new Date(appointment.dateTime);
   const formattedTime = date.toLocaleTimeString('en-US', {
     hour: 'numeric',
@@ -63,7 +65,7 @@ export const AppointmentQueueCard = ({
             {appointment.patientName}
           </Text>
           <Text style={styles.patientDetails}>
-            {appointment.age} yrs • {appointment.gender}
+            {appointment.age} {t('appointmentqueuecard.yrs') || 'yrs •'} {appointment.gender}
           </Text>
         </View>
         <View style={styles.iconContainer}>
@@ -76,7 +78,7 @@ export const AppointmentQueueCard = ({
       </View>
 
       <View style={styles.footer}>
-        <Text style={styles.reasonLabel}>Reason:</Text>
+        <Text style={styles.reasonLabel}>{t('appointmentqueuecard.reason') || 'Reason:'}</Text>
         <Text style={styles.reasonText} numberOfLines={1}>
           {appointment.reason}
         </Text>

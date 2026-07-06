@@ -1,8 +1,13 @@
 import React from 'react';
 import { PlaceholderScreen } from '../../../src/components/navigation/PlaceholderScreen';
+import { useTranslation } from 'react-i18next';
 
 export default function ReportScreen() {
+  const { t } = useTranslation();
   return (
-    <PlaceholderScreen title="Report" description="Placeholder for app/(app)/report/index.tsx" />
+    <PlaceholderScreen
+      title={t('report.report') || 'Report'}
+      description="Placeholder for app/(app)/report/index.tsx"
+    />
   );
 }

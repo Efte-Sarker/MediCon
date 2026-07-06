@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '@theme';
 import { OnboardingCard } from '../../../src/components/cards/OnboardingCard';
 import { useOnboardingStore } from '../../../src/store/onboardingStore';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 interface SlideData {
@@ -55,6 +56,7 @@ const SLIDES: SlideData[] = [
 ];
 
 export default function OnboardingScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const setHasSeenOnboarding = useOnboardingStore((s) => s.setHasSeenOnboarding);
   const flatListRef = useRef<FlatList<SlideData>>(null);
@@ -128,7 +130,7 @@ export default function OnboardingScreen(): React.JSX.Element {
             accessibilityLabel="Skip onboarding"
             accessibilityHint="Skips the introduction and goes to the login screen"
           >
-            <Text style={styles.skipText}>Skip</Text>
+            <Text style={styles.skipText}>{t('onboarding.skip') || 'Skip'}</Text>
           </TouchableOpacity>
         ) : (
           <View style={styles.skipButton} />
@@ -178,7 +180,7 @@ export default function OnboardingScreen(): React.JSX.Element {
               accessibilityRole="button"
               accessibilityLabel="Go to previous slide"
             >
-              <Text style={styles.backButtonText}>Back</Text>
+              <Text style={styles.backButtonText}>{t('onboarding.back') || 'Back'}</Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.backButton} />
@@ -192,7 +194,9 @@ export default function OnboardingScreen(): React.JSX.Element {
               accessibilityLabel="Get Started"
               accessibilityHint="Completes onboarding and goes to the login screen"
             >
-              <Text style={styles.primaryButtonText}>Get Started</Text>
+              <Text style={styles.primaryButtonText}>
+                {t('onboarding.get_started') || 'Get Started'}
+              </Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -201,7 +205,7 @@ export default function OnboardingScreen(): React.JSX.Element {
               accessibilityRole="button"
               accessibilityLabel="Go to next slide"
             >
-              <Text style={styles.primaryButtonText}>Next</Text>
+              <Text style={styles.primaryButtonText}>{t('onboarding.next') || 'Next'}</Text>
             </TouchableOpacity>
           )}
         </View>

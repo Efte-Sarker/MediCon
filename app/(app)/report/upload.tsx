@@ -16,8 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { reportsService } from '../../../src/services/api/reportsService';
+import { createAppError } from '../../../src/utils/errors';
+import { useTranslation } from 'react-i18next';
 
 export default function UploadReportScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<{
     uri: string;
@@ -50,8 +53,9 @@ export default function UploadReportScreen() {
           name: result.assets[0].fileName || `image-${Date.now()}.jpg`,
         });
       }
-    } catch (error) {
-      console.error('Error picking image', error);
+    } catch (err) {
+      const appError = createAppError('UNKNOWN_ERROR', String(err));
+      Alert.alert('Error', appError.message);
     }
   };
 
@@ -79,8 +83,9 @@ export default function UploadReportScreen() {
           name: file.name,
         });
       }
-    } catch (error) {
-      console.error('Error picking document', error);
+    } catch (err) {
+      const appError = createAppError('UNKNOWN_ERROR', String(err));
+      Alert.alert('Error', appError.message);
     }
   };
 
@@ -98,7 +103,7 @@ export default function UploadReportScreen() {
 
       // Navigate to the newly created report detail screen
       router.replace(`/(app)/report/${parsedReport.id}`);
-    } catch (error) {
+    } catch {
       Alert.alert('Upload Failed', 'There was an error processing your report. Please try again.');
       setIsProcessing(false);
     }
@@ -115,10 +120,13 @@ export default function UploadReportScreen() {
     return (
       <SafeAreaView style={styles.processingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.processingTitle}>Analyzing Report...</Text>
+        <Text style={styles.processingTitle}>
+          {t('upload.analyzing_report') || 'Analyzing Report...'}
+        </Text>
         <Text style={styles.processingSubtitle}>
-          Our AI is scanning the document and extracting the clinical biomarkers. This may take a
-          few seconds.
+          {t('upload.our_ai_is_scanning_the_documen') ||
+            `Our AI is scanning the document and extracting the clinical biomarkers. This may take a
+                          few seconds.`}
         </Text>
       </SafeAreaView>
     );
@@ -134,7 +142,7 @@ export default function UploadReportScreen() {
           <TouchableOpacity onPress={handleDiscard} style={styles.backButton}>
             <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Review Document</Text>
+          <Text style={styles.headerTitle}>{t('upload.review_document') || 'Review Document'}</Text>
           <View style={{ width: 24 }} />
         </View>
 
@@ -155,10 +163,14 @@ export default function UploadReportScreen() {
 
         <View style={styles.actionContainer}>
           <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handleDiscard}>
-            <Text style={styles.secondaryButtonText}>Choose Different File</Text>
+            <Text style={styles.secondaryButtonText}>
+              {t('upload.choose_different_file') || 'Choose Different File'}
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleSubmit}>
-            <Text style={styles.primaryButtonText}>Submit for Interpretation</Text>
+            <Text style={styles.primaryButtonText}>
+              {t('upload.submit_for_interpretation') || 'Submit for Interpretation'}
+            </Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -174,14 +186,15 @@ export default function UploadReportScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <MaterialCommunityIcons name="close" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Upload Report</Text>
+        <Text style={styles.headerTitle}>{t('upload.upload_report') || 'Upload Report'}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <View style={styles.selectionContainer}>
         <Text style={styles.instructions}>
-          Upload a lab report or medical document. Our AI will automatically extract the biomarkers
-          and provide a plain-language summary.
+          {t('upload.upload_a_lab_report_or_medical') ||
+            `Upload a lab report or medical document. Our AI will automatically extract the biomarkers
+                            and provide a plain-language summary.`}
         </Text>
 
         <TouchableOpacity style={styles.optionCard} onPress={handlePickImage} activeOpacity={0.7}>
@@ -189,8 +202,12 @@ export default function UploadReportScreen() {
             <MaterialCommunityIcons name="image" size={32} color={Colors.primary} />
           </View>
           <View style={styles.optionTextContainer}>
-            <Text style={styles.optionTitle}>Choose from Gallery</Text>
-            <Text style={styles.optionSubtitle}>Upload an image (JPG, PNG)</Text>
+            <Text style={styles.optionTitle}>
+              {t('upload.choose_from_gallery') || 'Choose from Gallery'}
+            </Text>
+            <Text style={styles.optionSubtitle}>
+              {t('upload.upload_an_image_jpg_png') || 'Upload an image (JPG, PNG)'}
+            </Text>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.textTertiary} />
         </TouchableOpacity>
@@ -204,8 +221,12 @@ export default function UploadReportScreen() {
             <MaterialCommunityIcons name="file-document" size={32} color={Colors.danger} />
           </View>
           <View style={styles.optionTextContainer}>
-            <Text style={styles.optionTitle}>Upload PDF Document</Text>
-            <Text style={styles.optionSubtitle}>Browse files on your device</Text>
+            <Text style={styles.optionTitle}>
+              {t('upload.upload_pdf_document') || 'Upload PDF Document'}
+            </Text>
+            <Text style={styles.optionSubtitle}>
+              {t('upload.browse_files_on_your_device') || 'Browse files on your device'}
+            </Text>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.textTertiary} />
         </TouchableOpacity>

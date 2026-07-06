@@ -16,8 +16,10 @@ import { reportsService } from '../../../src/services/api/reportsService';
 import { Report } from '../../../src/types/medical.types';
 import { BiomarkerRow } from '../../../src/components/medical/BiomarkerRow';
 import { AIDisclaimer } from '../../../src/components/medical/AIDisclaimer';
+import { useTranslation } from 'react-i18next';
 
 export default function ReportDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -33,7 +35,7 @@ export default function ReportDetailScreen() {
         if (!id) throw new Error('No report ID provided');
         const data = await reportsService.getReportDetails(id);
         setReport(data);
-      } catch (err) {
+      } catch {
         setError('Failed to load report details.');
       } finally {
         setLoading(false);
@@ -55,7 +57,7 @@ export default function ReportDetailScreen() {
         <MaterialCommunityIcons name="alert-circle-outline" size={48} color={Colors.danger} />
         <Text style={styles.errorText}>{error || 'Report not found.'}</Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Go Back</Text>
+          <Text style={styles.backButtonText}>{t('[id].go_back') || 'Go Back'}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -75,7 +77,7 @@ export default function ReportDetailScreen() {
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.surface} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Report Details
+          {t('[id].report_details') || 'Report Details'}
         </Text>
         <View style={styles.headerIcon} />
       </View>
@@ -110,7 +112,9 @@ export default function ReportDetailScreen() {
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Detected Biomarkers</Text>
+          <Text style={styles.sectionTitle}>
+            {t('[id].detected_biomarkers') || 'Detected Biomarkers'}
+          </Text>
 
           {report.biomarkers && report.biomarkers.length > 0 ? (
             <View style={styles.biomarkerList}>
@@ -121,7 +125,8 @@ export default function ReportDetailScreen() {
           ) : (
             <View style={styles.emptyBiomarkers}>
               <Text style={styles.emptyBiomarkersText}>
-                No specific biomarkers were extracted from this report.
+                {t('[id].no_specific_biomarkers_were_ex') ||
+                  'No specific biomarkers were extracted from this report.'}
               </Text>
             </View>
           )}
@@ -130,7 +135,9 @@ export default function ReportDetailScreen() {
         {/* Placeholder for viewing original document */}
         <TouchableOpacity style={styles.viewOriginalButton}>
           <MaterialCommunityIcons name="eye-outline" size={20} color={Colors.primary} />
-          <Text style={styles.viewOriginalText}>View Original Document</Text>
+          <Text style={styles.viewOriginalText}>
+            {t('[id].view_original_document') || 'View Original Document'}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

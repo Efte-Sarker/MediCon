@@ -1,11 +1,11 @@
 // 1. IMPORTS
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { DashboardAppointment } from '../../hooks/usePatientDashboard';
 import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 export interface AppointmentCardProps {
@@ -18,6 +18,7 @@ export const AppointmentCard = ({
   appointment,
   onPress,
 }: AppointmentCardProps): React.JSX.Element => {
+  const { t } = useTranslation();
   if (!appointment) {
     return (
       <Card accessibilityLabel="No upcoming appointments">
@@ -27,8 +28,13 @@ export const AppointmentCard = ({
             size={32}
             color={Colors.textTertiary}
           />
-          <Text style={styles.emptyTitle}>No upcoming appointments</Text>
-          <Text style={styles.emptySubtitle}>Book a consultation to get started.</Text>
+          <Text style={styles.emptyTitle}>
+            {t('appointmentcard.no_upcoming_appointments') || 'No upcoming appointments'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {t('appointmentcard.book_a_consultation_to_get_sta') ||
+              'Book a consultation to get started.'}
+          </Text>
         </View>
       </Card>
     );
@@ -53,24 +59,28 @@ export const AppointmentCard = ({
       accessibilityLabel={`Next appointment with ${appointment.doctorName}, ${appointment.specialty}, ${formattedDate} at ${formattedTime}, ${appointment.format}`}
     >
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.sectionLabel}>Next Appointment</Text>
-        </View>
-        <Badge label={isVideo ? 'Video' : 'In-person'} variant={isVideo ? 'info' : 'success'} />
+        <Text style={styles.sectionLabel}>
+          {t('appointmentcard.next_appointment') || 'Next Appointment'}
+        </Text>
       </View>
 
       <View style={styles.body}>
         <View style={styles.iconContainer}>
-          <MaterialCommunityIcons
-            name={isVideo ? 'video-outline' : 'hospital-building'}
-            size={24}
-            color={Colors.primary}
-          />
+          {appointment.imageUrl ? (
+            <Image source={{ uri: appointment.imageUrl }} style={styles.avatarImage} />
+          ) : (
+            <MaterialCommunityIcons name="account-outline" size={24} color={Colors.primary} />
+          )}
         </View>
         <View style={styles.details}>
           <Text style={styles.doctorName}>{appointment.doctorName}</Text>
           <Text style={styles.specialty}>{appointment.specialty}</Text>
         </View>
+        {isVideo && (
+          <View style={styles.actionIconContainer}>
+            <MaterialCommunityIcons name="video-outline" size={24} color={Colors.primary} />
+          </View>
+        )}
       </View>
 
       <View style={styles.footer}>
@@ -86,14 +96,7 @@ export const AppointmentCard = ({
 // 4. STYLES
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: Spacing.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   sectionLabel: {
     fontFamily: FontFamily.semiBold,
@@ -115,12 +118,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   details: {
     flex: 1,
   },
+  actionIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.md,
+  },
   doctorName: {
     fontFamily: FontFamily.bold,
+    fontWeight: '700',
     fontSize: FontSize.md,
     color: Colors.textPrimary,
     marginBottom: 2,

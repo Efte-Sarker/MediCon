@@ -3,25 +3,30 @@ import { View, Text, StyleSheet, ActivityIndicator, RefreshControl } from 'react
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { createAppError, AppError } from '../../../src/utils/errors';
+import { ErrorState } from '../../../src/components/ui/ErrorState';
 
 import { Colors, Spacing, FontFamily, FontSize, Layout } from '../../../src/theme';
 import { prescriptionsService } from '../../../src/services/api/prescriptionsService';
 import { Prescription } from '../../../src/types/medical.types';
 import { PrescriptionCard } from '../../../src/components/medical/PrescriptionCard';
 import { AdherenceTracker } from '../../../src/components/medical/AdherenceTracker';
+import { useTranslation } from 'react-i18next';
 
 export default function PrescriptionsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<AppError | null>(null);
 
   const loadData = async () => {
     try {
       const data = await prescriptionsService.getPrescriptions();
       setPrescriptions(data);
-    } catch (error) {
-      console.error('Error fetching prescriptions', error);
+    } catch (err) {
+      setError(createAppError('NETWORK_ERROR', String(err)));
     }
   };
 
@@ -50,7 +55,9 @@ export default function PrescriptionsScreen() {
     if (loading) return null;
     return (
       <View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>No active prescriptions.</Text>
+        <Text style={styles.emptyTitle}>
+          {t('prescriptions.no_active_prescriptions') || 'No active prescriptions.'}
+        </Text>
       </View>
     );
   };
@@ -58,12 +65,18 @@ export default function PrescriptionsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Prescriptions</Text>
+        <Text style={styles.headerTitle}>
+          {t('prescriptions.my_prescriptions') || 'My Prescriptions'}
+        </Text>
       </View>
 
-      {loading && !refreshing ? (
+      {loading && !refreshing && !error ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      ) : error ? (
+        <View style={styles.loadingContainer}>
+          <ErrorState message={error.message} onRetry={loadData} />
         </View>
       ) : (
         <View style={styles.listContainer}>
@@ -73,7 +86,9 @@ export default function PrescriptionsScreen() {
             ListHeaderComponent={() => (
               <View style={styles.listHeader}>
                 <AdherenceTracker />
-                <Text style={styles.sectionTitle}>Active Prescriptions</Text>
+                <Text style={styles.sectionTitle}>
+                  {t('prescriptions.active_prescriptions') || 'Active Prescriptions'}
+                </Text>
               </View>
             )}
             renderItem={({ item }) => (

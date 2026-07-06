@@ -15,15 +15,20 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { Colors, Spacing, FontFamily, FontSize, Layout, BorderRadius } from '../../../src/theme';
 import { prescriptionsService } from '../../../src/services/api/prescriptionsService';
+import { createAppError, AppError } from '../../../src/utils/errors';
+import { ErrorState } from '../../../src/components/ui/ErrorState';
 import { reminderService } from '../../../src/services/notifications/reminderService';
 import { Prescription, PrescriptionMedicine } from '../../../src/types/medical.types';
+import { useTranslation } from 'react-i18next';
 
 export default function PrescriptionDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
   const [prescription, setPrescription] = useState<Prescription | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AppError | null>(null);
 
   // Time picker state for setting reminders
   const [showPicker, setShowPicker] = useState(false);
@@ -47,12 +52,8 @@ export default function PrescriptionDetailScreen() {
           });
           setReminderTimes(defaultTimes);
         }
-      } catch (error) {
-        console.error(error);
-        if (isMounted) {
-          Alert.alert('Error', 'Failed to load prescription');
-          router.back();
-        }
+      } catch (err) {
+        if (isMounted) setError(createAppError('NETWORK_ERROR', String(err)));
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -73,7 +74,7 @@ export default function PrescriptionDetailScreen() {
         return;
       }
 
-      const identifier = await reminderService.scheduleDailyReminder(
+      await reminderService.scheduleDailyReminder(
         med.id,
         'Medicine Reminder',
         `It's time to take ${med.name} (${med.dosage})!`,
@@ -86,9 +87,9 @@ export default function PrescriptionDetailScreen() {
         'Success',
         `Daily reminder set for ${med.name} at ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
       );
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to schedule reminder');
+    } catch (err) {
+      const appError = createAppError('UNKNOWN_ERROR', String(err));
+      Alert.alert('Error', appError.message);
     }
   };
 
@@ -110,26 +111,45 @@ export default function PrescriptionDetailScreen() {
     );
   }
 
+  if (error) {
+    return (
+      <SafeAreaView style={styles.loadingContainer}>
+        <ErrorState
+          message={error.message}
+          onRetry={() => {
+            setError(null);
+            setLoading(true);
+            router.replace(`/(app)/prescriptions/${id}`);
+          }}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Prescription Details</Text>
+        <Text style={styles.headerTitle}>
+          {t('[id].prescription_details') || 'Prescription Details'}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.metaCard}>
-          <Text style={styles.metaLabel}>Issued On:</Text>
+          <Text style={styles.metaLabel}>{t('[id].issued_on') || 'Issued On:'}</Text>
           <Text style={styles.metaValue}>
             {new Date(prescription.issuedAt).toLocaleDateString()}
           </Text>
-          <Text style={[styles.metaLabel, { marginTop: Spacing.sm }]}>Doctor ID:</Text>
+          <Text style={[styles.metaLabel, { marginTop: Spacing.sm }]}>
+            {t('[id].doctor_id') || 'Doctor ID:'}
+          </Text>
           <Text style={styles.metaValue}>{prescription.doctorId}</Text>
         </View>
 
-        <Text style={styles.sectionTitle}>Medicines</Text>
+        <Text style={styles.sectionTitle}>{t('[id].medicines') || 'Medicines'}</Text>
 
         {prescription.medicines.map((med) => (
           <View key={med.id} style={styles.medicineCard}>
@@ -170,7 +190,9 @@ export default function PrescriptionDetailScreen() {
               <View style={styles.aiBox}>
                 <View style={styles.aiHeader}>
                   <MaterialCommunityIcons name="robot-outline" size={16} color={Colors.secondary} />
-                  <Text style={styles.aiHeaderTitle}>AI Demystifier</Text>
+                  <Text style={styles.aiHeaderTitle}>
+                    {t('[id].ai_demystifier') || 'AI Demystifier'}
+                  </Text>
                 </View>
                 <Text style={styles.aiText}>{med.aiDemystifierSummary}</Text>
               </View>

@@ -21,12 +21,14 @@ import {
   DoctorRegistrationForm,
   type DoctorFormData,
 } from '../../../src/components/forms/DoctorRegistrationForm';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 type RegisterStep = 'role_selection' | 'profile_form';
 
 // 3. COMPONENT
 export default function RegisterScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<{ phone: string }>();
   const login = useAuthStore((s) => s.login);
@@ -78,8 +80,10 @@ export default function RegisterScreen(): React.JSX.Element {
 
   const renderRoleSelection = () => (
     <View style={styles.roleContainer}>
-      <Text style={styles.title}>Choose Your Role</Text>
-      <Text style={styles.subtitle}>Select how you will use Medicon.</Text>
+      <Text style={styles.title}>{t('register.choose_your_role') || 'Choose Your Role'}</Text>
+      <Text style={styles.subtitle}>
+        {t('register.select_how_you_will_use_medico') || 'Select how you will use Medicon.'}
+      </Text>
 
       <TouchableOpacity
         style={styles.roleCard}
@@ -90,9 +94,10 @@ export default function RegisterScreen(): React.JSX.Element {
       >
         <Text style={styles.roleIcon}>🩺</Text>
         <View style={styles.roleTextContainer}>
-          <Text style={styles.roleTitle}>Patient</Text>
+          <Text style={styles.roleTitle}>{t('register.patient') || 'Patient'}</Text>
           <Text style={styles.roleDescription}>
-            Book appointments, track health records, and get AI-powered insights.
+            {t('register.book_appointments_track_health') ||
+              'Book appointments, track health records, and get AI-powered insights.'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -106,12 +111,15 @@ export default function RegisterScreen(): React.JSX.Element {
       >
         <Text style={styles.roleIcon}>👨‍⚕️</Text>
         <View style={styles.roleTextContainer}>
-          <Text style={styles.roleTitle}>Doctor</Text>
+          <Text style={styles.roleTitle}>{t('register.doctor') || 'Doctor'}</Text>
           <Text style={styles.roleDescription}>
-            Manage consultations, review patient records, and provide care.
+            {t('register.manage_consultations_review_pa') ||
+              'Manage consultations, review patient records, and provide care.'}
           </Text>
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>Requires verification</Text>
+            <Text style={styles.badgeText}>
+              {t('register.requires_verification') || 'Requires verification'}
+            </Text>
           </View>
         </View>
       </TouchableOpacity>
@@ -129,11 +137,13 @@ export default function RegisterScreen(): React.JSX.Element {
         accessibilityLabel="Go back to role selection"
         accessibilityRole="button"
       >
-        <Text style={styles.backText}>← Back</Text>
+        <Text style={styles.backText}>{t('register.back') || '← Back'}</Text>
       </TouchableOpacity>
 
       <Text style={styles.title}>{role === 'patient' ? 'Patient Profile' : 'Doctor Profile'}</Text>
-      <Text style={styles.subtitle}>Complete your profile to get started.</Text>
+      <Text style={styles.subtitle}>
+        {t('register.complete_your_profile_to_get_s') || 'Complete your profile to get started.'}
+      </Text>
 
       {role === 'patient' ? (
         <PatientRegistrationForm onSubmit={handlePatientSubmit} isLoading={isLoading} />

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Shadows } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Hospital } from '../../types/medical.types';
+import { useTranslation } from 'react-i18next';
 
 interface HospitalCardProps {
   hospital: Hospital;
@@ -10,6 +11,7 @@ interface HospitalCardProps {
 }
 
 export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JSX.Element => {
+  const { t } = useTranslation();
   return (
     <TouchableOpacity
       style={styles.card}
@@ -36,7 +38,9 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
           {hospital.distanceKm !== undefined && (
             <View style={styles.distanceBadge}>
               <MaterialCommunityIcons name="map-marker-distance" size={12} color={Colors.primary} />
-              <Text style={styles.distanceText}>{hospital.distanceKm.toFixed(1)} km</Text>
+              <Text style={styles.distanceText}>
+                {hospital.distanceKm.toFixed(1)} {t('hospitalcard.km') || 'km'}
+              </Text>
             </View>
           )}
         </View>
@@ -49,7 +53,9 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
           {hospital.hasEmergencyRoom && (
             <View style={[styles.tag, styles.emergencyTag]}>
               <MaterialCommunityIcons name="ambulance" size={12} color={Colors.surface} />
-              <Text style={[styles.tagText, styles.emergencyTagText]}>ER</Text>
+              <Text style={[styles.tagText, styles.emergencyTagText]}>
+                {t('hospitalcard.er') || 'ER'}
+              </Text>
             </View>
           )}
           {hospital.isOpen24x7 && (
@@ -59,7 +65,7 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
                 size={12}
                 color={Colors.textSecondary}
               />
-              <Text style={styles.tagText}>24x7</Text>
+              <Text style={styles.tagText}>{t('hospitalcard.24x7') || '24x7'}</Text>
             </View>
           )}
         </View>

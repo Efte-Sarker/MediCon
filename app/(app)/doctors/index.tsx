@@ -8,12 +8,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { doctorsService, Doctor } from '../../../src/services/api/doctorsService';
 import { DoctorCard } from '../../../src/components/cards/DoctorCard';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 /* No external props */
 
 // 3. COMPONENT
 export default function DoctorsListScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const { category } = useLocalSearchParams<{ category?: string }>();
 
@@ -69,7 +71,9 @@ export default function DoctorsListScreen(): React.JSX.Element {
       ) : doctors.length === 0 ? (
         <View style={styles.centerContainer}>
           <MaterialCommunityIcons name="doctor" size={48} color={Colors.textTertiary} />
-          <Text style={styles.emptyText}>No doctors found</Text>
+          <Text style={styles.emptyText}>
+            {t('doctors.no_doctors_found') || 'No doctors found'}
+          </Text>
         </View>
       ) : (
         <FlashList

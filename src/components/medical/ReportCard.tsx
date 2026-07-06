@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Report } from '../../types/medical.types';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../theme';
+import { useTranslation } from 'react-i18next';
 
 interface ReportCardProps {
   report: Report;
@@ -10,6 +11,7 @@ interface ReportCardProps {
 }
 
 export function ReportCard({ report, onPress }: ReportCardProps) {
+  const { t } = useTranslation();
   // Determine if this report has any flagged biomarkers
   const hasFlagged = report.biomarkers?.some((b) => b.isFlagged);
 
@@ -50,7 +52,7 @@ export function ReportCard({ report, onPress }: ReportCardProps) {
         {hasFlagged && (
           <View style={styles.flaggedBadge}>
             <MaterialCommunityIcons name="alert-circle" size={14} color={Colors.danger} />
-            <Text style={styles.flaggedText}>Attention</Text>
+            <Text style={styles.flaggedText}>{t('reportcard.attention') || 'Attention'}</Text>
           </View>
         )}
       </View>

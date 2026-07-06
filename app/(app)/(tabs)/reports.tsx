@@ -12,23 +12,28 @@ import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Colors, Spacing, FontFamily, FontSize, Layout, BorderRadius } from '../../../src/theme';
+import { Colors, Spacing, FontFamily, FontSize, Layout } from '../../../src/theme';
 import { Report } from '../../../src/types/medical.types';
 import { reportsService } from '../../../src/services/api/reportsService';
 import { ReportCard } from '../../../src/components/medical/ReportCard';
+import { createAppError, AppError } from '../../../src/utils/errors';
+import { ErrorState } from '../../../src/components/ui/ErrorState';
+import { useTranslation } from 'react-i18next';
 
 export default function ReportsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<AppError | null>(null);
 
   const loadReports = async () => {
     try {
       const data = await reportsService.getReports();
       setReports(data);
-    } catch (error) {
-      console.error('Failed to load reports', error);
+    } catch (err) {
+      setError(createAppError('NETWORK_ERROR', String(err)));
     }
   };
 
@@ -58,10 +63,11 @@ export default function ReportsScreen() {
     return (
       <View style={styles.emptyContainer}>
         <MaterialCommunityIcons name="file-document-outline" size={64} color={Colors.tertiary} />
-        <Text style={styles.emptyTitle}>No Reports Yet</Text>
+        <Text style={styles.emptyTitle}>{t('reports.no_reports_yet') || 'No Reports Yet'}</Text>
         <Text style={styles.emptySubtitle}>
-          Upload or scan your lab reports and medical documents to get AI-powered interpretations
-          and track your health metrics.
+          {t('reports.upload_or_scan_your_lab_report') ||
+            `Upload or scan your lab reports and medical documents to get AI-powered interpretations
+                          and track your health metrics.`}
         </Text>
       </View>
     );
@@ -70,12 +76,16 @@ export default function ReportsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>My Reports</Text>
+        <Text style={styles.headerTitle}>{t('reports.my_reports') || 'My Reports'}</Text>
       </View>
 
-      {loading && !refreshing ? (
+      {loading && !refreshing && !error ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      ) : error ? (
+        <View style={styles.loadingContainer}>
+          <ErrorState message={error.message} onRetry={loadReports} />
         </View>
       ) : (
         <View style={styles.listContainer}>

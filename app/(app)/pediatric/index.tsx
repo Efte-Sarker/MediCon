@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } from '@theme';
 import { EMERGENCY_PROTOCOLS } from '../../../src/services/protocols/emergency-protocols.data';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 const IconMap: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
   activity: 'heart-pulse',
@@ -18,6 +19,7 @@ const IconMap: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
 };
 
 export default function PediatricTriageScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
 
   // Sort protocols: Call emergency services first, then the rest.
@@ -51,7 +53,7 @@ export default function PediatricTriageScreen() {
               accessibilityLabel="Calling emergency services may be required"
             >
               <MaterialCommunityIcons name="phone" color={Colors.danger} size={12} />
-              <Text style={styles.callBadgeText}>Call 911</Text>
+              <Text style={styles.callBadgeText}>{t('pediatric.call_911') || 'Call 911'}</Text>
             </View>
           )}
         </View>
@@ -66,10 +68,13 @@ export default function PediatricTriageScreen() {
         <View style={styles.headerTitleRow}>
           <MaterialCommunityIcons name="human-child" color={Colors.secondary} size={32} />
           <Text style={styles.headerTitle} accessibilityRole="header">
-            Pediatric Triage
+            {t('pediatric.pediatric_triage') || 'Pediatric Triage'}
           </Text>
         </View>
-        <Text style={styles.headerSubtitle}>Emergency guidance for children & infants</Text>
+        <Text style={styles.headerSubtitle}>
+          {t('pediatric.emergency_guidance_for_childre') ||
+            'Emergency guidance for children & infants'}
+        </Text>
       </View>
 
       <FlatList

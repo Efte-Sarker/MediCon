@@ -143,3 +143,14 @@ export interface Hospital {
   isOpen24x7: boolean;
   imageUrl?: string;
 }
+
+export interface SystemNotification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'REMINDER' | 'CONFIRMATION' | 'QNA_ANSWER' | 'SYSTEM';
+  isRead: boolean;
+  createdAt: string; // ISO 8601
+  actionUrl?: string;
+}

@@ -8,12 +8,14 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { doctorsService, ConsultationHistoryItem } from '../../../src/services/api/doctorsService';
 import { Card } from '../../../src/components/ui/Card';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 /* No external props */
 
 // 3. COMPONENT
 export default function ConsultationHistoryScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
 
   const [history, setHistory] = useState<ConsultationHistoryItem[]>([]);
@@ -86,7 +88,7 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>History</Text>
+        <Text style={styles.title}>{t('history.history') || 'History'}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -97,13 +99,20 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
       ) : history.length === 0 ? (
         <View style={styles.centerContainer}>
           <MaterialCommunityIcons name="history" size={48} color={Colors.textTertiary} />
-          <Text style={styles.emptyTitle}>No history found</Text>
-          <Text style={styles.emptyText}>You haven't had any consultations yet.</Text>
+          <Text style={styles.emptyTitle}>
+            {t('history.no_history_found') || 'No history found'}
+          </Text>
+          <Text style={styles.emptyText}>
+            {t('history.you_havent_had_any_consultatio') ||
+              "You haven't had any consultations yet."}
+          </Text>
           <TouchableOpacity
             style={styles.exploreButton}
             onPress={() => router.push('/(app)/(tabs)/doctors')}
           >
-            <Text style={styles.exploreButtonText}>Find a Doctor</Text>
+            <Text style={styles.exploreButtonText}>
+              {t('history.find_a_doctor') || 'Find a Doctor'}
+            </Text>
           </TouchableOpacity>
         </View>
       ) : (

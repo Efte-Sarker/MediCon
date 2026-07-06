@@ -14,12 +14,14 @@ import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Shadows } from '@t
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { doctorsService, Doctor } from '../../../src/services/api/doctorsService';
 import { Avatar } from '../../../src/components/ui/Avatar';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 /* No external props */
 
 // 3. COMPONENT
 export default function DoctorDetailScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -65,7 +67,7 @@ export default function DoctorDetailScreen(): React.JSX.Element {
         </View>
         <View style={styles.centerContainer}>
           <MaterialCommunityIcons name="alert-circle-outline" size={48} color={Colors.danger} />
-          <Text style={styles.errorText}>Doctor not found</Text>
+          <Text style={styles.errorText}>{t('[id].doctor_not_found') || 'Doctor not found'}</Text>
         </View>
       </SafeAreaView>
     );
@@ -83,7 +85,7 @@ export default function DoctorDetailScreen(): React.JSX.Element {
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.title}>{t('[id].profile') || 'Profile'}</Text>
         <View style={styles.headerRight} />
       </View>
 
@@ -101,20 +103,22 @@ export default function DoctorDetailScreen(): React.JSX.Element {
             <View style={styles.statItem}>
               <MaterialCommunityIcons name="star" size={20} color="#f5a623" />
               <Text style={styles.statValue}>{doctor.rating.toFixed(1)}</Text>
-              <Text style={styles.statLabel}>{doctor.reviewCount} Reviews</Text>
+              <Text style={styles.statLabel}>
+                {doctor.reviewCount} {t('[id].reviews') || 'Reviews'}
+              </Text>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.statItem}>
               <MaterialCommunityIcons name="briefcase-outline" size={20} color={Colors.primary} />
               <Text style={styles.statValue}>{doctor.experience}</Text>
-              <Text style={styles.statLabel}>Experience</Text>
+              <Text style={styles.statLabel}>{t('[id].experience') || 'Experience'}</Text>
             </View>
           </View>
         </View>
 
         {/* About Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.sectionTitle}>{t('[id].about') || 'About'}</Text>
           <Text style={styles.aboutText}>{doctor.about}</Text>
         </View>
 
@@ -125,7 +129,9 @@ export default function DoctorDetailScreen(): React.JSX.Element {
               <MaterialCommunityIcons name="cash" size={20} color={Colors.textSecondary} />
             </View>
             <View>
-              <Text style={styles.infoLabel}>Consultation Fee</Text>
+              <Text style={styles.infoLabel}>
+                {t('[id].consultation_fee') || 'Consultation Fee'}
+              </Text>
               <Text style={styles.infoValue}>${doctor.consultationFee}</Text>
             </View>
           </View>
@@ -134,7 +140,7 @@ export default function DoctorDetailScreen(): React.JSX.Element {
               <MaterialCommunityIcons name="license" size={20} color={Colors.textSecondary} />
             </View>
             <View>
-              <Text style={styles.infoLabel}>License Number</Text>
+              <Text style={styles.infoLabel}>{t('[id].license_number') || 'License Number'}</Text>
               <Text style={styles.infoValue}>{doctor.licenseNumber}</Text>
             </View>
           </View>
@@ -148,7 +154,9 @@ export default function DoctorDetailScreen(): React.JSX.Element {
           onPress={() => router.push(`/(app)/doctors/booking?id=${doctor.id}`)}
           activeOpacity={0.8}
         >
-          <Text style={styles.bookButtonText}>Book Appointment</Text>
+          <Text style={styles.bookButtonText}>
+            {t('[id].book_appointment') || 'Book Appointment'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

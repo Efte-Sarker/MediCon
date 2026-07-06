@@ -9,8 +9,10 @@ import {
 } from '../../../src/services/protocols/emergency-protocols.data';
 import { EmergencyStepCard } from '../../../src/components/medical/EmergencyStepCard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function EmergencyProtocolScreen() {
+  const { t } = useTranslation();
   const { protocol: protocolId } = useLocalSearchParams<{ protocol: string }>();
   const router = useRouter();
 
@@ -19,7 +21,7 @@ export default function EmergencyProtocolScreen() {
   if (!protocol) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text>Protocol not found.</Text>
+        <Text>{t('[protocol].protocol_not_found') || 'Protocol not found.'}</Text>
       </SafeAreaView>
     );
   }
@@ -60,7 +62,9 @@ export default function EmergencyProtocolScreen() {
             accessibilityLabel="Call 911 immediately"
           >
             <MaterialCommunityIcons name="phone" color={Colors.surface} size={20} />
-            <Text style={styles.callButtonText}>Call 911 Now</Text>
+            <Text style={styles.callButtonText}>
+              {t('[protocol].call_911_now') || 'Call 911 Now'}
+            </Text>
           </TouchableOpacity>
         )}
 
@@ -73,8 +77,12 @@ export default function EmergencyProtocolScreen() {
           >
             <MaterialCommunityIcons name="human-child" color={Colors.secondary} size={24} />
             <View style={styles.pediatricBannerTextContainer}>
-              <Text style={styles.pediatricBannerTitle}>Treating a child or infant?</Text>
-              <Text style={styles.pediatricBannerSub}>View pediatric guidelines</Text>
+              <Text style={styles.pediatricBannerTitle}>
+                {t('[protocol].treating_a_child_or_infant') || 'Treating a child or infant?'}
+              </Text>
+              <Text style={styles.pediatricBannerSub}>
+                {t('[protocol].view_pediatric_guidelines') || 'View pediatric guidelines'}
+              </Text>
             </View>
           </TouchableOpacity>
         )}

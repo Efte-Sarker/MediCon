@@ -15,10 +15,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { hospitalsService } from '../../../src/services/api/hospitalsService';
 import { Hospital } from '../../../src/types/medical.types';
 import { HospitalCard } from '../../../src/components/cards/HospitalCard';
+import { useTranslation } from 'react-i18next';
 
 const USE_MOCK_MAP = true; // Temporary flag for Phase 1 without a real API key
 
 export default function HospitalsScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [locationStatus, setLocationStatus] = useState<Location.PermissionStatus | null>(null);
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
@@ -43,7 +45,7 @@ export default function HospitalsScreen() {
           );
           setHospitals(nearbyHospitals);
         }
-      } catch (error) {
+      } catch {
         // Fallback for when location fails (e.g. offline or disabled)
         setLocationStatus(Location.PermissionStatus.DENIED);
       } finally {
@@ -60,7 +62,9 @@ export default function HospitalsScreen() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Locating nearby hospitals...</Text>
+        <Text style={styles.loadingText}>
+          {t('hospitals.locating_nearby_hospitals') || 'Locating nearby hospitals...'}
+        </Text>
       </View>
     );
   }
@@ -69,16 +73,19 @@ export default function HospitalsScreen() {
     return (
       <View style={styles.centerContainer}>
         <MaterialCommunityIcons name="map-marker-off" size={64} color={Colors.textTertiary} />
-        <Text style={styles.errorTitle}>Location Unavailable</Text>
+        <Text style={styles.errorTitle}>
+          {t('hospitals.location_unavailable') || 'Location Unavailable'}
+        </Text>
         <Text style={styles.errorSubtitle}>
-          We need access to your location to find nearby hospitals and emergency centers. Please
-          enable location services in your device settings.
+          {t('hospitals.we_need_access_to_your_locatio') ||
+            `We need access to your location to find nearby hospitals and emergency centers. Please
+                          enable location services in your device settings.`}
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
           onPress={() => router.replace('/(app)/(tabs)/hospitals')}
         >
-          <Text style={styles.retryButtonText}>Retry</Text>
+          <Text style={styles.retryButtonText}>{t('hospitals.retry') || 'Retry'}</Text>
         </TouchableOpacity>
       </View>
     );

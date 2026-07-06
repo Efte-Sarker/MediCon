@@ -5,7 +5,7 @@ import { Colors, Spacing, BorderRadius, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { DashboardMedication } from '../../hooks/usePatientDashboard';
 import { Card } from '../ui/Card';
-import { Badge } from '../ui/Badge';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 export interface MedicationCardProps {
@@ -24,13 +24,19 @@ const statusConfig: Record<
 
 // 3. COMPONENT
 export const MedicationCard = ({ medication, onPress }: MedicationCardProps): React.JSX.Element => {
+  const { t } = useTranslation();
   if (!medication) {
     return (
       <Card accessibilityLabel="No active medications">
         <View style={styles.emptyContainer}>
           <MaterialCommunityIcons name="pill" size={32} color={Colors.textTertiary} />
-          <Text style={styles.emptyTitle}>No active medications</Text>
-          <Text style={styles.emptySubtitle}>Your prescriptions will appear here.</Text>
+          <Text style={styles.emptyTitle}>
+            {t('medicationcard.no_active_medications') || 'No active medications'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {t('medicationcard.your_prescriptions_will_appear') ||
+              'Your prescriptions will appear here.'}
+          </Text>
         </View>
       </Card>
     );
@@ -41,11 +47,12 @@ export const MedicationCard = ({ medication, onPress }: MedicationCardProps): Re
   return (
     <Card
       onPress={onPress}
-      accessibilityLabel={`Next medication: ${medication.name}, ${medication.dosage}, scheduled at ${medication.scheduledTime}, status ${config.label}`}
+      accessibilityLabel={`Next medication: ${medication.name}, ${medication.instructions}, scheduled at ${medication.scheduledTime}, status ${config.label}`}
     >
       <View style={styles.header}>
-        <Text style={styles.sectionLabel}>Next Medication</Text>
-        <Badge label={config.label} variant={config.variant} />
+        <Text style={styles.sectionLabel}>
+          {t('medicationcard.next_medication') || 'Next Medication'}
+        </Text>
       </View>
 
       <View style={styles.body}>
@@ -54,7 +61,10 @@ export const MedicationCard = ({ medication, onPress }: MedicationCardProps): Re
         </View>
         <View style={styles.details}>
           <Text style={styles.medicineName}>{medication.name}</Text>
-          <Text style={styles.dosage}>{medication.dosage}</Text>
+          <Text style={styles.dosage}>{medication.instructions}</Text>
+        </View>
+        <View style={styles.scheduleBadge}>
+          <Text style={styles.scheduleText}>{medication.scheduleFormat}</Text>
         </View>
       </View>
 
@@ -69,9 +79,6 @@ export const MedicationCard = ({ medication, onPress }: MedicationCardProps): Re
 // 4. STYLES
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: Spacing.md,
   },
   sectionLabel: {
@@ -98,8 +105,21 @@ const styles = StyleSheet.create({
   details: {
     flex: 1,
   },
+  scheduleBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.tertiary,
+    marginLeft: Spacing.md,
+  },
+  scheduleText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.sm,
+    color: Colors.secondary,
+  },
   medicineName: {
     fontFamily: FontFamily.bold,
+    fontWeight: '700',
     fontSize: FontSize.md,
     color: Colors.textPrimary,
     marginBottom: 2,

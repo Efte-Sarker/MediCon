@@ -2,6 +2,7 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, TextStyles, Layout } from '@theme';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 export interface AuthPhoneFormProps {
@@ -20,14 +21,15 @@ export const AuthPhoneForm = ({
   isLoading,
   error,
 }: AuthPhoneFormProps): React.JSX.Element => {
+  const { t } = useTranslation();
   const isValid = phone.replace(/\D/g, '').length >= 10;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Phone Number</Text>
+      <Text style={styles.label}>{t('authphoneform.phone_number') || 'Phone Number'}</Text>
       <TextInput
         style={[styles.input, error ? styles.inputError : undefined]}
-        placeholder="Enter your phone number"
+        placeholder={t('authphoneform.enter_your_phone_number') || 'Enter your phone number'}
         placeholderTextColor={Colors.textTertiary}
         keyboardType="phone-pad"
         value={phone}

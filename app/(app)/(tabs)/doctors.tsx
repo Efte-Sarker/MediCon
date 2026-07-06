@@ -13,6 +13,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { doctorsService } from '../../../src/services/api/doctorsService';
+import { SymptomSearchBar } from '../../../src/components/forms/SymptomSearchBar';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 type Category = {
@@ -23,6 +25,7 @@ type Category = {
 
 // 3. COMPONENT
 export default function DoctorsScreen(): React.JSX.Element {
+  const { t } = useTranslation();
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,9 +47,16 @@ export default function DoctorsScreen(): React.JSX.Element {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Doctors Directory</Text>
-          <Text style={styles.subtitle}>Find specialists and book appointments</Text>
+          <Text style={styles.title}>{t('doctors.doctors_directory') || 'Doctors Directory'}</Text>
+          <Text style={styles.subtitle}>
+            {t('doctors.find_specialists_and_book_appo') ||
+              'Find specialists and book appointments'}
+          </Text>
         </View>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <SymptomSearchBar />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -58,7 +68,9 @@ export default function DoctorsScreen(): React.JSX.Element {
         >
           <View style={styles.historyContent}>
             <MaterialCommunityIcons name="history" size={24} color={Colors.primary} />
-            <Text style={styles.historyText}>Consultation History</Text>
+            <Text style={styles.historyText}>
+              {t('doctors.consultation_history') || 'Consultation History'}
+            </Text>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.textTertiary} />
         </TouchableOpacity>
@@ -69,13 +81,15 @@ export default function DoctorsScreen(): React.JSX.Element {
           onPress={() => router.push('/(app)/doctors/')}
           activeOpacity={0.8}
         >
-          <Text style={styles.exploreAllText}>Explore All Doctors</Text>
+          <Text style={styles.exploreAllText}>
+            {t('doctors.explore_all_doctors') || 'Explore All Doctors'}
+          </Text>
           <MaterialCommunityIcons name="arrow-right" size={16} color={Colors.surface} />
         </TouchableOpacity>
 
         {/* Categories Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Specialties</Text>
+          <Text style={styles.sectionTitle}>{t('doctors.specialties') || 'Specialties'}</Text>
 
           {loading ? (
             <ActivityIndicator
@@ -132,6 +146,9 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     color: Colors.textSecondary,
     marginTop: Spacing.xs,
+  },
+  searchContainer: {
+    paddingBottom: Spacing.sm,
   },
   scrollContent: {
     paddingHorizontal: Spacing.base,

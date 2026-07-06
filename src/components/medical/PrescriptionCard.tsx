@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Prescription } from '../../types/medical.types';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../theme';
+import { useTranslation } from 'react-i18next';
 
 interface PrescriptionCardProps {
   prescription: Prescription;
@@ -10,6 +11,7 @@ interface PrescriptionCardProps {
 }
 
 export function PrescriptionCard({ prescription, onPress }: PrescriptionCardProps) {
+  const { t } = useTranslation();
   const formattedDate = new Date(prescription.issuedAt).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -26,7 +28,7 @@ export function PrescriptionCard({ prescription, onPress }: PrescriptionCardProp
         </View>
         <View style={styles.titleContainer}>
           <Text style={styles.title} numberOfLines={1}>
-            Prescription
+            {t('prescriptioncard.prescription') || 'Prescription'}
           </Text>
           <Text style={styles.subtitle}>
             {medicineCount} {medicineCount === 1 ? 'Medicine' : 'Medicines'}
@@ -40,11 +42,15 @@ export function PrescriptionCard({ prescription, onPress }: PrescriptionCardProp
       <View style={styles.footer}>
         <View style={styles.footerItem}>
           <MaterialCommunityIcons name="calendar" size={14} color={Colors.textSecondary} />
-          <Text style={styles.footerText}>Issued: {formattedDate}</Text>
+          <Text style={styles.footerText}>
+            {t('prescriptioncard.issued') || 'Issued:'} {formattedDate}
+          </Text>
         </View>
         <View style={styles.footerItem}>
           <MaterialCommunityIcons name="doctor" size={14} color={Colors.textSecondary} />
-          <Text style={styles.footerText}>Dr. ID: {prescription.doctorId || 'Unknown'}</Text>
+          <Text style={styles.footerText}>
+            {t('prescriptioncard.dr_id') || 'Dr. ID:'} {prescription.doctorId || 'Unknown'}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

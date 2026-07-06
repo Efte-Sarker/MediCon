@@ -3,12 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Biomarker } from '../../types/medical.types';
 import { Colors, Spacing, FontFamily, FontSize } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 interface BiomarkerRowProps {
   biomarker: Biomarker;
 }
 
 export function BiomarkerRow({ biomarker }: BiomarkerRowProps) {
+  const { t } = useTranslation();
   const valueColor = biomarker.isFlagged ? Colors.danger : Colors.textPrimary;
 
   return (
@@ -32,7 +34,9 @@ export function BiomarkerRow({ biomarker }: BiomarkerRowProps) {
           <Text style={[styles.value, { color: valueColor }]}>{biomarker.value}</Text>
           <Text style={styles.unit}>{biomarker.unit}</Text>
         </View>
-        <Text style={styles.reference}>Ref: {biomarker.referenceRange}</Text>
+        <Text style={styles.reference}>
+          {t('biomarkerrow.ref') || 'Ref:'} {biomarker.referenceRange}
+        </Text>
       </View>
     </View>
   );

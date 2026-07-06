@@ -4,8 +4,10 @@ import { AdherenceRecord } from '../../types/medical.types';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../theme';
 import { prescriptionsService } from '../../services/api/prescriptionsService';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export function AdherenceTracker() {
+  const { t } = useTranslation();
   const [records, setRecords] = useState<AdherenceRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -16,8 +18,8 @@ export function AdherenceTracker() {
         const today = new Date().toISOString().split('T')[0];
         const data = await prescriptionsService.getDailyAdherence(today);
         if (isMounted) setRecords(data);
-      } catch (e) {
-        console.error('Failed to load adherence', e);
+      } catch {
+        // Silently handle error for now
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -44,30 +46,35 @@ export function AdherenceTracker() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Today's Adherence</Text>
+      <Text style={styles.title}>
+        {t('adherencetracker.todays_adherence') || "Today's Adherence"}
+      </Text>
 
       {total === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialCommunityIcons name="check-circle-outline" size={24} color={Colors.success} />
-          <Text style={styles.emptyText}>No medicines scheduled for today.</Text>
+          <Text style={styles.emptyText}>
+            {t('adherencetracker.no_medicines_scheduled_for_tod') ||
+              'No medicines scheduled for today.'}
+          </Text>
         </View>
       ) : (
         <View style={styles.statsContainer}>
           <View style={styles.statBox}>
             <Text style={[styles.statNumber, { color: Colors.success }]}>{taken}</Text>
-            <Text style={styles.statLabel}>Taken</Text>
+            <Text style={styles.statLabel}>{t('adherencetracker.taken') || 'Taken'}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statNumber, { color: Colors.warning }]}>{pending}</Text>
-            <Text style={styles.statLabel}>Pending</Text>
+            <Text style={styles.statLabel}>{t('adherencetracker.pending') || 'Pending'}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statNumber, { color: Colors.danger }]}>{missed}</Text>
-            <Text style={styles.statLabel}>Missed</Text>
+            <Text style={styles.statLabel}>{t('adherencetracker.missed') || 'Missed'}</Text>
           </View>
 
           <View style={styles.gradeBox}>
-            <Text style={styles.gradeLabel}>Status</Text>
+            <Text style={styles.gradeLabel}>{t('adherencetracker.status') || 'Status'}</Text>
             <Text
               style={[
                 styles.gradeText,

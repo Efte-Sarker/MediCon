@@ -10,6 +10,7 @@ import {
   type TextInputKeyPressEventData,
 } from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, TextStyles, Layout } from '@theme';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 const OTP_LENGTH = 6;
@@ -30,6 +31,7 @@ export const AuthOTPForm = ({
   phone,
   onResend,
 }: AuthOTPFormProps): React.JSX.Element => {
+  const { t } = useTranslation();
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
@@ -69,8 +71,10 @@ export const AuthOTPForm = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.subtitle}>Enter the 6-digit code sent to {phone}</Text>
-      <Text style={styles.devHint}>(Dev OTP: 123456)</Text>
+      <Text style={styles.subtitle}>
+        {t('authotpform.enter_the_6digit_code_sent_to') || 'Enter the 6-digit code sent to'} {phone}
+      </Text>
+      <Text style={styles.devHint}>{t('authotpform.dev_otp_123456') || '(Dev OTP: 123456)'}</Text>
 
       <View style={styles.otpRow}>
         {digits.map((digit, index) => (
@@ -110,7 +114,7 @@ export const AuthOTPForm = ({
         accessibilityLabel="Resend OTP button"
         accessibilityRole="button"
       >
-        <Text style={styles.resendText}>Resend Code</Text>
+        <Text style={styles.resendText}>{t('authotpform.resend_code') || 'Resend Code'}</Text>
       </TouchableOpacity>
     </View>
   );

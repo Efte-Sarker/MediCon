@@ -1,31 +1,51 @@
 // 1. IMPORTS
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } from '@theme';
+import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePatientDashboard } from '../../hooks/usePatientDashboard';
 import { AppointmentCard } from '../cards/AppointmentCard';
-import { DoctorCard } from '../cards/DoctorCard';
 import { MedicationCard } from '../cards/MedicationCard';
-
+import { SymptomSearchBar } from '../forms/SymptomSearchBar';
 // 2. TYPES
 /* No external props — this is a self-contained dashboard. */
 
 // 3. COMPONENT
 export const PatientDashboard = (): React.JSX.Element => {
   const router = useRouter();
-  const { nextAppointment, recentDoctor, nextMedicine } = usePatientDashboard();
+  const { t } = useTranslation();
+  const { nextAppointment, nextMedicine } = usePatientDashboard();
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Welcome back 👋</Text>
-          <Text style={styles.subtitle}>Here&apos;s your health overview</Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>MediCon</Text>
         </View>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/notifications')}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityLabel={t('dashboard.notifications') || 'Notifications'}
+          >
+            <MaterialCommunityIcons name="bell-outline" size={24} color={Colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/settings/')}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityLabel={t('dashboard.settings') || 'Settings'}
+          >
+            <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <SymptomSearchBar />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -35,33 +55,47 @@ export const PatientDashboard = (): React.JSX.Element => {
           onPress={() => router.push('/(app)/emergency/')}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel="Emergency SOS. Double tap to access emergency protocols."
+          accessibilityLabel={
+            t('dashboard.emergencyAccessibility') ||
+            'Emergency SOS. Double tap to access emergency protocols.'
+          }
         >
-          <MaterialCommunityIcons name="alert-octagon" size={24} color={Colors.surface} />
-          <Text style={styles.sosText}>EMERGENCY SOS</Text>
-          <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.surface} />
+          <View style={styles.sosLeftIconWrapper}>
+            <MaterialCommunityIcons
+              name="alarm-light-outline"
+              size={22}
+              color={(Colors as any).emergency || Colors.danger}
+            />
+          </View>
+          <View style={styles.sosTextContainer}>
+            <Text style={styles.sosText}>{t('dashboard.emergencySOS') || 'Emergency SOS'}</Text>
+            <Text style={styles.sosSubtitle}>Get help immediately</Text>
+          </View>
+          <View style={styles.sosRightIconWrapper}>
+            <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.surface} />
+          </View>
         </TouchableOpacity>
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>
           <QuickAction
-            icon="stethoscope"
-            label="Doctors"
-            onPress={() => router.push('/(app)/(tabs)/doctors')}
-          />
-          <QuickAction
             icon="flask-outline"
-            label="Reports"
+            label={t('dashboard.reports') || 'Reports'}
             onPress={() => router.push('/(app)/(tabs)/reports')}
           />
           <QuickAction
             icon="hospital-building"
-            label="Hospitals"
+            label={t('dashboard.hospitals') || 'Hospitals'}
             onPress={() => router.push('/(app)/(tabs)/hospitals')}
           />
           <QuickAction
+            icon="pill"
+            label={t('dashboard.meds') || 'Medicines'}
+            onPress={() => router.push('/(app)/(tabs)/prescriptions')}
+          />
+          <QuickAction
             icon="chat-processing-outline"
-            label="AI Chat"
+            label={t('dashboard.aiChat') || 'AI Chat'}
             onPress={() => router.push('/(app)/(tabs)/ai-chat')}
           />
         </View>
@@ -70,7 +104,6 @@ export const PatientDashboard = (): React.JSX.Element => {
         <View style={styles.cardsContainer}>
           <AppointmentCard appointment={nextAppointment} />
           <MedicationCard medication={nextMedicine} />
-          <DoctorCard doctor={recentDoctor} />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -94,9 +127,9 @@ const QuickAction = ({ icon, label, onPress }: QuickActionProps): React.JSX.Elem
     accessibilityLabel={label}
   >
     <View style={styles.quickActionIcon}>
-      <MaterialCommunityIcons name={icon} size={24} color={Colors.primary} />
+      <MaterialCommunityIcons name={icon} size={28} color={Colors.primary} />
     </View>
-    <Text style={styles.quickActionLabel}>{label}</Text>
+    <Text style={styles.quickActionText}>{label}</Text>
   </TouchableOpacity>
 );
 
@@ -110,66 +143,100 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.base,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  headerLeft: {
+    flex: 1,
   },
   greeting: {
-    fontFamily: FontFamily.bold,
+    fontFamily: FontFamily.extraBold,
+    fontWeight: '900',
     fontSize: FontSize.xxl,
-    color: Colors.textPrimary,
+    color: Colors.primary,
   },
-  subtitle: {
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+  searchContainer: {
+    paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.base,
   },
   scrollContent: {
     paddingHorizontal: Spacing.base,
-    paddingBottom: Layout.tabBarHeight + Spacing.base,
+    paddingBottom: Spacing.base,
   },
   sosButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.danger,
-    borderRadius: BorderRadius.md,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    gap: Spacing.sm,
-    marginBottom: Spacing.xl,
-    ...Shadows.md,
-  },
-  sosText: {
-    flex: 1,
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.md,
-    color: Colors.surface,
-    textAlign: 'center',
-  },
-  quickActions: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: Spacing.xl,
+    backgroundColor: (Colors as any).emergency || Colors.danger,
+    borderRadius: BorderRadius.md,
+    paddingVertical: 19,
+    paddingHorizontal: Spacing.lg,
+    marginTop: 20,
+    marginBottom: 20,
   },
-  quickActionItem: {
-    alignItems: 'center',
-    gap: Spacing.xs,
-    flex: 1,
-  },
-  quickActionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: BorderRadius.lg,
+  sosLeftIconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: Colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.sm,
   },
-  quickActionLabel: {
+  sosRightIconWrapper: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sosTextContainer: {
+    flex: 1,
+    paddingLeft: Spacing.md,
+    paddingRight: Spacing.md,
+  },
+  sosText: {
+    fontFamily: FontFamily.bold,
+    fontWeight: '700',
+    fontSize: 15, // Decreased font size by 5px
+    color: Colors.surface,
+    marginBottom: 2,
+  },
+  sosSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.base,
+    color: Colors.surface,
+    opacity: 0.9,
+  },
+  quickActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  quickActionItem: {
+    alignItems: 'center',
+    gap: Spacing.sm,
+    width: '24%',
+  },
+  quickActionIcon: {
+    width: 68,
+    height: 68,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickActionText: {
     fontFamily: FontFamily.medium,
-    fontSize: FontSize.xs,
+    fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    textAlign: 'center',
   },
   cardsContainer: {
     gap: Spacing.base,

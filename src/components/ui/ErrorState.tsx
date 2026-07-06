@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Colors, Spacing, FontFamily, FontSize } from '@theme';
 import { Button } from './Button';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 export interface ErrorStateProps {
@@ -15,13 +16,14 @@ export const ErrorState = ({
   message = 'Something went wrong. Please try again.',
   onRetry,
 }: ErrorStateProps): React.JSX.Element => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container} accessibilityRole="alert">
       <Text style={styles.icon}>⚠️</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && (
         <Button
-          label="Retry"
+          label={t('errorstate.retry') || 'Retry'}
           onPress={onRetry}
           variant="outline"
           accessibilityHint="Attempts to reload the content"

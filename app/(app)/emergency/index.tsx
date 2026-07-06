@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } from '@theme';
 import { EMERGENCY_PROTOCOLS } from '../../../src/services/protocols/emergency-protocols.data';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 const IconMap: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
   activity: 'heart-pulse',
@@ -18,6 +19,7 @@ const IconMap: Record<string, keyof typeof MaterialCommunityIcons.glyphMap> = {
 };
 
 export default function EmergencyTriageScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
 
   // Sort protocols: Call emergency services first, then the rest.
@@ -50,7 +52,7 @@ export default function EmergencyTriageScreen() {
               accessibilityLabel="Calling emergency services may be required"
             >
               <MaterialCommunityIcons name="phone" color={Colors.danger} size={12} />
-              <Text style={styles.callBadgeText}>Call 911</Text>
+              <Text style={styles.callBadgeText}>{t('emergency.call_911') || 'Call 911'}</Text>
             </View>
           )}
         </View>
@@ -63,9 +65,12 @@ export default function EmergencyTriageScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.headerTitle} accessibilityRole="header">
-          Emergency Triage
+          {t('emergency.emergency_triage') || 'Emergency Triage'}
         </Text>
-        <Text style={styles.headerSubtitle}>Select a situation for immediate offline guidance</Text>
+        <Text style={styles.headerSubtitle}>
+          {t('emergency.select_a_situation_for_immedia') ||
+            'Select a situation for immediate offline guidance'}
+        </Text>
       </View>
 
       <FlatList

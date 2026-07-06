@@ -104,44 +104,44 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(app)/(tabs)/hospitals.tsx`, `app/(app)/doctors/hospital/[id].tsx`, `src/components/cards/HospitalCard.tsx`, `src/services/api/hospitalsService.ts` (mock)
 **DoD:** Graceful degradation (no crash/blank map) with location denied and with network disabled.
 
-# 1.15 — Lab Report Interpreter UI ✅ DONE
+# 1.15 — Lab Report Interpreter UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** Clinical Report Repository (by date/test type); upload/scan entry screen (camera/picker wired, OCR result mocked); flagged-value display with mock plain-language summaries (AI Safety Convention applies).
 **Files:** `app/(app)/report/*`, `src/components/medical/{ReportCard,BiomarkerRow,AIDisclaimer}.tsx`, `src/services/api/reportsService.ts` (mock)
 **DoD:** Empty state for zero reports; rejection messaging for unsupported file types; non-destructive re-upload flow.
 
-# 1.16 — Prescriptions & Adherence Module UI
+# 1.16 — Prescriptions & Adherence Module UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.11`, `1.15`
 **Deliverables:** Prescription store list/detail; mock AI Demystifier display; Daily Adherence Monitor (taken/pending/missed, mock); Custom Reminder Configuration wired to **real** `expo-notifications` local scheduling; Auto-Reminder seeds a user-editable default.
 **Files:** `app/(app)/prescriptions/*`, `src/components/medical/{PrescriptionCard,AdherenceTracker}.tsx`, `src/services/notifications/reminderService.ts` (real), `src/services/api/prescriptionsService.ts` (mock data)
 **DoD:** A scheduled local reminder genuinely fires a device notification; unit test for adherence-status thresholds.
 **Notes:** SMS reminders and cross-device adherence sync require the backend — completed in `2.7`.
 
-# 1.17 — Medicine Intelligence UI
+# 1.17 — Medicine Intelligence UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.16`
 **Deliverables:** Explainer (class, forms, side effects, dietary conflicts); side-by-side Comparator with AI rationale; Interaction Checker cross-referencing `1.16`'s prescription list — all mock, AI Safety Convention applies.
 **Files:** `app/(app)/medicine/*`, `src/components/medical/{MedicineCompareCard,InteractionFlag}.tsx`, `src/services/ai/medicineAiService.ts` (mock)
 **DoD:** Copy reviewed against AI Safety Rules; component test for conflict-grading display.
 
-# 1.18 — Symptom Triage UI
+# 1.18 — Symptom Triage UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.11`
 **Deliverables:** Typed/spoken (voice-capture UI, no real transcription) symptom input with duration/pain-level; mock result screen with mandatory route-to-care CTA.
 **Files:** `app/(app)/symptom/*`, `src/components/forms/SymptomInputForm.tsx`, `src/services/ai/symptomTriageService.ts` (mock)
 **DoD:** Result copy passes the Medical Safety Rules checklist; voice input gracefully no-ops without a real backend.
 
-# 1.19 — AI Chat (Consultation) UI
+# 1.19 — AI Chat (Consultation) UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.18`
 **Deliverables:** Chat UI (message list, input, mock streaming response); voice-recording capture (no real transcription); mock conversation persistence.
 **Files:** `app/(app)/(tabs)/ai-chat.tsx`, `src/components/medical/ChatBubble.tsx`, `src/services/ai/chatService.ts` (mock), `src/store/chatStore.ts`
 **DoD:** Offline message (Tier 3) shown instead of a hung loading state; scroll/performance test with a long mock conversation.
 
-# 1.20 — Appointment Scheduler & Pre-Consultation Digest UI
+# 1.20 — Appointment Scheduler & Pre-Consultation Digest UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.13`, `1.16`
 **Deliverables:** Calendar/slot picker (in-person or video); mock booking confirmation; Digest preview compiling mock vitals/medicines/reports; explicitly placeholder-only video-call screen (real Agora wiring deferred to `2.11`).
 **Files:** `app/(app)/doctors/booking/*`, `src/components/cards/DigestCard.tsx`, `src/services/api/appointmentsService.ts` (mock)
 **DoD:** Video placeholder unambiguously flagged in code as a placeholder; booking flow walked through for both consultation types.
 
-# 1.21 — Doctor Q&A Network UI
+# 1.21 — Doctor Q&A Network UI (COMPLETED)
 **Prerequisites:** `1.7`, `1.12`, `1.13`
 **Deliverables:** Patient: ask-question form + private "my questions" history (mock). Doctor: inbox mock-routed to their department, answer composer. UI visually enforces department-scoped, private-by-default access.
 **Files:** `app/(app)/doctors/qna/*`, `src/components/medical/{QuestionCard,AnswerComposer}.tsx`, `src/services/api/qnaService.ts` (mock)
@@ -153,13 +153,13 @@ Tooling → tokens → scaffolding → primitives → navigation, before any fea
 **Files:** `app/(app)/settings/*`, `src/store/settingsStore.ts`, locale resource files
 **DoD:** Switching language updates every prior screen's text live, no restart, no missing-translation fallbacks.
 
-# 1.23 — Notifications Screen
+# 1.23 — Notifications Screen (COMPLETED)
 **Prerequisites:** `1.6`, `1.7`
 **Deliverables:** `notifications.tsx` listing mock system notifications (reminders fired, confirmations, Q&A answers) with read/unread state.
 **Files:** `app/(app)/notifications.tsx`, `src/services/notifications/notificationsListService.ts` (mock)
 **DoD:** Empty state for zero notifications; component test for read/unread toggling.
 
-# 1.24 — Phase 1 Integration Pass, Mock-Data QA & Accessibility Sweep
+# 1.24 — Phase 1 Integration Pass, Mock-Data QA & Accessibility Sweep (COMPLETED)
 **Prerequisites:** `1.1`–`1.23`
 **Deliverables:** Full click-through script, both roles; forced-error/empty toggles on every mock service; full screen-reader and bilingual sweep across every screen; confirmation `1.10` remains network-call-free inside the full integrated app.
 **DoD:** Universal DoD across the entire app simultaneously; zero P0/P1 defects open. **Phase 1 exit gate — Phase 2 should not begin before sign-off.**

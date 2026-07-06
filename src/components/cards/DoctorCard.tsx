@@ -7,6 +7,7 @@ import type { DashboardDoctor } from '../../hooks/usePatientDashboard';
 import type { Doctor } from '../../services/api/doctorsService';
 import { Card } from '../ui/Card';
 import { Avatar } from '../ui/Avatar';
+import { useTranslation } from 'react-i18next';
 
 export interface DoctorCardProps {
   doctor: DashboardDoctor | Doctor | null;
@@ -20,13 +21,19 @@ export const DoctorCard = ({
   onPress,
   hideSectionLabel = false,
 }: DoctorCardProps): React.JSX.Element => {
+  const { t } = useTranslation();
   if (!doctor) {
     return (
       <Card accessibilityLabel="No recent doctors">
         <View style={styles.emptyContainer}>
           <MaterialCommunityIcons name="stethoscope" size={32} color={Colors.textTertiary} />
-          <Text style={styles.emptyTitle}>No recent doctors</Text>
-          <Text style={styles.emptySubtitle}>Explore the directory to find a doctor.</Text>
+          <Text style={styles.emptyTitle}>
+            {t('doctorcard.no_recent_doctors') || 'No recent doctors'}
+          </Text>
+          <Text style={styles.emptySubtitle}>
+            {t('doctorcard.explore_the_directory_to_find_') ||
+              'Explore the directory to find a doctor.'}
+          </Text>
         </View>
       </Card>
     );
@@ -42,7 +49,9 @@ export const DoctorCard = ({
       onPress={onPress}
       accessibilityLabel={`Doctor: ${displayName}, ${displaySpecialty}, rated ${doctor.rating} out of 5`}
     >
-      {!hideSectionLabel && <Text style={styles.sectionLabel}>Recent Doctor</Text>}
+      {!hideSectionLabel && (
+        <Text style={styles.sectionLabel}>{t('doctorcard.recent_doctor') || 'Recent Doctor'}</Text>
+      )}
 
       <View style={styles.body}>
         <View>

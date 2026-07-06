@@ -7,12 +7,14 @@ import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } 
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDoctorDashboard } from '../../hooks/useDoctorDashboard';
 import { AppointmentQueueCard } from '../cards/AppointmentQueueCard';
+import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
 /* No external props — this is a self-contained dashboard. */
 
 // 3. COMPONENT
 export const DoctorDashboard = (): React.JSX.Element => {
+  const { t } = useTranslation();
   const router = useRouter();
   const { todayQueue, metrics } = useDoctorDashboard();
 
@@ -21,9 +23,19 @@ export const DoctorDashboard = (): React.JSX.Element => {
       {/* Header */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Doctor Dashboard</Text>
-          <Text style={styles.subtitle}>Welcome back, Dr. Smith</Text>
+          <Text style={styles.greeting}>
+            {t('doctordashboard.doctor_dashboard') || 'Doctor Dashboard'}
+          </Text>
+          <Text style={styles.subtitle}>
+            {t('doctordashboard.welcome_back_dr_smith') || 'Welcome back, Dr. Smith'}
+          </Text>
         </View>
+        <TouchableOpacity
+          onPress={() => router.push('/(app)/settings/')}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        >
+          <MaterialCommunityIcons name="cog-outline" size={28} color={Colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -31,19 +43,19 @@ export const DoctorDashboard = (): React.JSX.Element => {
         <View style={styles.quickActions}>
           <QuickAction
             icon="calendar-clock"
-            label="Schedule"
+            label={t('doctordashboard.schedule') || 'Schedule'}
             onPress={() => {
               // Future: Navigation to Schedule
             }}
           />
           <QuickAction
             icon="inbox-outline"
-            label="Q&A Inbox"
+            label={t('doctordashboard.qa_inbox') || 'Q&A Inbox'}
             onPress={() => router.push('/(app)/doctors/qna/')}
           />
           <QuickAction
             icon="account-group-outline"
-            label="Patients"
+            label={t('doctordashboard.patients') || 'Patients'}
             onPress={() => {
               // Future: Navigation to Patients list
             }}
@@ -54,28 +66,34 @@ export const DoctorDashboard = (): React.JSX.Element => {
         <View style={styles.metricsContainer}>
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>{metrics.pending}</Text>
-            <Text style={styles.metricLabel}>Pending</Text>
+            <Text style={styles.metricLabel}>{t('doctordashboard.pending') || 'Pending'}</Text>
           </View>
           <View style={styles.metricDivider} />
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>{metrics.completed}</Text>
-            <Text style={styles.metricLabel}>Completed</Text>
+            <Text style={styles.metricLabel}>{t('doctordashboard.completed') || 'Completed'}</Text>
           </View>
           <View style={styles.metricDivider} />
           <View style={styles.metricItem}>
             <Text style={styles.metricValue}>{metrics.total}</Text>
-            <Text style={styles.metricLabel}>Total Today</Text>
+            <Text style={styles.metricLabel}>
+              {t('doctordashboard.total_today') || 'Total Today'}
+            </Text>
           </View>
         </View>
 
         {/* Today's Queue */}
         <View style={styles.queueSection}>
-          <Text style={styles.sectionTitle}>Today's Queue</Text>
+          <Text style={styles.sectionTitle}>
+            {t('doctordashboard.todays_queue') || "Today's Queue"}
+          </Text>
 
           {todayQueue.length === 0 ? (
             <View style={styles.emptyContainer}>
               <MaterialCommunityIcons name="calendar-check" size={32} color={Colors.textTertiary} />
-              <Text style={styles.emptyText}>No appointments today</Text>
+              <Text style={styles.emptyText}>
+                {t('doctordashboard.no_appointments_today') || 'No appointments today'}
+              </Text>
             </View>
           ) : (
             <View style={styles.queueContainer}>
@@ -129,8 +147,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.base,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
   },
   greeting: {
     fontFamily: FontFamily.bold,

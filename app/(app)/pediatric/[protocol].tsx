@@ -9,8 +9,10 @@ import {
 } from '../../../src/services/protocols/emergency-protocols.data';
 import { EmergencyStepCard } from '../../../src/components/medical/EmergencyStepCard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 
 export default function PediatricProtocolScreen() {
+  const { t } = useTranslation();
   const { protocol: protocolId } = useLocalSearchParams<{ protocol: string }>();
   const router = useRouter();
   const [ageBand, setAgeBand] = useState<'child' | 'infant'>('child');
@@ -20,7 +22,7 @@ export default function PediatricProtocolScreen() {
   if (!protocol) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text>Protocol not found.</Text>
+        <Text>{t('[protocol].protocol_not_found') || 'Protocol not found.'}</Text>
       </SafeAreaView>
     );
   }
@@ -59,7 +61,7 @@ export default function PediatricProtocolScreen() {
           accessibilityState={{ selected: ageBand === 'child' }}
         >
           <Text style={[styles.tabText, ageBand === 'child' && styles.activeTabText]}>
-            Child (1 yr - Puberty)
+            {t('[protocol].child_1_yr_puberty') || 'Child (1 yr - Puberty)'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -69,7 +71,7 @@ export default function PediatricProtocolScreen() {
           accessibilityState={{ selected: ageBand === 'infant' }}
         >
           <Text style={[styles.tabText, ageBand === 'infant' && styles.activeTabText]}>
-            Infant (Under 1 yr)
+            {t('[protocol].infant_under_1_yr') || 'Infant (Under 1 yr)'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -85,14 +87,19 @@ export default function PediatricProtocolScreen() {
             accessibilityLabel="Call 911 immediately"
           >
             <MaterialCommunityIcons name="phone" color={Colors.surface} size={20} />
-            <Text style={styles.callButtonText}>Call 911 Now</Text>
+            <Text style={styles.callButtonText}>
+              {t('[protocol].call_911_now') || 'Call 911 Now'}
+            </Text>
           </TouchableOpacity>
         )}
 
         {!hasSpecificVariant && (
           <View style={styles.infoBanner}>
             <MaterialCommunityIcons name="information" color={Colors.secondary} size={20} />
-            <Text style={styles.infoBannerText}>Standard protocol applies for this age group.</Text>
+            <Text style={styles.infoBannerText}>
+              {t('[protocol].standard_protocol_applies_for_') ||
+                'Standard protocol applies for this age group.'}
+            </Text>
           </View>
         )}
 

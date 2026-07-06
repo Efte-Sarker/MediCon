@@ -8,6 +8,7 @@ export interface DashboardAppointment {
   specialty: string;
   dateTime: string;
   format: 'video' | 'in-person';
+  imageUrl?: string;
 }
 
 export interface DashboardDoctor {
@@ -21,7 +22,8 @@ export interface DashboardDoctor {
 export interface DashboardMedication {
   id: string;
   name: string;
-  dosage: string;
+  instructions: string;
+  scheduleFormat: string;
   scheduledTime: string;
   status: 'upcoming' | 'taken' | 'missed';
 }
@@ -47,6 +49,7 @@ export const usePatientDashboard = (): PatientDashboardData => {
         specialty: 'General Medicine',
         dateTime: '2026-07-05T10:30:00',
         format: 'video',
+        imageUrl: 'https://i.pravatar.cc/150?img=32',
       },
       recentDoctor: {
         id: 'doc-001',
@@ -58,7 +61,8 @@ export const usePatientDashboard = (): PatientDashboardData => {
       nextMedicine: {
         id: 'med-001',
         name: 'Amoxicillin',
-        dosage: '500mg',
+        instructions: 'After meals',
+        scheduleFormat: '1+0+1',
         scheduledTime: '08:00 PM',
         status: 'upcoming',
       },

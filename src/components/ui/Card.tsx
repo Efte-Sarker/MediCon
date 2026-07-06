@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import type { ViewStyle } from 'react-native';
-import { Colors, Spacing, BorderRadius, Shadows } from '@theme';
+import { Colors, Spacing, BorderRadius } from '@theme';
 
 // 2. TYPES
 export interface CardProps {
@@ -46,6 +46,5 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.base,
-    ...Shadows.sm,
   },
 });

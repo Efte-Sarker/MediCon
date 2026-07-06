@@ -12,6 +12,8 @@ describe('Design System Tokens', () => {
       'textPrimary',
       'textSecondary',
       'textTertiary',
+      'success',
+      'warning',
     ];
     expect(Object.keys(Colors).sort()).toEqual(expectedKeys.sort());
 

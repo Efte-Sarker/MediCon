@@ -3,14 +3,16 @@ import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity } fr
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Colors, Spacing, FontFamily, FontSize, Layout, BorderRadius } from '../../../src/theme';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { hospitalsService } from '../../../src/services/api/hospitalsService';
 import { Hospital } from '../../../src/types/medical.types';
 import { Doctor } from '../../../src/services/api/doctorsService';
 import { DoctorCard } from '../../../src/components/cards/DoctorCard';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 
 export default function HospitalDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -29,7 +31,7 @@ export default function HospitalDetailScreen() {
         const details = await hospitalsService.getHospitalDetails(id);
         setHospital(details.hospital);
         setDoctors(details.doctors);
-      } catch (err) {
+      } catch {
         setError('Failed to load hospital details. Please check your connection.');
       } finally {
         setLoading(false);
@@ -51,7 +53,7 @@ export default function HospitalDetailScreen() {
         <MaterialCommunityIcons name="alert-circle-outline" size={48} color={Colors.danger} />
         <Text style={styles.errorText}>{error || 'Hospital not found.'}</Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Go Back</Text>
+          <Text style={styles.backButtonText}>{t('[id].go_back') || 'Go Back'}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -94,7 +96,7 @@ export default function HospitalDetailScreen() {
           <View style={styles.row}>
             <MaterialCommunityIcons name="ambulance" size={16} color={Colors.danger} />
             <Text style={[styles.contact, { color: Colors.danger }]}>
-              {hospital.emergencyNumber} (ER)
+              {hospital.emergencyNumber} {t('[id].er') || '(ER)'}
             </Text>
           </View>
         )}
@@ -102,17 +104,21 @@ export default function HospitalDetailScreen() {
         <View style={styles.tagsContainer}>
           {hospital.hasEmergencyRoom && (
             <View style={[styles.tag, styles.emergencyTag]}>
-              <Text style={styles.emergencyTagText}>ER Available</Text>
+              <Text style={styles.emergencyTagText}>
+                {t('[id].er_available') || 'ER Available'}
+              </Text>
             </View>
           )}
           {hospital.isOpen24x7 && (
             <View style={styles.tag}>
-              <Text style={styles.tagText}>24x7 Open</Text>
+              <Text style={styles.tagText}>{t('[id].24x7_open') || '24x7 Open'}</Text>
             </View>
           )}
         </View>
 
-        <Text style={styles.sectionTitle}>Affiliated Doctors</Text>
+        <Text style={styles.sectionTitle}>
+          {t('[id].affiliated_doctors') || 'Affiliated Doctors'}
+        </Text>
       </View>
     </View>
   );
@@ -128,7 +134,10 @@ export default function HospitalDetailScreen() {
         ItemSeparatorComponent={() => <View style={{ height: Spacing.base }} />}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No doctors currently listed for this hospital.</Text>
+            <Text style={styles.emptyText}>
+              {t('[id].no_doctors_currently_listed_fo') ||
+                'No doctors currently listed for this hospital.'}
+            </Text>
           </View>
         )}
       />
