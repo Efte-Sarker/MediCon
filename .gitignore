@@ -42,3 +42,7 @@ yarn-error.*
 
 .agents/
 docs/
+
+.claude/
+CLAUDE.md
+AGENTS.md
