@@ -170,5 +170,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
     marginLeft: Spacing.xs,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

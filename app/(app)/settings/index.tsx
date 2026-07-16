@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textPrimary,
     marginLeft: Spacing.md,
+    lineHeight: FontSize.md * 1.5,
   },
   logoutButton: {
     marginTop: Spacing.xl,
@@ -105,5 +106,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.md,
     color: Colors.danger,
+    lineHeight: FontSize.md * 1.5,
   },
 });

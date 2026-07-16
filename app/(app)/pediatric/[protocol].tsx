@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     marginBottom: Spacing.xl,
-    lineHeight: 22,
+    lineHeight: FontSize.md * 1.5,
   },
   callButton: {
     flexDirection: 'row',
@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.secondary,
+    lineHeight: FontSize.sm * 1.5,
   },
   stepsContainer: {
     gap: Spacing.xs,

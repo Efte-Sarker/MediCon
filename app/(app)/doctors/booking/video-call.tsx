@@ -109,5 +109,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.md,
     color: Colors.surface,
+    lineHeight: FontSize.md * 1.5,
   },
 });

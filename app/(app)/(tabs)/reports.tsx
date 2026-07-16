@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: FontSize.base * 1.5,
   },
   fab: {
     position: 'absolute',

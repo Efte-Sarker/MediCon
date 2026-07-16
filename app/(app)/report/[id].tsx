@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.md,
     textAlign: 'center',
+    lineHeight: FontSize.md * 1.5,
   },
   backButton: {
     marginTop: Spacing.xl,
@@ -240,6 +241,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
     marginLeft: Spacing.sm,
+    lineHeight: FontSize.sm * 1.5,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -254,7 +256,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.base,
     color: Colors.textPrimary,
-    lineHeight: 24,
+    lineHeight: FontSize.base * 1.5,
     backgroundColor: Colors.surface,
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
@@ -281,6 +283,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
     textAlign: 'center',
+    lineHeight: FontSize.sm * 1.5,
   },
   viewOriginalButton: {
     flexDirection: 'row',
@@ -298,5 +301,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.primary,
     marginLeft: Spacing.sm,
+    lineHeight: FontSize.md * 1.5,
   },
 });

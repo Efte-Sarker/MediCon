@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -160,5 +161,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.md,
     marginTop: 2,
+    lineHeight: FontSize.md * 1.5,
   },
 });

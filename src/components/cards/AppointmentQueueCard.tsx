@@ -107,6 +107,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.semiBold,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
   },
   badges: {
     flexDirection: 'row',
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
   },
   iconContainer: {
     width: 44,
@@ -160,5 +162,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

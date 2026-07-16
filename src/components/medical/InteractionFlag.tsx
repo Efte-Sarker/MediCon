@@ -77,6 +77,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

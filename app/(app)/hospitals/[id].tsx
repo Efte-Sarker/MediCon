@@ -8,6 +8,7 @@ import { hospitalsService } from '../../../src/services/api/hospitalsService';
 import { Hospital } from '../../../src/types/medical.types';
 import { Doctor } from '../../../src/services/api/doctorsService';
 import { DoctorCard } from '../../../src/components/cards/DoctorCard';
+import { Modal } from '../../../src/components/ui/Modal';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
@@ -21,6 +22,15 @@ export default function HospitalDetailScreen() {
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [infoModalConfig, setInfoModalConfig] = useState<{
+    visible: boolean;
+    title: string;
+    content: string;
+  }>({
+    visible: false,
+    title: '',
+    content: '',
+  });
 
   useEffect(() => {
     (async () => {
@@ -82,42 +92,111 @@ export default function HospitalDetailScreen() {
       <View style={styles.infoContainer}>
         <Text style={styles.name}>{hospital.name}</Text>
 
-        <View style={styles.row}>
-          <MaterialCommunityIcons name="map-marker" size={16} color={Colors.textSecondary} />
-          <Text style={styles.address}>{hospital.address}</Text>
-        </View>
-
-        <View style={styles.row}>
-          <MaterialCommunityIcons name="phone" size={16} color={Colors.textSecondary} />
-          <Text style={styles.contact}>{hospital.contactNumber}</Text>
-        </View>
-
-        {hospital.emergencyNumber && (
-          <View style={styles.row}>
-            <MaterialCommunityIcons name="ambulance" size={16} color={Colors.danger} />
-            <Text style={[styles.contact, { color: Colors.danger }]}>
-              {hospital.emergencyNumber} {t('[id].er') || '(ER)'}
-            </Text>
-          </View>
-        )}
-
+        {/* Hospital Facilities / Badges */}
         <View style={styles.tagsContainer}>
           {hospital.hasEmergencyRoom && (
-            <View style={[styles.tag, styles.emergencyTag]}>
-              <Text style={styles.emergencyTagText}>
-                {t('[id].er_available') || 'ER Available'}
+            <View style={[styles.imageBadge, styles.imageBadgeDanger]}>
+              <MaterialCommunityIcons name="heart-pulse" size={12} color={Colors.surface} />
+              <Text style={styles.imageBadgeDangerText}>
+                {t('[id].er_available') || 'Emergency Room Available'}
               </Text>
             </View>
           )}
           {hospital.isOpen24x7 && (
-            <View style={styles.tag}>
-              <Text style={styles.tagText}>{t('[id].24x7_open') || '24x7 Open'}</Text>
+            <View style={styles.imageBadge}>
+              <MaterialCommunityIcons name="clock-outline" size={12} color={Colors.primary} />
+              <Text style={styles.imageBadgeText}>{t('[id].24x7_open') || '24x7 Open'}</Text>
             </View>
           )}
         </View>
 
+        {/* 2-column info grid */}
+        <View style={styles.infoGrid}>
+          {/* Address — full width */}
+          <View style={[styles.infoTile, styles.infoTileFullWidth]}>
+            <View style={styles.infoTileIcon}>
+              <MaterialCommunityIcons name="map-marker" size={18} color={Colors.primary} />
+            </View>
+            <View style={styles.infoTileContent}>
+              <Text style={styles.infoTileLabel}>Address</Text>
+              <Text style={styles.infoTileValue} numberOfLines={2}>
+                {hospital.address}
+              </Text>
+            </View>
+          </View>
+
+          {/* Phone */}
+          <View style={styles.infoTile}>
+            <View style={styles.infoTileIcon}>
+              <MaterialCommunityIcons name="phone" size={16} color={Colors.primary} />
+            </View>
+            <View style={styles.infoTileContent}>
+              <View style={styles.labelRow}>
+                <Text style={styles.infoTileLabel}>Contact</Text>
+                <TouchableOpacity
+                  onPress={() =>
+                    setInfoModalConfig({
+                      visible: true,
+                      title: 'Contact',
+                      content:
+                        'The general reception/front-desk number of the hospital. You call this for booking an appointment, asking about visiting hours, inquiring about a department, billing and administrative queries.',
+                    })
+                  }
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <MaterialCommunityIcons
+                    name="help-circle-outline"
+                    size={14}
+                    color={Colors.textTertiary}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.infoTileValue}>{hospital.contactNumber}</Text>
+            </View>
+          </View>
+
+          {/* Emergency — shown only if available */}
+          {hospital.emergencyNumber ? (
+            <View style={[styles.infoTile, styles.infoTileDanger]}>
+              <View style={[styles.infoTileIcon, styles.infoTileIconDanger]}>
+                <MaterialCommunityIcons name="ambulance" size={16} color={Colors.danger} />
+              </View>
+              <View style={styles.infoTileContent}>
+                <View style={styles.labelRow}>
+                  <Text style={[styles.infoTileLabel, { color: 'rgba(208, 42, 65, 0.6)' }]}>
+                    Emergency
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      setInfoModalConfig({
+                        visible: true,
+                        title: 'Emergency',
+                        content:
+                          'A dedicated hotline routed directly to the ER triage desk — bypassing reception entirely. You call this when someone is having a life-threatening situation, you need an ambulance dispatched immediately, or a patient needs to be pre-alerted before arrival so the ER team is ready.',
+                      })
+                    }
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  >
+                    <MaterialCommunityIcons
+                      name="help-circle-outline"
+                      size={14}
+                      color="rgba(208, 42, 65, 0.6)"
+                    />
+                  </TouchableOpacity>
+                </View>
+                <Text style={[styles.infoTileValue, { color: Colors.danger }]}>
+                  {hospital.emergencyNumber}
+                </Text>
+              </View>
+            </View>
+          ) : (
+            /* Placeholder to keep even grid when no emergency number */
+            <View style={[styles.infoTile, { opacity: 0 }]} />
+          )}
+        </View>
+
         <Text style={styles.sectionTitle}>
-          {t('[id].affiliated_doctors') || 'Affiliated Doctors'}
+          {t('[id].available_doctors') || 'Available Doctors'}
         </Text>
       </View>
     </View>
@@ -127,11 +206,30 @@ export default function HospitalDetailScreen() {
     <View style={styles.container}>
       <FlashList
         data={doctors}
-        renderItem={({ item }) => <DoctorCard doctor={item} />}
+        numColumns={2}
+        renderItem={({ item, index }) => (
+          <View
+            style={{
+              flex: 1,
+              paddingLeft: index % 2 === 0 ? Spacing.md : Spacing.md / 2,
+              paddingRight: index % 2 === 0 ? Spacing.md / 2 : Spacing.md,
+            }}
+          >
+            <DoctorCard
+              doctor={item}
+              variant="online"
+              fullWidth
+              onPress={() => router.push(`/(app)/doctors/${item.id}`)}
+              onBookPress={() =>
+                router.push(`/(app)/doctors/booking/digest?doctorId=${item.id}&type=video`)
+              }
+            />
+          </View>
+        )}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}
         contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl }}
-        ItemSeparatorComponent={() => <View style={{ height: Spacing.base }} />}
+        ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>
@@ -141,6 +239,14 @@ export default function HospitalDetailScreen() {
           </View>
         )}
       />
+
+      <Modal
+        visible={infoModalConfig.visible}
+        onClose={() => setInfoModalConfig((prev) => ({ ...prev, visible: false }))}
+        title={infoModalConfig.title}
+      >
+        <Text style={styles.modalContentText}>{infoModalConfig.content}</Text>
+      </Modal>
     </View>
   );
 }
@@ -148,7 +254,7 @@ export default function HospitalDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
   },
   centerContainer: {
     flex: 1,
@@ -163,6 +269,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     marginTop: Spacing.md,
     textAlign: 'center',
+    lineHeight: FontSize.md * 1.5,
   },
   backButton: {
     marginTop: Spacing.xl,
@@ -208,7 +315,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   infoContainer: {
-    padding: Spacing.xl,
+    paddingTop: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.sm,
     backgroundColor: Colors.surface,
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
@@ -216,49 +325,94 @@ const styles = StyleSheet.create({
   },
   name: {
     fontFamily: FontFamily.bold,
+    fontWeight: 'bold',
     fontSize: FontSize.xl,
     color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.base,
   },
-  row: {
+  infoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+    marginBottom: Spacing.xl,
+  },
+  infoTile: {
+    flex: 1,
+    minWidth: '46%',
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.xs,
     gap: Spacing.sm,
+    backgroundColor: Colors.background,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm + 2,
+    paddingHorizontal: Spacing.sm + 2,
+    borderWidth: 1.5,
+    borderColor: Colors.tertiary,
   },
-  address: {
+  infoTileFullWidth: {
+    flexBasis: '100%',
+  },
+  infoTileDanger: {
+    backgroundColor: 'rgba(208, 42, 65, 0.04)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(208, 42, 65, 0.2)',
+  },
+  infoTileIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  infoTileIconDanger: {
+    backgroundColor: 'rgba(208, 42, 65, 0.1)',
+  },
+  infoTileContent: {
     flex: 1,
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
   },
-  contact: {
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 2,
+  },
+  infoTileLabel: {
     fontFamily: FontFamily.medium,
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+  },
+  infoTileValue: {
+    fontFamily: FontFamily.semiBold,
     fontSize: FontSize.sm,
-    color: Colors.textSecondary,
+    color: Colors.textPrimary,
   },
   tagsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginTop: Spacing.md,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.sm,
   },
-  tag: {
+  imageBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
     backgroundColor: Colors.tertiary,
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.full,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
   },
-  tagText: {
-    fontFamily: FontFamily.medium,
+  imageBadgeDanger: {
+    backgroundColor: Colors.danger,
+  },
+  imageBadgeText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: FontSize.xs,
     color: Colors.primary,
   },
-  emergencyTag: {
-    backgroundColor: Colors.danger,
-  },
-  emergencyTagText: {
-    fontFamily: FontFamily.medium,
+  imageBadgeDangerText: {
+    fontFamily: FontFamily.semiBold,
     fontSize: FontSize.xs,
     color: Colors.surface,
   },
@@ -266,8 +420,8 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
-    marginTop: Spacing.base,
-    marginBottom: Spacing.md,
+    marginTop: 0,
+    marginBottom: Spacing.sm,
   },
   emptyContainer: {
     padding: Spacing.xl,
@@ -277,5 +431,12 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
+  },
+  modalContentText: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.md,
+    color: Colors.textSecondary,
+    lineHeight: FontSize.md * 1.5,
   },
 });

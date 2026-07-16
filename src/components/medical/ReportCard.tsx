@@ -118,6 +118,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
   },
   flaggedBadge: {
     flexDirection: 'row',
@@ -132,5 +133,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.xs,
     color: Colors.danger,
+    lineHeight: FontSize.xs * 1.5,
   },
 });

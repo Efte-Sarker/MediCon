@@ -1,12 +1,11 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Colors, Layout, FontSize, FontFamily } from '../../../src/theme';
+
+import { Colors, FontSize, FontFamily } from '../../../src/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
 
 export default function TabsLayout() {
-  const insets = useSafeAreaInsets();
-
   return (
     <Tabs
       screenOptions={{
@@ -20,8 +19,7 @@ export default function TabsLayout() {
         },
         tabBarActiveTintColor: Colors.primary,
         tabBarInactiveTintColor: Colors.textSecondary,
-        tabBarPressColor: 'transparent',
-        tabBarActiveBackgroundColor: 'transparent',
+        tabBarButton: (props) => <TouchableOpacity activeOpacity={1} {...(props as any)} />,
         tabBarItemStyle: {
           backgroundColor: 'transparent',
         },

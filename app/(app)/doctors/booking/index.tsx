@@ -8,48 +8,33 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import {
-  Colors,
-  Spacing,
-  FontFamily,
-  FontSize,
-  BorderRadius,
-  Shadows,
-} from '../../../../src/theme';
-import {
-  appointmentsService,
-  TimeSlot,
-  ConsultationType,
-} from '../../../../src/services/api/appointmentsService';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../../src/theme';
+import { appointmentsService, TimeSlot } from '../../../../src/services/api/appointmentsService';
 import { doctorsService, Doctor } from '../../../../src/services/api/doctorsService';
-import { Avatar } from '../../../../src/components/ui/Avatar';
 import { useTranslation } from 'react-i18next';
 
 export default function BookingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const insets = useSafeAreaInsets();
 
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Form State
-  const [selectedDate, setSelectedDate] = useState<string>('2026-07-06');
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [slots, setSlots] = useState<TimeSlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [consultationType, setConsultationType] = useState<ConsultationType>('video');
   const [slotsLoading, setSlotsLoading] = useState(false);
 
-  // Mock dates for calendar
-  const mockDates = [
-    { day: 'Mon', date: '06', full: '2026-07-06' },
-    { day: 'Tue', date: '07', full: '2026-07-07' },
-    { day: 'Wed', date: '08', full: '2026-07-08' },
-    { day: 'Thu', date: '09', full: '2026-07-09' },
-    { day: 'Fri', date: '10', full: '2026-07-10' },
-  ];
+  const dates = Array.from({ length: 5 }).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d;
+  });
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -70,7 +55,8 @@ export default function BookingScreen() {
       if (!id) return;
       try {
         setSlotsLoading(true);
-        const availableSlots = await appointmentsService.getAvailableSlots(id, selectedDate);
+        const dateString = selectedDate.toISOString().split('T')[0];
+        const availableSlots = await appointmentsService.getAvailableSlots(id, dateString);
         setSlots(availableSlots);
         setSelectedSlot(null); // Reset selection on date change
       } finally {
@@ -82,13 +68,14 @@ export default function BookingScreen() {
 
   const handleContinue = () => {
     if (!id || !selectedSlot) return;
+    const dateString = selectedDate.toISOString().split('T')[0];
     router.push({
       pathname: '/(app)/doctors/booking/digest',
       params: {
         doctorId: id,
-        date: selectedDate,
+        date: dateString,
         timeSlotId: selectedSlot,
-        type: consultationType,
+        type: 'video',
       },
     });
   };
@@ -97,7 +84,12 @@ export default function BookingScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
             <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -112,7 +104,12 @@ export default function BookingScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
             <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -129,89 +126,69 @@ export default function BookingScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('booking.book_appointment') || 'Book Appointment'}</Text>
-        <View style={styles.headerRight} />
+        <Text style={styles.headerTitle}>
+          {t('booking.book_appointment') || 'Book Appointment'}
+        </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Doctor Info */}
-        <View style={styles.doctorCard}>
-          <Avatar name={doctor.fullName} size={50} />
-          <View style={styles.doctorInfo}>
-            <Text style={styles.doctorName}>{doctor.fullName}</Text>
-            <Text style={styles.doctorSpecialty}>{doctor.department}</Text>
-          </View>
-        </View>
-
-        {/* Consultation Type */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t('booking.consultation_type') || 'Consultation Type'}
-          </Text>
-          <View style={styles.typeContainer}>
-            <TouchableOpacity
-              style={[styles.typeOption, consultationType === 'video' && styles.typeOptionActive]}
-              onPress={() => setConsultationType('video')}
-            >
-              <MaterialCommunityIcons
-                name="video"
-                size={24}
-                color={consultationType === 'video' ? Colors.primary : Colors.textSecondary}
-              />
-              <Text
-                style={[styles.typeText, consultationType === 'video' && styles.typeTextActive]}
-              >
-                {t('booking.video_call') || 'Video Call'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.typeOption,
-                consultationType === 'in-person' && styles.typeOptionActive,
-              ]}
-              onPress={() => setConsultationType('in-person')}
-            >
-              <MaterialCommunityIcons
-                name="hospital-building"
-                size={24}
-                color={consultationType === 'in-person' ? Colors.primary : Colors.textSecondary}
-              />
-              <Text
-                style={[styles.typeText, consultationType === 'in-person' && styles.typeTextActive]}
-              >
-                {t('booking.in_person') || 'In Person'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
+      >
         {/* Date Selection */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('booking.select_date') || 'Select Date'}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.dateScroll}>
-            {mockDates.map((item) => (
-              <TouchableOpacity
-                key={item.full}
-                style={[styles.dateBox, selectedDate === item.full && styles.dateBoxActive]}
-                onPress={() => setSelectedDate(item.full)}
-              >
-                <Text style={[styles.dateDay, selectedDate === item.full && styles.dateTextActive]}>
-                  {item.day}
-                </Text>
-                <Text style={[styles.dateNum, selectedDate === item.full && styles.dateTextActive]}>
-                  {item.date}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <View style={styles.dateSelectorContent}>
+            {dates.map((date, index) => {
+              const isSelected =
+                selectedDate.toISOString().split('T')[0] === date.toISOString().split('T')[0];
+              const isToday = index === 0;
+              const dayName = isToday
+                ? 'Today'
+                : date.toLocaleDateString('en-US', { weekday: 'short' });
+              const dayNumber = date.getDate();
+
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.dateSelectorItem, isSelected && styles.dateSelectorItemActive]}
+                  onPress={() => setSelectedDate(date)}
+                  activeOpacity={1}
+                >
+                  <Text
+                    style={[
+                      styles.dateSelectorDayName,
+                      isSelected && styles.dateSelectorTextActive,
+                    ]}
+                  >
+                    {dayName}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.dateSelectorDayNumber,
+                      isSelected && styles.dateSelectorTextActive,
+                    ]}
+                  >
+                    {dayNumber}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         {/* Time Slots */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('booking.available_time') || 'Available Time'}</Text>
+          <Text style={styles.sectionTitle}>
+            {t('booking.available_time') || 'Available Time Slot'}
+          </Text>
           {slotsLoading ? (
             <ActivityIndicator size="small" color={Colors.primary} style={{ marginTop: 20 }} />
           ) : (
@@ -244,13 +221,20 @@ export default function BookingScreen() {
       </ScrollView>
 
       {/* Footer */}
-      <View style={styles.footer}>
+      <View style={[styles.bottomFixedContainer, { bottom: Spacing.base + insets.bottom }]}>
         <TouchableOpacity
-          style={[styles.continueButton, !selectedSlot && styles.continueButtonDisabled]}
+          style={[styles.confirmFullBtn, !selectedSlot && styles.confirmFullBtnDisabled]}
           disabled={!selectedSlot}
           onPress={handleContinue}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Confirm Appointment"
         >
-          <Text style={styles.continueText}>{t('booking.continue') || 'Continue'}</Text>
+          <Text
+            style={[styles.confirmFullBtnText, !selectedSlot && styles.confirmFullBtnTextDisabled]}
+          >
+            {t('booking.continue') || 'Confirm'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -265,20 +249,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.tertiary,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background,
+    gap: Spacing.xs,
   },
   backButton: {
-    padding: Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerRight: {
-    width: 32,
-  },
-  title: {
+  headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
@@ -292,34 +276,11 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textSecondary,
+    lineHeight: FontSize.md * 1.5,
   },
   scrollContent: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-  },
-  doctorCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.surface,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.xl,
-    borderWidth: 1,
-    borderColor: Colors.tertiary,
-    ...Shadows.sm,
-  },
-  doctorInfo: {
-    marginLeft: Spacing.md,
-  },
-  doctorName: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.lg,
-    color: Colors.textPrimary,
-  },
-  doctorSpecialty: {
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.md,
-    color: Colors.primary,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
   },
   section: {
     marginBottom: Spacing.xl,
@@ -330,73 +291,48 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
-  typeContainer: {
+  dateSelectorContent: {
     flexDirection: 'row',
-    gap: Spacing.md,
-  },
-  typeOption: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.tertiary,
-    backgroundColor: Colors.surface,
+    justifyContent: 'space-between',
     gap: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
-  typeOptionActive: {
-    borderColor: Colors.primary,
-    backgroundColor: `${Colors.primary}10`, // very light primary
-  },
-  typeText: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-  },
-  typeTextActive: {
-    color: Colors.primary,
-  },
-  dateScroll: {
-    flexDirection: 'row',
-  },
-  dateBox: {
-    width: 60,
-    height: 80,
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
+  dateSelectorItem: {
+    flex: 1,
+    height: 72,
+    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: Spacing.md,
     borderWidth: 1,
     borderColor: Colors.tertiary,
   },
-  dateBoxActive: {
+  dateSelectorItemActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  dateDay: {
+  dateSelectorDayName: {
     fontFamily: FontFamily.regular,
-    fontSize: FontSize.sm,
+    fontSize: FontSize.xs,
     color: Colors.textSecondary,
     marginBottom: 4,
   },
-  dateNum: {
+  dateSelectorDayNumber: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
-  dateTextActive: {
+  dateSelectorTextActive: {
     color: Colors.surface,
   },
   slotsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.md,
+    columnGap: '3%',
+    rowGap: Spacing.md,
   },
   slotBox: {
-    width: '30%',
+    width: '31.33%',
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
     borderWidth: 1,
@@ -416,6 +352,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
+    lineHeight: FontSize.sm * 1.5,
   },
   slotTextActive: {
     color: Colors.surface,
@@ -423,25 +360,31 @@ const styles = StyleSheet.create({
   slotTextDisabled: {
     color: Colors.textTertiary,
   },
-  footer: {
-    padding: Spacing.lg,
-    backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.tertiary,
-    ...Shadows.sm,
+  bottomFixedContainer: {
+    position: 'absolute',
+    left: Spacing.base,
+    right: Spacing.base,
   },
-  continueButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+  confirmFullBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    minHeight: 56,
   },
-  continueButtonDisabled: {
+  confirmFullBtnDisabled: {
     backgroundColor: Colors.tertiary,
   },
-  continueText: {
+  confirmFullBtnText: {
     fontFamily: FontFamily.bold,
-    fontSize: FontSize.md,
+    fontSize: FontSize.base,
     color: Colors.surface,
+    lineHeight: FontSize.base * 1.5,
+  },
+  confirmFullBtnTextDisabled: {
+    color: Colors.textTertiary,
   },
 });

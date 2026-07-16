@@ -53,8 +53,8 @@
     "24x7": "24x7"
   },
   "medicationcard": {
-    "no_active_medications": "No active medications",
-    "your_prescriptions_will_appear": "Your prescriptions will appear here.",
+    "no_prescription_scheduled": "No prescription scheduled",
+    "your_scheduled_medicines_will_appear": "Your scheduled medicines will appear here.",
     "next_medication": "Next Medication"
   },
   "doctordashboard": {
@@ -129,7 +129,11 @@
     "consultation_history": "Consultation History",
     "explore_all_doctors": "Explore All Doctors",
     "specialties": "Specialties",
-    "no_doctors_found": "No doctors found"
+    "no_doctors_found": "No doctors found",
+    "online_doctors": "Online Doctors",
+    "view_all": "view all",
+    "departments": "Departments",
+    "view_all_departments": "View all departments"
   },
   "hospitals": {
     "locating_nearby_hospitals": "Locating nearby hospitals...",
@@ -162,9 +166,9 @@
     "book_appointment": "Book Appointment",
     "go_back": "Go Back",
     "er": "(ER)",
-    "er_available": "ER Available",
+    "er_available": "Emergency Room Available",
     "24x7_open": "24x7 Open",
-    "affiliated_doctors": "Affiliated Doctors",
+    "available_doctors": "Available Doctors",
     "no_doctors_currently_listed_fo": "No doctors currently listed for this hospital.",
     "prescription_details": "Prescription Details",
     "issued_on": "Issued On:",
@@ -319,7 +323,7 @@
     "video_call": "Video Call",
     "in_person": "In Person",
     "select_date": "Select Date",
-    "available_time": "Available Time",
+    "available_time": "Available Time Slot",
     "continue": "Continue"
   },
   "video-call": {

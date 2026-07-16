@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Colors, Spacing, FontFamily, FontSize, Shadows } from '@theme';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '@theme';
 import { useAuthStore } from '../../../../src/store/authStore';
 import { qnaService } from '../../../../src/services/api/qnaService';
 import { doctorsService } from '../../../../src/services/api/doctorsService';
@@ -50,19 +50,27 @@ function PatientQnAScreen() {
     }
   }, [userId]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData();
-  }, [loadData]);
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData]),
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+        <Text style={styles.headerTitle}>
+          <Text style={styles.headerTitleBold}>{t('qna.ask', 'Ask ')}</Text>
+          <Text style={styles.headerTitleBold}>{t('qna.doctor', 'Doctor')}</Text>
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(app)/settings/')}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          accessibilityLabel={t('dashboard.settings') || 'Settings'}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('qna.my_questions') || 'My Questions'}</Text>
-        <View style={styles.headerRight} />
       </View>
 
       {loading && !error ? (
@@ -82,11 +90,7 @@ function PatientQnAScreen() {
             ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
             ListEmptyComponent={() => (
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons
-                  name="chat-question-outline"
-                  size={48}
-                  color={Colors.textTertiary}
-                />
+                <MaterialCommunityIcons name="forum-outline" size={64} color="#CBD5E1" />
                 <Text style={styles.emptyText}>
                   {t('qna.you_havent_asked_any_questions') ||
                     "You haven't asked any questions yet."}
@@ -98,16 +102,18 @@ function PatientQnAScreen() {
         </View>
       )}
 
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push('/(app)/doctors/qna/ask')}
-        activeOpacity={0.8}
-        accessibilityRole="button"
-        accessibilityLabel="Ask a new question"
-      >
-        <MaterialCommunityIcons name="plus" size={28} color={Colors.surface} />
-      </TouchableOpacity>
+      {/* Fixed Action Button */}
+      <View style={[styles.bottomFixedContainer, { bottom: Spacing.base }]}>
+        <TouchableOpacity
+          style={styles.standardButton}
+          onPress={() => router.push('/(app)/doctors/qna/ask')}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="Ask a new question"
+        >
+          <Text style={styles.standardButtonText}>Ask Your Question</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
@@ -209,8 +215,10 @@ function DoctorInboxScreen() {
                   color={Colors.textTertiary}
                 />
                 <Text style={styles.emptyText}>
-                  {t('qna.no_questions_in_your_departmen') ||
-                    'No questions in your department inbox.'}
+                  {t(
+                    'qna.no_questions_in_your_departmen',
+                    'No questions in your department inbox.',
+                  )}
                 </Text>
               </View>
             )}
@@ -243,8 +251,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.md,
     backgroundColor: Colors.background,
   },
   backButton: {
@@ -255,9 +264,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerTitle: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.xl,
-    color: Colors.textPrimary,
+    fontSize: FontSize.xxl,
+    color: Colors.primary,
+  },
+  headerTitleBold: {
+    fontFamily: FontFamily.extraBold,
+    fontWeight: '900',
   },
   headerSubtitle: {
     fontFamily: FontFamily.medium,
@@ -277,33 +289,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    padding: Spacing.xl,
-    paddingBottom: Spacing.xxl * 3,
+    paddingHorizontal: Spacing.base,
+    paddingBottom: Spacing.xxl * 4, // More padding to account for fixed bottom button
+    flexGrow: 1, // ensure the empty state can be centered vertically
   },
   emptyContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 60,
-    gap: Spacing.sm,
+    gap: Spacing.xs,
   },
   emptyText: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
+    lineHeight: FontSize.md * 1.5,
   },
-  fab: {
+  bottomFixedContainer: {
     position: 'absolute',
-    bottom: Spacing.xxl,
-    right: Spacing.xl,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.primary,
+    left: Spacing.base,
+    right: Spacing.base,
+  },
+  standardButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    ...Shadows.md,
-    elevation: 5,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    minHeight: 56,
+  },
+  standardButtonText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.surface,
   },
   questionItemWrapper: {
     gap: Spacing.md,

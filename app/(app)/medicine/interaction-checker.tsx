@@ -172,6 +172,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.primary,
+    lineHeight: FontSize.sm * 1.5,
   },
   searchSection: {
     marginBottom: Spacing.xl,
@@ -194,5 +195,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.xl,
+    lineHeight: FontSize.md * 1.5,
   },
 });

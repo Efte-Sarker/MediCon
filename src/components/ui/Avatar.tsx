@@ -1,6 +1,6 @@
 // 1. IMPORTS
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Image } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
 import { Colors, FontFamily } from '@theme';
 
@@ -38,7 +38,7 @@ export const Avatar = ({
   if (source) {
     return (
       <Image
-        source={source}
+        source={source as any}
         style={[styles.image, dynamicSize]}
         accessibilityRole="image"
         accessibilityLabel={accessibilityLabel ?? `${name ?? 'User'} avatar`}

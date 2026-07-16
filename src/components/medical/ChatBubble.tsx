@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: FontFamily.regular,
     fontSize: FontSize.md,
-    lineHeight: 22,
+    lineHeight: FontSize.md * 1.5,
   },
   textUser: {
     color: Colors.surface,
@@ -100,5 +100,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textTertiary,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

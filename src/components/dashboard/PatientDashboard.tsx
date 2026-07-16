@@ -4,7 +4,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '@theme';
+import { Colors, Spacing, BorderRadius, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePatientDashboard } from '../../hooks/usePatientDashboard';
 import { AppointmentCard } from '../cards/AppointmentCard';
@@ -39,7 +39,11 @@ export const PatientDashboard = (): React.JSX.Element => {
             hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
             accessibilityLabel={t('dashboard.settings') || 'Settings'}
           >
-            <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+            <MaterialCommunityIcons
+              name="account-outline"
+              size={27.6}
+              color={Colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -143,7 +147,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
   },
   headerActions: {
@@ -163,6 +167,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     paddingTop: Spacing.md,
     paddingHorizontal: Spacing.base,
+    marginBottom: Spacing.lg,
   },
   scrollContent: {
     paddingHorizontal: Spacing.base,
@@ -176,8 +181,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     paddingVertical: 19,
     paddingHorizontal: Spacing.lg,
-    marginTop: 20,
-    marginBottom: 20,
+    marginTop: 0,
+    marginBottom: Spacing.lg,
   },
   sosLeftIconWrapper: {
     width: 48,
@@ -217,7 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: Spacing.lg,
   },
   quickActionItem: {
     alignItems: 'center',
@@ -237,6 +242,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
     textAlign: 'center',
+    lineHeight: FontSize.sm * 1.5,
   },
   cardsContainer: {
     gap: Spacing.base,

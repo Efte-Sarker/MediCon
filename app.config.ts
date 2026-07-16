@@ -29,6 +29,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   web: {
     favicon: './assets/favicon.png',
   },
+  updates: {
+    url: 'https://u.expo.dev/fc59c36e-7707-4744-924a-aad648c925c8',
+  },
+  runtimeVersion: {
+    policy: 'appVersion',
+  },
   scheme: 'medicon',
   plugins: [
     'expo-router',
@@ -48,6 +54,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ],
     'expo-document-picker',
     '@react-native-community/datetimepicker',
+    'expo-image',
+    'expo-secure-store',
+    'expo-status-bar',
   ],
   extra: {
     eas: {

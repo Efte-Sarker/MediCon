@@ -50,5 +50,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
+    lineHeight: FontSize.md * 1.5,
   },
 });

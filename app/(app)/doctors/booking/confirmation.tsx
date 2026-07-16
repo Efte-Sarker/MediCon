@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: FontSize.md * 1.5,
   },
   footer: {
     padding: Spacing.xl,

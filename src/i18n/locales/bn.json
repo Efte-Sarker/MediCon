@@ -38,8 +38,8 @@
     "24x7": "২৪x৭"
   },
   "medicationcard": {
-    "no_active_medications": "কোনো সক্রিয় ওষুধ নেই",
-    "your_prescriptions_will_appear": "আপনার প্রেসক্রিপশনগুলি এখানে প্রদর্শিত হবে।",
+    "no_prescription_scheduled": "কোনো প্রেসক্রিপশন নির্ধারিত নেই",
+    "your_scheduled_medicines_will_appear": "আপনার নির্ধারিত ওষুধগুলি এখানে প্রদর্শিত হবে।",
     "next_medication": "পরবর্তী ওষুধ"
   },
   "doctordashboard": {
@@ -114,7 +114,11 @@
     "consultation_history": "পরামর্শের ইতিহাস",
     "explore_all_doctors": "সব ডাক্তার খুঁজুন",
     "specialties": "বিশেষত্ব",
-    "no_doctors_found": "কোনো ডাক্তার পাওয়া যায়নি"
+    "no_doctors_found": "কোনো ডাক্তার পাওয়া যায়নি",
+    "online_doctors": "অনলাইন ডাক্তার",
+    "view_all": "সব দেখুন",
+    "departments": "বিভাগসমূহ",
+    "view_all_departments": "সব বিভাগ দেখুন"
   },
   "hospitals": {
     "locating_nearby_hospitals": "আশেপাশের হাসপাতাল খোঁজা হচ্ছে...",
@@ -149,7 +153,7 @@
     "er": "(ইআর)",
     "er_available": "ইআর উপলব্ধ",
     "24x7_open": "২৪x৭ খোলা",
-    "affiliated_doctors": "অধিভুক্ত ডাক্তার",
+    "available_doctors": "প্রাপ্তিসাধ্য ডাক্তার",
     "no_doctors_currently_listed_fo": "এই হাসপাতালের জন্য বর্তমানে কোনো ডাক্তার তালিকাভুক্ত নেই।",
     "prescription_details": "প্রেসক্রিপশনের বিবরণ",
     "issued_on": "ইস্যু করা হয়েছে:",

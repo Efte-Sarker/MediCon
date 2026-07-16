@@ -245,5 +245,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

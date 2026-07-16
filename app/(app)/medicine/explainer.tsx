@@ -217,12 +217,12 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
     marginBottom: 4,
-    lineHeight: 20,
+    lineHeight: FontSize.sm * 1.5,
   },
   summaryText: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
-    lineHeight: 22,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

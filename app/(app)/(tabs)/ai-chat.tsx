@@ -126,5 +126,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textSecondary,
+    lineHeight: FontSize.md * 1.5,
   },
 });

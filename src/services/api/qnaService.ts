@@ -64,12 +64,18 @@ class QnaService {
   /**
    * Patient submits a new question.
    */
-  async askQuestion(patientId: string, department: string, content: string): Promise<Question> {
+  async askQuestion(
+    patientId: string,
+    department: string,
+    content: string,
+    isAnonymous?: boolean,
+  ): Promise<Question> {
     const newQuestion: Question = {
       id: `q-${Date.now()}`,
       patientId,
       department,
       content,
+      isAnonymous,
       createdAt: new Date().toISOString(),
       answers: [],
     };

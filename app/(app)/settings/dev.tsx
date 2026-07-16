@@ -96,6 +96,7 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.lg,
     marginTop: Spacing.lg,
     marginBottom: Spacing.sm,
+    lineHeight: FontSize.sm * 1.5,
   },
   section: {
     backgroundColor: Colors.surface,
@@ -134,5 +135,6 @@ const styles = StyleSheet.create({
     color: Colors.danger,
     textAlign: 'center',
     marginTop: Spacing.xl,
+    lineHeight: FontSize.base * 1.5,
   },
 });

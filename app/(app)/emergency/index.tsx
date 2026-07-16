@@ -140,6 +140,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
     marginBottom: Spacing.xs,
+    lineHeight: FontSize.sm * 1.5,
   },
   callBadge: {
     flexDirection: 'row',

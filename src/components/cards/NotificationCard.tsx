@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: FontSize.sm * 1.5,
   },
   toggleButton: {
     padding: Spacing.xs,

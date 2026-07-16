@@ -37,10 +37,15 @@ export default function DoctorsListScreen(): React.JSX.Element {
 
   const renderItem = useCallback(
     ({ item }: { item: Doctor }) => (
-      <View style={styles.cardWrapper}>
+      <View style={styles.gridItemContainer}>
         <DoctorCard
           doctor={item}
+          variant="online"
+          fullWidth
           onPress={() => router.push(`/(app)/doctors/${item.id}`)}
+          onBookPress={() =>
+            router.push(`/(app)/doctors/booking/digest?doctorId=${item.id}&type=video`)
+          }
           hideSectionLabel
         />
       </View>
@@ -60,8 +65,7 @@ export default function DoctorsListScreen(): React.JSX.Element {
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>{category ? 'Specialists' : 'All Doctors'}</Text>
-        <View style={styles.headerRight} />
+        <Text style={styles.headerTitle}>{category ? 'Specialists' : 'Online Doctors'}</Text>
       </View>
 
       {loading ? (
@@ -79,6 +83,7 @@ export default function DoctorsListScreen(): React.JSX.Element {
         <FlashList
           data={doctors}
           renderItem={renderItem}
+          numColumns={2}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
@@ -96,29 +101,33 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.tertiary,
-    backgroundColor: Colors.surface,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background,
+    gap: Spacing.xs,
   },
   backButton: {
-    padding: Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerRight: {
-    width: 24 + Spacing.xs * 2, // matches back button width to center title
-  },
-  title: {
+  headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
   listContent: {
-    padding: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    paddingTop: 0,
   },
-  cardWrapper: {
-    marginBottom: Spacing.md,
+  gridItemContainer: {
+    flex: 1,
+    paddingHorizontal: Spacing.sm / 2, // Horizontal spacing for 2 columns
+    paddingBottom: Spacing.md, // Vertical spacing
   },
   centerContainer: {
     flex: 1,
@@ -131,5 +140,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textSecondary,
+    lineHeight: FontSize.md * 1.5,
   },
 });

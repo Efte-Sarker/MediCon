@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize } from '@theme';
@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 export default function NotificationsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const userId = useAuthStore((s) => s.userId) || 'patient-1'; // Default for mock
   const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +70,6 @@ export default function NotificationsScreen() {
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('notifications.title') || 'Notifications'}</Text>
-        <View style={styles.headerRight} />
       </View>
 
       {loading && !error ? (
@@ -80,6 +80,15 @@ export default function NotificationsScreen() {
         <View style={styles.centerContainer}>
           <ErrorState message={error.message} onRetry={loadData} />
         </View>
+      ) : notifications.length === 0 ? (
+        <View
+          style={[styles.centerContainer, { paddingBottom: insets.bottom + 80, gap: Spacing.sm }]}
+        >
+          <MaterialCommunityIcons name="bell-cancel-outline" size={64} color="#CBD5E1" />
+          <Text style={styles.emptyText}>
+            {t('notifications.empty') || 'You have no notifications.'}
+          </Text>
+        </View>
       ) : (
         <View style={styles.listContainer}>
           <FlashList
@@ -87,18 +96,6 @@ export default function NotificationsScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
-            ListEmptyComponent={() => (
-              <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons
-                  name="bell-off-outline"
-                  size={48}
-                  color={Colors.textTertiary}
-                />
-                <Text style={styles.emptyText}>
-                  {t('notifications.empty') || 'You have no notifications.'}
-                </Text>
-              </View>
-            )}
             renderItem={({ item }) => (
               <NotificationCard
                 notification={item}
@@ -121,22 +118,23 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
     backgroundColor: Colors.background,
+    gap: Spacing.xs,
   },
   backButton: {
-    padding: Spacing.xs,
-    marginLeft: -Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
-    fontSize: FontSize.xl,
+    fontSize: FontSize.lg,
     color: Colors.textPrimary,
-  },
-  headerRight: {
-    width: 32,
   },
   centerContainer: {
     flex: 1,
@@ -151,16 +149,11 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     paddingBottom: Spacing.xxl * 3,
   },
-  emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-    gap: Spacing.sm,
-  },
   emptyText: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
+    lineHeight: FontSize.md * 1.5,
   },
 });

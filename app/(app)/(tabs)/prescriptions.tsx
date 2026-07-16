@@ -1,164 +1,783 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+// 1. IMPORTS
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
+  PanResponder,
+  Animated,
+} from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { createAppError, AppError } from '../../../src/utils/errors';
-import { ErrorState } from '../../../src/components/ui/ErrorState';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { Colors, Spacing, FontFamily, FontSize, Layout } from '../../../src/theme';
+import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '../../../src/theme';
 import { prescriptionsService } from '../../../src/services/api/prescriptionsService';
 import { Prescription } from '../../../src/types/medical.types';
 import { PrescriptionCard } from '../../../src/components/medical/PrescriptionCard';
-import { AdherenceTracker } from '../../../src/components/medical/AdherenceTracker';
-import { useTranslation } from 'react-i18next';
+import { ActivePrescriptionView } from '../../../src/components/medical/ActivePrescriptionView';
+import { createAppError, AppError } from '../../../src/utils/errors';
+import { ErrorState } from '../../../src/components/ui/ErrorState';
 
-export default function PrescriptionsScreen() {
-  const { t } = useTranslation();
+// 2. TYPES
+
+type ActiveTab = 'doctors' | 'uploads';
+
+// 3. COMPONENT
+
+export default function PrescriptionsScreen(): React.JSX.Element {
   const router = useRouter();
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const insets = useSafeAreaInsets();
+  const [panY] = useState(() => new Animated.Value(0));
+
+  // ── Tab state ───────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<ActiveTab>('doctors');
+
+  // ── List data ───────────────────────────────────────────────────────────────
+  const [doctorRxs, setDoctorRxs] = useState<Prescription[]>([]);
+  const [uploadedRxs, setUploadedRxs] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<AppError | null>(null);
 
-  const loadData = async () => {
+  // ── Scheduling state ────────────────────────────────────────────────────────
+  const [scheduledId, setScheduledId] = useState<string | null>(
+    prescriptionsService.getScheduledPrescriptionId(),
+  );
+  const [schedulingId, setSchedulingId] = useState<string | null>(null); // which card is loading
+
+  // ── Active prescription quick-view ──────────────────────────────────────────
+  const [quickViewVisible, setQuickViewVisible] = useState(false);
+  const [activePrescription, setActivePrescription] = useState<Prescription | null>(null);
+  const [quickViewLoading, setQuickViewLoading] = useState(false);
+
+  // ── Data loading ────────────────────────────────────────────────────────────
+  const isMountedRef = useRef(true);
+
+  const loadData = useCallback(async (): Promise<void> => {
     try {
-      const data = await prescriptionsService.getPrescriptions();
-      setPrescriptions(data);
-    } catch (err) {
-      setError(createAppError('NETWORK_ERROR', String(err)));
+      setError(null);
+      const [doctors, uploads] = await Promise.all([
+        prescriptionsService.getDoctorPrescriptions(),
+        prescriptionsService.getUploadedPrescriptions(),
+      ]);
+      if (isMountedRef.current) {
+        setDoctorRxs(doctors);
+        setUploadedRxs(uploads);
+      }
+    } catch {
+      if (isMountedRef.current) {
+        setError(
+          createAppError('NETWORK_ERROR', 'Unable to load prescriptions. Please try again.'),
+        );
+      }
     }
-  };
+  }, []);
 
   useEffect(() => {
-    let isMounted = true;
+    isMountedRef.current = true;
     (async () => {
       setLoading(true);
       await loadData();
-      if (isMounted) {
-        setLoading(false);
-        setRefreshing(false);
-      }
+      if (isMountedRef.current) setLoading(false);
     })();
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
-  }, []);
+  }, [loadData]);
 
-  const onRefresh = async () => {
+  const onRefresh = async (): Promise<void> => {
     setRefreshing(true);
     await loadData();
+    setScheduledId(prescriptionsService.getScheduledPrescriptionId());
     setRefreshing(false);
   };
 
-  const renderEmptyComponent = () => {
-    if (loading) return null;
+  // ── Schedule / unschedule ───────────────────────────────────────────────────
+
+  const handleSchedule = async (rx: Prescription): Promise<void> => {
+    if (scheduledId === rx.id) {
+      // Explicit unschedule via button — handled by handleUnschedule
+      return;
+    }
+    const previousId = scheduledId;
+    setSchedulingId(rx.id);
+    try {
+      await prescriptionsService.schedulePrescription(rx.id);
+      if (isMountedRef.current) {
+        setScheduledId(rx.id);
+        if (previousId) {
+          Alert.alert(
+            'Prescription Scheduled',
+            'The previous prescription has been automatically unscheduled. Only one prescription can be active at a time.',
+          );
+        }
+      }
+    } catch {
+      if (isMountedRef.current) {
+        Alert.alert('Error', 'Failed to schedule prescription. Please try again.');
+      }
+    } finally {
+      if (isMountedRef.current) setSchedulingId(null);
+    }
+  };
+
+  const handleUnschedule = async (): Promise<void> => {
+    setSchedulingId(scheduledId);
+    try {
+      await prescriptionsService.unschedulePrescription();
+      if (isMountedRef.current) {
+        setScheduledId(null);
+        setActivePrescription(null);
+      }
+    } catch {
+      if (isMountedRef.current) {
+        Alert.alert('Error', 'Failed to unschedule prescription. Please try again.');
+      }
+    } finally {
+      if (isMountedRef.current) setSchedulingId(null);
+    }
+  };
+
+  // ── Quick-view ──────────────────────────────────────────────────────────────
+
+  const handleOpenQuickView = async (): Promise<void> => {
+    if (!scheduledId) {
+      setQuickViewVisible(true);
+      setActivePrescription(null);
+      return;
+    }
+    setQuickViewLoading(true);
+    setQuickViewVisible(true);
+    try {
+      const rx = await prescriptionsService.getScheduledPrescription();
+      if (isMountedRef.current) setActivePrescription(rx);
+    } catch {
+      if (isMountedRef.current) setActivePrescription(null);
+    } finally {
+      if (isMountedRef.current) setQuickViewLoading(false);
+    }
+  };
+
+  // Reset panY when modal opens
+  useEffect(() => {
+    if (quickViewVisible) {
+      panY.setValue(0);
+    }
+  }, [quickViewVisible, panY]);
+
+  const [handlePanResponder] = useState(() =>
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 5,
+      onPanResponderMove: Animated.event([null, { dy: panY }], { useNativeDriver: false }),
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 50) {
+          setQuickViewVisible(false);
+        } else {
+          Animated.spring(panY, {
+            toValue: 0,
+            useNativeDriver: false,
+          }).start();
+        }
+      },
+    }),
+  );
+
+  // ── Render helpers ──────────────────────────────────────────────────────────
+
+  const currentList = activeTab === 'doctors' ? doctorRxs : uploadedRxs;
+
+  const renderItem = useCallback(
+    ({ item }: { item: Prescription }): React.JSX.Element => (
+      <View style={styles.cardWrapper}>
+        <PrescriptionCard
+          prescription={item}
+          isScheduled={scheduledId === item.id}
+          isScheduling={schedulingId === item.id}
+          onPress={() => router.push(`/(app)/prescriptions/${item.id}`)}
+          onToggleSchedule={() => {
+            if (scheduledId === item.id) {
+              handleUnschedule();
+            } else {
+              handleSchedule(item);
+            }
+          }}
+        />
+      </View>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [scheduledId, schedulingId, router],
+  );
+
+  const renderEmptyDoctor = (): React.JSX.Element => (
+    <View style={styles.emptyContainer}>
+      <MaterialCommunityIcons name="stethoscope" size={48} color={Colors.textTertiary} />
+      <Text style={styles.emptyTitle}>No prescriptions from doctors yet</Text>
+      <Text style={styles.emptySubtitle}>
+        Prescriptions issued by doctors after consultations will appear here.
+      </Text>
+    </View>
+  );
+
+  const renderEmptyUploads = (): React.JSX.Element => (
+    <View style={styles.emptyContainer}>
+      <MaterialCommunityIcons name="file-upload-outline" size={48} color={Colors.textTertiary} />
+      <Text style={styles.emptyTitle}>No uploaded prescriptions</Text>
+      <Text style={styles.emptySubtitle}>
+        Upload prescriptions from a paper copy or photo to manage them here.
+      </Text>
+      <TouchableOpacity
+        style={styles.uploadBtn}
+        onPress={() => Alert.alert('Upload', 'Upload flow coming soon.')}
+        accessibilityRole="button"
+        accessibilityLabel="Upload a prescription"
+      >
+        <MaterialCommunityIcons name="upload" size={16} color={Colors.surface} />
+        <Text style={styles.uploadBtnText}>Upload Prescription</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // ── Loading / Error ─────────────────────────────────────────────────────────
+
+  if (loading && !refreshing) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyTitle}>
-          {t('prescriptions.no_active_prescriptions') || 'No active prescriptions.'}
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {renderHeader()}
+        {renderTabs()}
+        <View style={styles.centeredFlex}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        {renderHeader()}
+        {renderTabs()}
+        <View style={styles.centeredFlex}>
+          <ErrorState
+            message={error.message}
+            onRetry={() => {
+              setLoading(true);
+              loadData().finally(() => setLoading(false));
+            }}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Helper sub-renderers ────────────────────────────────────────────────────
+
+  function renderHeader(): React.JSX.Element {
+    return (
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          <Text style={styles.headerTitleBold}>My </Text>
+          <Text style={styles.headerTitleBold}>Prescriptions</Text>
         </Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(app)/settings/')}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          accessibilityLabel="Settings"
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+        </TouchableOpacity>
       </View>
     );
-  };
+  }
+
+  function renderTabs(): React.JSX.Element {
+    return (
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'doctors' && styles.tabActive]}
+          onPress={() => setActiveTab('doctors')}
+          activeOpacity={1}
+          accessibilityRole="tab"
+          accessibilityLabel="From Doctors tab"
+          accessibilityState={{ selected: activeTab === 'doctors' }}
+        >
+          <Text style={[styles.tabText, activeTab === 'doctors' && styles.tabTextActive]}>
+            From Doctors
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'uploads' && styles.tabActive]}
+          onPress={() => setActiveTab('uploads')}
+          activeOpacity={1}
+          accessibilityRole="tab"
+          accessibilityLabel="My Uploads tab"
+          accessibilityState={{ selected: activeTab === 'uploads' }}
+        >
+          <Text style={[styles.tabText, activeTab === 'uploads' && styles.tabTextActive]}>
+            My Uploads
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  // ── Quick-view modal ────────────────────────────────────────────────────────
+
+  const renderQuickViewModal = (): React.JSX.Element => (
+    <Modal
+      visible={quickViewVisible}
+      transparent
+      animationType="fade"
+      onRequestClose={() => setQuickViewVisible(false)}
+      statusBarTranslucent
+    >
+      <View style={styles.modalBackdrop}>
+        <TouchableOpacity
+          style={styles.modalDismissArea}
+          onPress={() => setQuickViewVisible(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Close quick view"
+        />
+        <Animated.View
+          style={[
+            styles.modalSheet,
+            {
+              transform: [
+                {
+                  translateY: panY.interpolate({
+                    inputRange: [0, 1000],
+                    outputRange: [0, 1000],
+                    extrapolate: 'clamp',
+                  }),
+                },
+              ],
+            },
+          ]}
+        >
+          {/* Sheet drag indicator and header area */}
+          <View style={styles.dragArea} {...handlePanResponder.panHandlers}>
+            <View style={styles.sheetHandle} />
+          </View>
+
+          {/* Sheet header */}
+          <View style={styles.sheetHeader}>
+            <View style={styles.sheetHeaderLeft}>
+              <Text style={styles.sheetTitle}>Active Prescription</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setQuickViewVisible(false)}
+              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <MaterialCommunityIcons name="close" size={22} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* One-prescription-at-a-time notice */}
+          <View style={styles.singleRxNotice}>
+            <MaterialCommunityIcons
+              name="information-outline"
+              size={13}
+              color={Colors.textTertiary}
+            />
+            <Text style={styles.singleRxNoticeText}>
+              Only one prescription can be active at a time.
+            </Text>
+          </View>
+
+          {/* Content */}
+          {quickViewLoading ? (
+            <View style={styles.centeredFlex}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+            </View>
+          ) : !activePrescription ? (
+            <View style={[styles.quickViewEmpty, { paddingBottom: insets.bottom }]}>
+              <MaterialCommunityIcons name="clipboard-outline" size={64} color="#CBD5E1" />
+              <Text style={styles.quickViewEmptyTitle}>No prescription scheduled</Text>
+              <Text style={styles.quickViewEmptySubtitle}>
+                Set one to view your medicine schedule.
+              </Text>
+            </View>
+          ) : (
+            <ActivePrescriptionView prescription={activePrescription} />
+          )}
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+
+  // ── Upload button (floating in "My Uploads" tab when non-empty) ─────────────
+  const showUploadFab = activeTab === 'uploads' && uploadedRxs.length > 0;
+
+  // ── Main render ─────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          {t('prescriptions.my_prescriptions') || 'My Prescriptions'}
-        </Text>
+      {/* Header */}
+      {renderHeader()}
+
+      {/* Two-tab switcher */}
+      {renderTabs()}
+
+      {/* Active prescription quick-view button */}
+      <View style={styles.quickViewBtnContainer}>
+        <TouchableOpacity
+          style={[
+            styles.quickViewBtn,
+            scheduledId ? styles.quickViewBtnActive : styles.quickViewBtnEmpty,
+          ]}
+          onPress={handleOpenQuickView}
+          activeOpacity={0.85}
+          accessibilityRole="button"
+          accessibilityLabel={
+            scheduledId
+              ? 'View active prescription medicines and schedule'
+              : 'No prescription scheduled. Tap to learn more.'
+          }
+        >
+          <View style={styles.quickViewBtnLeft}>
+            <MaterialCommunityIcons
+              name="clipboard-text-outline"
+              size={20}
+              color={scheduledId ? Colors.surface : Colors.textTertiary}
+            />
+            <View>
+              <Text
+                style={[styles.quickViewBtnTitle, !scheduledId && styles.quickViewBtnTitleEmpty]}
+              >
+                {scheduledId ? 'Active Schedule' : 'Active Schedule'}
+              </Text>
+              <Text
+                style={[
+                  styles.quickViewBtnSubtitle,
+                  !scheduledId && styles.quickViewBtnSubtitleEmpty,
+                ]}
+              >
+                {scheduledId ? 'View scheduled medicines' : 'Select a prescription from below'}
+              </Text>
+            </View>
+          </View>
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={24}
+            color={scheduledId ? Colors.surface : Colors.textTertiary}
+          />
+        </TouchableOpacity>
       </View>
 
-      {loading && !refreshing && !error ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      ) : error ? (
-        <View style={styles.loadingContainer}>
-          <ErrorState message={error.message} onRetry={loadData} />
-        </View>
-      ) : (
-        <View style={styles.listContainer}>
-          <FlashList
-            data={prescriptions}
-            keyExtractor={(item) => item.id}
-            ListHeaderComponent={() => (
-              <View style={styles.listHeader}>
-                <AdherenceTracker />
-                <Text style={styles.sectionTitle}>
-                  {t('prescriptions.active_prescriptions') || 'Active Prescriptions'}
-                </Text>
-              </View>
-            )}
-            renderItem={({ item }) => (
-              <PrescriptionCard
-                prescription={item}
-                onPress={() => router.push(`/(app)/prescriptions/${item.id}`)}
-              />
-            )}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
-            ListEmptyComponent={renderEmptyComponent}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={[Colors.primary]}
-              />
-            }
-          />
-        </View>
+      {/* List */}
+      <View style={styles.listWrapper}>
+        <FlashList
+          key={activeTab} // Force remount when tab changes to reset scroll position
+          data={currentList}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={activeTab === 'doctors' ? renderEmptyDoctor() : renderEmptyUploads()}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
+            />
+          }
+        />
+      </View>
+
+      {/* Upload FAB for "My Uploads" tab (when list is non-empty) */}
+      {showUploadFab && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => Alert.alert('Upload', 'Upload flow coming soon.')}
+          accessibilityRole="button"
+          accessibilityLabel="Upload a new prescription"
+        >
+          <MaterialCommunityIcons name="plus" size={24} color={Colors.primary} />
+          <Text style={styles.fabText}>Upload</Text>
+        </TouchableOpacity>
       )}
+
+      {/* Quick-view modal */}
+      {renderQuickViewModal()}
     </SafeAreaView>
   );
 }
 
+// 4. STYLES
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
   },
+
+  // ── Header ──────────────────────────────────────────────────────────────────
   header: {
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.background,
-  },
-  headerTitle: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.xxl,
-    color: Colors.textPrimary,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  listContainer: {
-    flex: 1,
-  },
-  listHeader: {
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
     marginBottom: Spacing.md,
   },
-  sectionTitle: {
+  headerTitle: {
+    fontSize: FontSize.xxl,
+    color: Colors.primary,
+  },
+  headerTitleBold: {
+    fontFamily: FontFamily.extraBold,
+    fontWeight: '900',
+  },
+
+  // ── Tab bar ──────────────────────────────────────────────────────────────────
+  tabBar: {
+    flexDirection: 'row',
+    marginHorizontal: Spacing.base,
+    marginBottom: Spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    padding: 0,
+    gap: 0,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    minHeight: 44,
+  },
+  tabActive: {
+    backgroundColor: Colors.tertiaryLight,
+  },
+  tabText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    color: Colors.textTertiary,
+  },
+  tabTextActive: {
     fontFamily: FontFamily.bold,
-    fontSize: FontSize.lg,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+    color: Colors.primary,
+  },
+
+  // ── List ─────────────────────────────────────────────────────────────────────
+  listWrapper: {
+    flex: 1,
   },
   listContent: {
-    paddingHorizontal: Spacing.xl,
+    paddingHorizontal: Spacing.base,
     paddingBottom: Layout.tabBarHeight + Spacing.xl,
-    paddingTop: Spacing.sm,
   },
+  cardWrapper: {
+    marginBottom: Spacing.sm,
+  },
+
+  // ── Empty states ─────────────────────────────────────────────────────────────
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing.xxxl,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.sm,
   },
   emptyTitle: {
-    fontFamily: FontFamily.medium,
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.md,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: FontSize.sm * 1.5,
+  },
+  uploadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    marginTop: Spacing.sm,
+    minHeight: 44,
+  },
+  uploadBtnText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.surface,
+    lineHeight: FontSize.base * 1.5,
+  },
+
+  // ── Upload FAB ────────────────────────────────────────────────────────────────
+  fab: {
+    position: 'absolute',
+    flexDirection: 'row',
+    right: Spacing.base,
+    bottom: Spacing.base,
+    height: 56,
+    paddingLeft: Spacing.base,
+    paddingRight: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.background,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+  },
+  fabText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.primary,
+    lineHeight: FontSize.base * 1.5,
+  },
+
+  // ── Quick-view button (under tab bar) ───────────────────────────────
+  quickViewBtnContainer: {
+    marginHorizontal: Spacing.base,
+    marginBottom: Spacing.lg,
+  },
+  quickViewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    minHeight: 64,
+  },
+  quickViewBtnActive: {
+    backgroundColor: Colors.primary,
+  },
+  quickViewBtnEmpty: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+  },
+  quickViewBtnLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    flex: 1,
+  },
+  quickViewBtnTitle: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.surface,
+  },
+  quickViewBtnTitleEmpty: {
+    color: Colors.textPrimary,
+  },
+  quickViewBtnSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.xs,
+    color: 'rgba(255,255,255,0.75)',
+  },
+  quickViewBtnSubtitleEmpty: {
+    color: Colors.textTertiary,
+  },
+
+  // ── Quick-view modal ──────────────────────────────────────────────────────────
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalDismissArea: {
+    flex: 1,
+  },
+  modalSheet: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    paddingHorizontal: Spacing.base,
+    height: '81%',
+  },
+  dragArea: {
+    paddingVertical: Spacing.sm,
+    alignItems: 'center',
+    width: '100%',
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderRadius: BorderRadius.full,
+    alignSelf: 'center',
+    marginTop: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  sheetHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  sheetTitle: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.lg,
+    color: Colors.primary,
+  },
+  singleRxNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginBottom: Spacing.md,
+  },
+  singleRxNoticeText: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+    lineHeight: FontSize.xs * 1.5,
+  },
+  quickViewEmpty: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.xs,
+  },
+  quickViewEmptyTitle: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.lg,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  quickViewEmptySubtitle: {
+    fontFamily: FontFamily.regular,
     fontSize: FontSize.base,
     color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: FontSize.base * 1.5,
+  },
+
+  // ── Shared utilities ──────────────────────────────────────────────────────────
+  centeredFlex: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     marginTop: Spacing.md,
+    lineHeight: FontSize.md * 1.5,
   },
   errorTitle: {
     fontFamily: FontFamily.bold,
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.md,
-    lineHeight: 22,
+    lineHeight: FontSize.base * 1.5,
   },
   retryButton: {
     marginTop: Spacing.xl,

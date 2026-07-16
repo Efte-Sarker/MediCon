@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.semiBold,
     fontSize: FontSize.base,
     color: Colors.textSecondary,
+    lineHeight: FontSize.base * 1.5,
   },
   slide: {
     width: SCREEN_WIDTH,

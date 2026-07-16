@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     marginBottom: Spacing.xl,
-    lineHeight: 22,
+    lineHeight: FontSize.md * 1.5,
   },
   callButton: {
     flexDirection: 'row',

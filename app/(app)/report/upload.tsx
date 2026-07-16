@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: FontSize.base * 1.5,
   },
   header: {
     flexDirection: 'row',
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     color: Colors.textSecondary,
     marginBottom: Spacing.xl,
-    lineHeight: 22,
+    lineHeight: FontSize.base * 1.5,
   },
   optionCard: {
     flexDirection: 'row',

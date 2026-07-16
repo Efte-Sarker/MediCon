@@ -37,10 +37,12 @@ export interface Prescription {
   id: string;
   patientId: string;
   doctorId?: string; // Optional if uploaded manually
+  doctorName?: string; // Display name for the issuing doctor
   issuedAt: string; // ISO 8601
   medicines: PrescriptionMedicine[];
   notes?: string;
-  imageUrl?: string;
+  imageUrl?: string; // URL to the original prescription image/document
+  source?: 'DOCTOR' | 'UPLOADED'; // Discriminates between doctor-issued and user-uploaded
 }
 
 export interface PrescriptionMedicine {
@@ -48,9 +50,14 @@ export interface PrescriptionMedicine {
   name: string;
   dosage: string;
   durationDays: number;
-  frequency: string;
+  timesPerDay?: number; // e.g. 2 for "twice a day"
+  times?: string[]; // Scheduled clock times, e.g. ['08:00', '20:00']
+  dosageSchedule?: { morning?: string; noon?: string; night?: string }; // Specific times for morning, noon, night
+  dosagePattern?: string; // e.g. "1+1+0"
+  frequency: string; // Human-readable, e.g. "Twice daily"
   instructions?: string;
-  aiDemystifierSummary?: string; // Mock explanation of the drug
+  explanation?: string; // Plain-language explanation of what the medicine does and when/why to take it
+  aiDemystifierSummary?: string; // Legacy: kept for backward compatibility
 }
 
 export type AdherenceStatus = 'TAKEN' | 'PENDING' | 'MISSED';
@@ -102,6 +109,7 @@ export interface Question {
   patientId: string;
   department: string;
   content: string;
+  isAnonymous?: boolean;
   createdAt: string; // ISO 8601
   answers: QuestionAnswer[];
 }

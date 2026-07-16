@@ -77,13 +77,14 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.md,
     color: Colors.primary,
+    lineHeight: FontSize.md * 1.5,
   },
   instruction: {
     flex: 1,
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textPrimary,
-    lineHeight: 24,
+    lineHeight: FontSize.md * 1.5,
     marginTop: 4, // Align text baseline somewhat with the badge
   },
   warningContainer: {
@@ -100,6 +101,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.danger,
-    lineHeight: 20,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

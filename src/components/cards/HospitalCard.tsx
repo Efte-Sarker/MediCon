@@ -32,17 +32,9 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
 
       <View style={styles.content}>
         <View style={styles.headerRow}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text style={styles.name} numberOfLines={2}>
             {hospital.name}
           </Text>
-          {hospital.distanceKm !== undefined && (
-            <View style={styles.distanceBadge}>
-              <MaterialCommunityIcons name="map-marker-distance" size={12} color={Colors.primary} />
-              <Text style={styles.distanceText}>
-                {hospital.distanceKm.toFixed(1)} {t('hospitalcard.km') || 'km'}
-              </Text>
-            </View>
-          )}
         </View>
 
         <Text style={styles.address} numberOfLines={2}>
@@ -50,22 +42,36 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
         </Text>
 
         <View style={styles.tagsContainer}>
+          {hospital.distanceKm !== undefined && (
+            <View style={[styles.tag, styles.distanceTag]}>
+              <MaterialCommunityIcons
+                name="map-marker-distance"
+                size={12}
+                color={Colors.textPrimary}
+              />
+              <Text style={[styles.tagText, styles.distanceTagText]}>
+                {hospital.distanceKm.toFixed(1)} {t('hospitalcard.km') || 'km'}
+              </Text>
+            </View>
+          )}
           {hospital.hasEmergencyRoom && (
             <View style={[styles.tag, styles.emergencyTag]}>
-              <MaterialCommunityIcons name="ambulance" size={12} color={Colors.surface} />
+              <MaterialCommunityIcons name="heart-pulse" size={12} color={Colors.danger} />
               <Text style={[styles.tagText, styles.emergencyTagText]}>
                 {t('hospitalcard.er') || 'ER'}
               </Text>
             </View>
           )}
           {hospital.isOpen24x7 && (
-            <View style={styles.tag}>
+            <View style={[styles.tag, styles.openTag]}>
               <MaterialCommunityIcons
                 name="clock-time-four-outline"
                 size={12}
-                color={Colors.textSecondary}
+                color={Colors.primary}
               />
-              <Text style={styles.tagText}>{t('hospitalcard.24x7') || '24x7'}</Text>
+              <Text style={[styles.tagText, styles.openTagText]}>
+                {t('hospitalcard.24x7') || '24x7'}
+              </Text>
             </View>
           )}
         </View>
@@ -84,8 +90,8 @@ const styles = StyleSheet.create({
     ...Shadows.sm,
   },
   imageContainer: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 100,
     borderRadius: BorderRadius.md,
     overflow: 'hidden',
     marginRight: Spacing.md,
@@ -113,23 +119,11 @@ const styles = StyleSheet.create({
   name: {
     flex: 1,
     fontFamily: FontFamily.bold,
+    fontWeight: 'bold',
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },
-  distanceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.tertiary,
-    paddingHorizontal: Spacing.xs,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.sm,
-    gap: 4,
-  },
-  distanceText: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-  },
+
   address: {
     fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
@@ -138,27 +132,40 @@ const styles = StyleSheet.create({
   },
   tagsContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginTop: Spacing.xs,
+    marginTop: 'auto',
+    paddingTop: Spacing.xs,
   },
   tag: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.background,
     paddingHorizontal: Spacing.sm,
     paddingVertical: 4,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.sm,
     gap: 4,
   },
   tagText: {
-    fontFamily: FontFamily.medium,
-    fontSize: 10,
-    color: Colors.textSecondary,
+    fontFamily: FontFamily.semiBold,
+    fontSize: FontSize.xs,
+    lineHeight: FontSize.xs * 1.5,
   },
   emergencyTag: {
-    backgroundColor: Colors.danger,
+    backgroundColor: 'rgba(208, 42, 65, 0.12)',
   },
   emergencyTagText: {
-    color: Colors.surface,
+    color: Colors.danger,
+  },
+  openTag: {
+    backgroundColor: Colors.tertiary,
+  },
+  openTagText: {
+    color: Colors.primary,
+  },
+  distanceTag: {
+    backgroundColor: 'rgba(30, 30, 30, 0.08)',
+  },
+  distanceTagText: {
+    color: Colors.textPrimary,
   },
 });

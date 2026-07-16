@@ -34,7 +34,7 @@ const MOCK_HOSPITALS: Hospital[] = [
   },
   {
     id: 'hosp_3',
-    name: 'Metro Care Center',
+    name: 'Metro Care Center & Advanced Medical Research Institute',
     address: '789 Central St, Downtown',
     latitude: 40.715,
     longitude: -74.01,

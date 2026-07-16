@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.base,
     color: Colors.textPrimary,
-    lineHeight: 22,
+    lineHeight: FontSize.base * 1.5,
   },
   answersContainer: {
     marginTop: Spacing.md,
@@ -150,11 +150,12 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: FontSize.sm * 1.5,
   },
   answerTime: {
     fontFamily: FontFamily.regular,
     fontSize: FontSize.xs,
     color: Colors.textTertiary,
+    lineHeight: FontSize.xs * 1.5,
   },
 });

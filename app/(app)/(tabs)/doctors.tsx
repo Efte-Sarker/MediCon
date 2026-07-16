@@ -7,13 +7,19 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } from '@theme';
+import { Colors, Spacing, BorderRadius, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { doctorsService } from '../../../src/services/api/doctorsService';
+import {
+  doctorsService,
+  ConsultationHistoryItem,
+  Doctor,
+} from '../../../src/services/api/doctorsService';
 import { SymptomSearchBar } from '../../../src/components/forms/SymptomSearchBar';
+import { DoctorCard } from '../../../src/components/cards/DoctorCard';
 import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
@@ -21,6 +27,7 @@ type Category = {
   id: string;
   name: string;
   icon: string;
+  keyword?: string;
 };
 
 // 3. COMPONENT
@@ -29,6 +36,10 @@ export default function DoctorsScreen(): React.JSX.Element {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState<ConsultationHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [onlineDoctors, setOnlineDoctors] = useState<Doctor[]>([]);
+  const [doctorsLoading, setDoctorsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -39,86 +50,194 @@ export default function DoctorsScreen(): React.JSX.Element {
         setLoading(false);
       }
     };
+
+    const fetchHistory = async () => {
+      try {
+        const data = await doctorsService.getConsultationHistory();
+        setHistory(data);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+
+    const fetchDoctors = async () => {
+      try {
+        const data = await doctorsService.getDoctors();
+        setOnlineDoctors(data.filter((doc) => doc.isOnline));
+      } finally {
+        setDoctorsLoading(false);
+      }
+    };
+
     fetchCategories();
+    fetchHistory();
+    fetchDoctors();
   }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>{t('doctors.doctors_directory') || 'Doctors Directory'}</Text>
-          <Text style={styles.subtitle}>
-            {t('doctors.find_specialists_and_book_appo') ||
-              'Find specialists and book appointments'}
-          </Text>
-        </View>
+        <Text style={styles.title}>
+          <Text style={styles.titleBold}>Video </Text>
+          <Text style={styles.titleBold}>Consultation</Text>
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(app)/settings/')}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+          accessibilityLabel={t('dashboard.settings') || 'Settings'}
+          accessibilityRole="button"
+        >
+          <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+        </TouchableOpacity>
       </View>
 
+      {/* Search Bar */}
       <View style={styles.searchContainer}>
         <SymptomSearchBar />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Quick Links */}
-        <TouchableOpacity
-          style={styles.historyButton}
-          onPress={() => router.push('/(app)/doctors/history')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.historyContent}>
-            <MaterialCommunityIcons name="history" size={24} color={Colors.primary} />
-            <Text style={styles.historyText}>
+        {/* Consultation History Section */}
+        <View style={[styles.section, { marginTop: 0 }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
               {t('doctors.consultation_history') || 'Consultation History'}
             </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/doctors/history')}
+              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('doctors.view_all_history') || 'View all consultation history'}
+            >
+              <Text style={styles.viewAllText}>{t('doctors.view_all') || 'view all'}</Text>
+            </TouchableOpacity>
           </View>
-          <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.textTertiary} />
-        </TouchableOpacity>
 
-        {/* Explore All */}
-        <TouchableOpacity
-          style={styles.exploreAllButton}
-          onPress={() => router.push('/(app)/doctors/')}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.exploreAllText}>
-            {t('doctors.explore_all_doctors') || 'Explore All Doctors'}
-          </Text>
-          <MaterialCommunityIcons name="arrow-right" size={16} color={Colors.surface} />
-        </TouchableOpacity>
+          {historyLoading ? (
+            <ActivityIndicator size="small" color={Colors.primary} style={styles.sectionLoader} />
+          ) : history.length === 0 ? (
+            <View style={styles.emptySection}>
+              <MaterialCommunityIcons name="history" size={28} color={Colors.textTertiary} />
+              <Text style={styles.emptyText}>
+                {t('doctors.no_consultations_yet') || 'No consultations yet'}
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.horizontalScroll}
+            >
+              {history.map((item) => (
+                <DoctorCard
+                  key={item.id}
+                  doctor={item}
+                  variant="history"
+                  onPress={() => router.push(`/(app)/doctors/${item.doctorId}`)}
+                  onBookPress={() =>
+                    router.push(
+                      `/(app)/doctors/booking/digest?doctorId=${item.doctorId}&type=video`,
+                    )
+                  }
+                />
+              ))}
+            </ScrollView>
+          )}
+        </View>
 
-        {/* Categories Section */}
+        {/* Department Cards — 3-column grid */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('doctors.specialties') || 'Specialties'}</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>{t('doctors.departments') || 'Departments'}</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/doctors/departments')}
+              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('doctors.view_all_departments') || 'View all departments'}
+            >
+              <Text style={styles.viewAllText}>{t('doctors.view_all') || 'view all'}</Text>
+            </TouchableOpacity>
+          </View>
 
           {loading ? (
-            <ActivityIndicator
-              size="large"
-              color={Colors.primary}
-              style={{ marginTop: Spacing.xl }}
-            />
+            <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
           ) : (
             <View style={styles.grid}>
-              {categories.map((category) => (
+              {categories.slice(0, 6).map((category) => (
                 <TouchableOpacity
                   key={category.id}
                   style={styles.gridItem}
                   onPress={() => router.push(`/(app)/doctors/?category=${category.id}`)}
                   activeOpacity={0.7}
+                  accessibilityRole="button"
+                  accessibilityLabel={category.name}
                 >
                   <View style={styles.iconContainer}>
                     <MaterialCommunityIcons
-                      name={category.icon as any}
-                      size={28}
+                      name={category.icon as keyof typeof MaterialCommunityIcons.glyphMap}
+                      size={26}
                       color={Colors.primary}
                     />
                   </View>
                   <Text style={styles.categoryName} numberOfLines={2}>
                     {category.name}
                   </Text>
+                  {category.keyword && (
+                    <Text style={styles.categoryKeyword} numberOfLines={1}>
+                      {category.keyword}
+                    </Text>
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
+          )}
+        </View>
+
+        {/* Online Doctors Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>
+              {t('doctors.online_doctors') || 'Online Doctors'}
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/doctors/')}
+              hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel={t('doctors.view_all_doctors') || 'View all doctors'}
+            >
+              <Text style={styles.viewAllText}>{t('doctors.view_all') || 'view all'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {doctorsLoading ? (
+            <ActivityIndicator size="small" color={Colors.primary} style={styles.sectionLoader} />
+          ) : onlineDoctors.length === 0 ? (
+            <View style={styles.emptySection}>
+              <MaterialCommunityIcons name="doctor" size={28} color={Colors.textTertiary} />
+              <Text style={styles.emptyText}>
+                {t('doctors.no_doctors_online') || 'No doctors online right now'}
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={onlineDoctors}
+              keyExtractor={(item) => item.id}
+              numColumns={2}
+              scrollEnabled={false}
+              columnWrapperStyle={styles.onlineGridRow}
+              contentContainerStyle={styles.onlineGridContainer}
+              renderItem={({ item: doctor }) => (
+                <DoctorCard
+                  doctor={doctor}
+                  variant="online"
+                  onPress={() => router.push(`/(app)/doctors/${doctor.id}`)}
+                  onBookPress={() =>
+                    router.push(`/(app)/doctors/booking/digest?doctorId=${doctor.id}&type=video`)
+                  }
+                />
+              )}
+            />
           )}
         </View>
       </ScrollView>
@@ -133,94 +252,61 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.base,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
   },
   title: {
-    fontFamily: FontFamily.bold,
     fontSize: FontSize.xxl,
-    color: Colors.textPrimary,
+    color: Colors.primary,
   },
-  subtitle: {
+  titleNormal: {
     fontFamily: FontFamily.regular,
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+  },
+  titleBold: {
+    fontFamily: FontFamily.extraBold,
+    fontWeight: '900',
   },
   searchContainer: {
-    paddingBottom: Spacing.sm,
+    paddingTop: Spacing.md,
+    paddingHorizontal: Spacing.base,
+    marginBottom: Spacing.lg,
   },
   scrollContent: {
     paddingHorizontal: Spacing.base,
-    paddingBottom: Layout.tabBarHeight + Spacing.base,
+    paddingBottom: Spacing.lg,
   },
-  historyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.surface,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.md,
-    ...Shadows.sm,
+  loader: {
+    marginVertical: Spacing.xl,
   },
-  historyContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
-  },
-  historyText: {
-    fontFamily: FontFamily.semiBold,
-    fontSize: FontSize.md,
-    color: Colors.textPrimary,
-  },
-  exploreAllButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    marginBottom: Spacing.xl,
-    gap: Spacing.xs,
-    ...Shadows.sm,
-  },
-  exploreAllText: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.md,
-    color: Colors.surface,
-  },
-  section: {
-    flex: 1,
-  },
-  sectionTitle: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.lg,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    paddingHorizontal: Spacing.xs,
-  },
+
+  // --- Department Grid (3 columns) ---
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: Spacing.md,
+    justifyContent: 'space-between',
+    rowGap: Spacing.md,
   },
   gridItem: {
-    width: '47%', // roughly half width with gap
+    width: '31.5%',
+    height: 140,
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xs,
     alignItems: 'center',
     justifyContent: 'center',
     gap: Spacing.sm,
-    ...Shadows.sm,
-    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
   },
   iconContainer: {
-    width: 56,
-    height: 56,
+    width: 48,
+    height: 48,
     borderRadius: BorderRadius.full,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -229,5 +315,62 @@ const styles = StyleSheet.create({
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
     textAlign: 'center',
+  },
+  categoryKeyword: {
+    fontFamily: FontFamily.regular,
+    fontSize: 13,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: -Spacing.xs,
+  },
+
+  // --- Section (shared) ---
+  section: {
+    marginTop: Spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
+  sectionTitle: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.lg,
+    color: Colors.textPrimary,
+  },
+  viewAllText: {
+    fontFamily: FontFamily.medium,
+    fontSize: 13,
+    color: Colors.primary,
+    lineHeight: 19.5,
+  },
+  sectionLoader: {
+    marginVertical: Spacing.lg,
+  },
+  emptySection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+  },
+  emptyText: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.base,
+    color: Colors.textSecondary,
+    lineHeight: FontSize.base * 1.5,
+  },
+  horizontalScroll: {
+    gap: Spacing.md,
+    paddingRight: Spacing.xs,
+  },
+  onlineGridRow: {
+    gap: Spacing.md,
+  },
+  onlineGridContainer: {
+    gap: Spacing.md,
   },
 });

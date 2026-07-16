@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     marginBottom: Spacing.xl,
-    lineHeight: 22,
+    lineHeight: FontSize.md * 1.5,
   },
   card: {
     flexDirection: 'row',
@@ -151,6 +151,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: FontSize.sm * 1.5,
   },
 });

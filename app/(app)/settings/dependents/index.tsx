@@ -97,5 +97,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     color: Colors.primary,
     marginLeft: Spacing.sm,
+    lineHeight: FontSize.base * 1.5,
   },
 });

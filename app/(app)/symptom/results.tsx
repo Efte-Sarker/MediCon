@@ -157,5 +157,6 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginTop: Spacing.xxl,
+    lineHeight: FontSize.md * 1.5,
   },
 });

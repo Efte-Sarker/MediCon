@@ -7,7 +7,7 @@ import { Colors, Spacing, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { doctorsService, ConsultationHistoryItem } from '../../../src/services/api/doctorsService';
-import { Card } from '../../../src/components/ui/Card';
+import { DoctorCard } from '../../../src/components/cards/DoctorCard';
 import { useTranslation } from 'react-i18next';
 
 // 2. TYPES
@@ -36,40 +36,17 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
 
   const renderItem = useCallback(
     ({ item }: { item: ConsultationHistoryItem }) => {
-      const date = new Date(item.date);
-      const formattedDate = date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-
       return (
         <View style={styles.cardWrapper}>
-          <Card
+          <DoctorCard
+            doctor={item}
+            variant="history"
+            fullWidth
             onPress={() => router.push(`/(app)/doctors/${item.doctorId}`)}
-            accessibilityLabel={`Consultation with ${item.doctorName} on ${formattedDate}. Status: ${item.status}`}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.dateText}>{formattedDate}</Text>
-              <View
-                style={[
-                  styles.statusBadge,
-                  item.status === 'completed' ? styles.statusCompleted : styles.statusOther,
-                ]}
-              >
-                <Text style={styles.statusText}>{item.status.toUpperCase()}</Text>
-              </View>
-            </View>
-            <View style={styles.cardBody}>
-              <View style={styles.iconContainer}>
-                <MaterialCommunityIcons name="stethoscope" size={24} color={Colors.primary} />
-              </View>
-              <View style={styles.details}>
-                <Text style={styles.doctorName}>{item.doctorName}</Text>
-                <Text style={styles.specialty}>{item.specialty}</Text>
-              </View>
-            </View>
-          </Card>
+            onBookPress={() =>
+              router.push(`/(app)/doctors/booking/digest?doctorId=${item.doctorId}&type=video`)
+            }
+          />
         </View>
       );
     },
@@ -88,8 +65,7 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.title}>{t('history.history') || 'History'}</Text>
-        <View style={styles.headerRight} />
+        <Text style={styles.headerTitle}>Consultation History</Text>
       </View>
 
       {loading ? (
@@ -136,29 +112,32 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.tertiary,
-    backgroundColor: Colors.surface,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background,
+    gap: Spacing.xs,
   },
   backButton: {
-    padding: Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  headerRight: {
-    width: 24 + Spacing.xs * 2, // matches back button width to center title
-  },
-  title: {
+  headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
   listContent: {
-    padding: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    paddingTop: 0,
   },
   cardWrapper: {
     marginBottom: Spacing.md,
+    marginHorizontal: Spacing.sm / 2, // Squeezes the card slightly to match the Departments screen grid width
   },
   cardHeader: {
     flexDirection: 'row',
@@ -170,6 +149,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    lineHeight: FontSize.sm * 1.5,
   },
   statusBadge: {
     paddingHorizontal: Spacing.sm,
@@ -186,6 +166,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: 10,
     color: Colors.textPrimary,
+    lineHeight: 15,
   },
   cardBody: {
     flexDirection: 'row',
@@ -233,6 +214,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: Spacing.xl,
+    lineHeight: FontSize.md * 1.5,
   },
   exploreButton: {
     backgroundColor: Colors.primary,

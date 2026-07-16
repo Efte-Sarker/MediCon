@@ -56,6 +56,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.regular,
     fontSize: FontSize.xs,
     color: Colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: FontSize.xs * 1.5,
   },
 });
