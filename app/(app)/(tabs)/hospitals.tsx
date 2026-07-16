@@ -95,7 +95,7 @@ export default function HospitalsScreen() {
     if (USE_MOCK_MAP) {
       return (
         <ImageBackground
-          source={require('../../../assets/images/map_placeholder.png')}
+          source={require('../../../assets/images/map_placeholder.jpg')}
           style={styles.map}
           resizeMode="cover"
         >
