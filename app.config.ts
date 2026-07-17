@@ -1,8 +1,10 @@
 import { ExpoConfig, ConfigContext } from 'expo/config';
 
+const IS_DEV = process.env.APP_VARIANT === 'development';
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: 'Medicon',
+  name: IS_DEV ? 'Medicon (Dev)' : 'Medicon',
   slug: 'medicon',
   version: '1.0.0',
   orientation: 'portrait',
@@ -10,9 +12,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   userInterfaceStyle: 'light',
   ios: {
     supportsTablet: true,
+    bundleIdentifier: IS_DEV ? 'com.anonymous.medicon.dev' : 'com.anonymous.medicon',
   },
   android: {
-    package: 'com.anonymous.medicon',
+    package: IS_DEV ? 'com.anonymous.medicon.dev' : 'com.anonymous.medicon',
     adaptiveIcon: {
       backgroundColor: '#E6F4FE',
       foregroundImage: './assets/android-icon-foreground.png',
