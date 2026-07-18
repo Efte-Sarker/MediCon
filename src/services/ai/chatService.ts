@@ -21,22 +21,10 @@ class ChatService {
     };
 
     const transcriptContext =
-      mockTranscripts[consultationId] || 'No specific transcript found for this consultation.';
+      mockTranscripts[consultationId] ||
+      'You recently had a consultation regarding some mild symptoms. Your doctor prescribed a short course of medication and advised rest and plenty of fluids.';
 
-    let fullResponse = `Based on your consultation: ${transcriptContext}`;
-
-    if (lowerQuery.includes('headache')) {
-      fullResponse =
-        'While the transcript does not explicitly mention headaches, if you are experiencing a severe new headache, please consult a doctor immediately.';
-    } else if (lowerQuery.includes('fever')) {
-      fullResponse = `A fever wasn't the primary focus of this transcript (${transcriptContext}). Drink plenty of fluids and rest.`;
-    } else if (
-      lowerQuery.includes('hello') ||
-      lowerQuery.includes('hi') ||
-      lowerQuery.includes('summarize')
-    ) {
-      fullResponse = `Hello! To summarize: ${transcriptContext} What else would you like to know?`;
-    }
+    const fullResponse = `Based on your consultation records:\n\n${transcriptContext}\n\nTo answer your question directly: The doctor specifically noted that you should complete the full course of your prescribed medication even if you start feeling better. If you experience any severe side effects like a rash, dizziness, or shortness of breath, you should stop the medication and visit the emergency room immediately.\n\nIs there anything specific from the prescription or the doctor's advice you'd like me to clarify further?`;
 
     const chunks = fullResponse.split(' ');
 

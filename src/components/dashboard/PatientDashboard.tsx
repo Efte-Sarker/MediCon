@@ -100,7 +100,7 @@ export const PatientDashboard = (): React.JSX.Element => {
           <QuickAction
             icon="chat-processing-outline"
             label={t('dashboard.aiChat') || 'AI Chat'}
-            onPress={() => router.push('/(app)/(tabs)/ai-chat')}
+            onPress={() => router.push('/(app)/ai-chat')}
           />
         </View>
 

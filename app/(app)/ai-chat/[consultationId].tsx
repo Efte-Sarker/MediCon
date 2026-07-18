@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -8,22 +8,24 @@ import {
   Platform,
   Animated,
   Text,
+  Keyboard,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useChatStore, ChatMessage } from '../../../src/store/chatStore';
 import { ChatBubble } from '../../../src/components/medical/ChatBubble';
 import { chatService } from '../../../src/services/ai/chatService';
-import { AIDisclaimer } from '../../../src/components/medical/AIDisclaimer';
-import { useTranslation } from 'react-i18next';
 
 export default function ConsultationChatScreen() {
-  const { t } = useTranslation();
-  const { consultationId } = useLocalSearchParams<{ consultationId: string }>();
-  const { conversations, addMessage, updateMessage, seedLongConversation } = useChatStore();
+  const insets = useSafeAreaInsets();
+  const { consultationId, doctorName } = useLocalSearchParams<{
+    consultationId: string;
+    doctorName?: string;
+  }>();
+  const { conversations, addMessage, updateMessage, clearHistory } = useChatStore();
   const messages = conversations[consultationId] || [];
 
   const [inputText, setInputText] = useState('');
@@ -32,6 +34,28 @@ export default function ConsultationChatScreen() {
 
   const flashListRef = useRef<any>(null);
   const [pulseAnim] = useState(() => new Animated.Value(1));
+
+  useEffect(() => {
+    // Clear history on mount to ensure chat is empty initially
+    clearHistory(consultationId);
+  }, [consultationId, clearHistory]);
+
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const handleSend = async (text: string) => {
     if (!text.trim() || activeStreamingId) return;
@@ -106,156 +130,181 @@ export default function ConsultationChatScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>
-          {t('[consultationid].medicon_ai_assistant') || 'MediCon AI Assistant'}
-        </Text>
-        {__DEV__ && (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => seedLongConversation(consultationId)}
-            style={styles.seedButton}
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
-            <MaterialCommunityIcons name="database-plus" size={20} color={Colors.primary} />
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
-        )}
-      </View>
-
-      <AIDisclaimer />
-
-      <View style={styles.listContainer}>
-        <FlashList<ChatMessage>
-          ref={flashListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ChatBubble message={item} isTyping={item.id === activeStreamingId} />
-          )}
-          contentContainerStyle={styles.listContent}
-          onContentSizeChange={() => {
-            if (messages.length > 0) {
-              flashListRef.current?.scrollToEnd({ animated: true });
-            }
-          }}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <View style={styles.inputContainer}>
-          <TouchableOpacity style={styles.micButton} onPress={handleMicPress} activeOpacity={0.7}>
-            <Animated.View style={[styles.micIconContainer, { transform: [{ scale: pulseAnim }] }]}>
-              <MaterialCommunityIcons
-                name={isRecording ? 'stop-circle' : 'microphone'}
-                size={24}
-                color={isRecording ? Colors.danger : Colors.primary}
-              />
-            </Animated.View>
-          </TouchableOpacity>
-          <TextInput
-            style={styles.textInput}
-            placeholder={isRecording ? 'Listening...' : 'Type a health question...'}
-            placeholderTextColor={isRecording ? Colors.primary : Colors.textTertiary}
-            value={inputText}
-            onChangeText={setInputText}
-            multiline
-            maxLength={500}
-          />
-          <TouchableOpacity
-            style={[
-              styles.sendButton,
-              (!inputText.trim() || activeStreamingId) && styles.sendButtonDisabled,
-            ]}
-            onPress={() => handleSend(inputText)}
-            disabled={!inputText.trim() || !!activeStreamingId}
-          >
-            <MaterialCommunityIcons
-              name="send"
-              size={20}
-              color={!inputText.trim() || activeStreamingId ? Colors.textTertiary : Colors.surface}
-            />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {doctorName || 'Doctor'}
+          </Text>
+          <View style={styles.emptyRightSlot} />
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+        <View style={styles.listContainer}>
+          <FlashList<ChatMessage>
+            ref={flashListRef}
+            data={messages}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            renderItem={({ item }) => (
+              <ChatBubble message={item} isTyping={item.id === activeStreamingId} />
+            )}
+            contentContainerStyle={styles.listContent}
+            onContentSizeChange={() => {
+              if (messages.length > 0) {
+                flashListRef.current?.scrollToEnd({ animated: true });
+              }
+            }}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+
+        <View style={[styles.inputWrapperContainer, { paddingBottom: isKeyboardVisible ? Spacing.md : insets.bottom + Spacing.md }]}>
+          <View style={styles.inputWrapper}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="What do you want to know?"
+              placeholderTextColor={Colors.textTertiary}
+              value={inputText}
+              onChangeText={setInputText}
+              multiline
+              maxLength={500}
+            />
+            <View style={styles.actionButtonsContainer}>
+              <TouchableOpacity
+                style={styles.micButton}
+                onPress={handleMicPress}
+                activeOpacity={0.7}
+              >
+                <Animated.View
+                  style={[styles.micIconContainer, { transform: [{ scale: pulseAnim }] }]}
+                >
+                  <MaterialCommunityIcons
+                    name={isRecording ? 'stop-circle-outline' : 'microphone-outline'}
+                    size={24}
+                    color={isRecording ? Colors.danger : Colors.textSecondary}
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  (!inputText.trim() || activeStreamingId) && styles.sendButtonDisabled,
+                ]}
+                onPress={() => handleSend(inputText)}
+                disabled={!inputText.trim() || !!activeStreamingId}
+              >
+                <MaterialCommunityIcons
+                  name="arrow-up"
+                  size={20}
+                  color={
+                    !inputText.trim() || activeStreamingId ? Colors.textTertiary : Colors.surface
+                  }
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.background,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.tertiary,
+    paddingRight: 5,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.surface,
+    gap: Spacing.xs,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
-  seedButton: {
-    padding: Spacing.xs,
+  emptyRightSlot: {
+    width: 44,
+    height: 44,
   },
   listContainer: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   listContent: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.lg,
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+  inputWrapperContainer: {
     padding: Spacing.md,
     backgroundColor: Colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: Colors.tertiary,
   },
-  micButton: {
-    padding: Spacing.xs,
-    marginRight: Spacing.sm,
-    marginBottom: Spacing.xs,
-  },
-  micIconContainer: {
+  inputWrapper: {
     backgroundColor: Colors.background,
-    padding: Spacing.xs,
-    borderRadius: BorderRadius.full,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
   },
   textInput: {
-    flex: 1,
-    minHeight: 40,
-    maxHeight: 120,
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.sm,
-    paddingBottom: Spacing.sm,
+    width: '100%',
     fontFamily: FontFamily.regular,
     fontSize: FontSize.md,
     color: Colors.textPrimary,
-    borderWidth: 1,
-    borderColor: Colors.tertiary,
+    maxHeight: 120,
+    minHeight: 24,
+    padding: 0,
+    textAlignVertical: 'top',
+  },
+  actionButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  micButton: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: Spacing.xs,
+  },
+  micIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: Spacing.sm,
-    marginBottom: 4,
   },
   sendButtonDisabled: {
     backgroundColor: Colors.tertiary,

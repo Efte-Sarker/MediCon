@@ -9,7 +9,9 @@ export const Routes = {
     DOCTORS: '/(app)/(tabs)/doctors',
     HOSPITALS: '/(app)/(tabs)/hospitals',
     REPORTS: '/(app)/(tabs)/reports',
-    AI_CHAT: '/(app)/(tabs)/ai-chat',
+  },
+  AI_CHAT: {
+    HOME: '/(app)/ai-chat',
   },
   EMERGENCY: {
     HOME: '/(app)/emergency',

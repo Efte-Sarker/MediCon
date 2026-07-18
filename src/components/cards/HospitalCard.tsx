@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Shadows } from '../../theme';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Hospital } from '../../types/medical.types';
 import { useTranslation } from 'react-i18next';
@@ -8,9 +8,14 @@ import { useTranslation } from 'react-i18next';
 interface HospitalCardProps {
   hospital: Hospital;
   onPress: () => void;
+  onClose?: () => void;
 }
 
-export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JSX.Element => {
+export const HospitalCard = ({
+  hospital,
+  onPress,
+  onClose,
+}: HospitalCardProps): React.JSX.Element => {
   const { t } = useTranslation();
   return (
     <TouchableOpacity
@@ -27,6 +32,17 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
           <View style={[styles.image, styles.imagePlaceholder]}>
             <MaterialCommunityIcons name="hospital-building" size={32} color={Colors.primary} />
           </View>
+        )}
+
+        {onClose && (
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={onClose}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            activeOpacity={0.7}
+          >
+            <MaterialCommunityIcons name="close" size={14} color={Colors.surface} />
+          </TouchableOpacity>
         )}
       </View>
 
@@ -86,8 +102,6 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     flexDirection: 'row',
     padding: Spacing.sm,
-    marginBottom: Spacing.base,
-    ...Shadows.sm,
   },
   imageContainer: {
     width: 100,
@@ -104,6 +118,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.tertiary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 12,
+    padding: 4,
   },
   content: {
     flex: 1,

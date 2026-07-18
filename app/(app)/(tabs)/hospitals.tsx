@@ -8,6 +8,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
@@ -22,6 +23,7 @@ const USE_MOCK_MAP = true; // Temporary flag for Phase 1 without a real API key
 export default function HospitalsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [locationStatus, setLocationStatus] = useState<Location.PermissionStatus | null>(null);
   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
@@ -95,7 +97,7 @@ export default function HospitalsScreen() {
     if (USE_MOCK_MAP) {
       return (
         <ImageBackground
-          source={require('../../../assets/images/map_placeholder.jpg')}
+          source={require('../../../assets/images/map_placeholder_cropped.jpg')}
           style={styles.map}
           resizeMode="cover"
         >
@@ -168,12 +170,22 @@ export default function HospitalsScreen() {
     <View style={styles.container}>
       {renderMap()}
 
+      <TouchableOpacity
+        style={[styles.backButton, { top: Math.max(insets.top, Spacing.base) + Spacing.sm }]}
+        onPress={() => router.back()}
+        accessibilityRole="button"
+        accessibilityLabel="Go back"
+      >
+        <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+      </TouchableOpacity>
+
       {/* Bottom Sheet Overlay for Selected Hospital */}
       {selectedHospital && (
         <View style={styles.bottomOverlay}>
           <HospitalCard
             hospital={selectedHospital}
             onPress={() => handleHospitalPress(selectedHospital)}
+            onClose={() => setSelectedHospital(null)}
           />
         </View>
       )}
@@ -253,5 +265,17 @@ const styles = StyleSheet.create({
     bottom: Spacing.base,
     left: Spacing.base,
     right: Spacing.base,
+  },
+  backButton: {
+    position: 'absolute',
+    left: Spacing.base,
+    backgroundColor: Colors.surface,
+    padding: Spacing.sm,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
 });

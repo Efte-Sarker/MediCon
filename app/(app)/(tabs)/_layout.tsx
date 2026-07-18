@@ -69,7 +69,6 @@ export default function TabsLayout() {
       {/* Hidden from tab bar */}
       <Tabs.Screen name="reports" options={{ href: null }} />
       <Tabs.Screen name="hospitals" options={{ href: null }} />
-      <Tabs.Screen name="ai-chat" options={{ href: null }} />
     </Tabs>
   );
 }
