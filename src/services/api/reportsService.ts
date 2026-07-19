@@ -1,14 +1,22 @@
 import { Report } from '../../types/medical.types';
+import {
+  reportSingleImage,
+  reportMultiImage1,
+  reportMultiImage2,
+  reportMultiImage3,
+} from '../../constants/images';
 
 // Mock list of previously parsed reports
-const MOCK_REPORTS: Report[] = [
+let MOCK_REPORTS: Report[] = [
   {
     id: 'rep-1',
     patientId: 'pat-1',
-    title: 'Complete Blood Count (CBC)',
+    title: 'Complete Blood Count',
     type: 'BLOOD_TEST',
     date: '2026-06-15T08:30:00Z',
     laboratory: 'Central Diagnostic Lab',
+    fileType: 'image',
+    thumbnails: [reportSingleImage],
     aiSummary:
       'Your CBC shows mildly elevated white blood cells, which could indicate a minor infection or inflammation. Hemoglobin and platelet counts are well within normal ranges. Please consult your physician if you are experiencing any symptoms like fever.',
     biomarkers: [
@@ -45,6 +53,8 @@ const MOCK_REPORTS: Report[] = [
     type: 'BLOOD_TEST',
     date: '2025-11-10T09:00:00Z',
     laboratory: 'City Health Clinic',
+    fileType: 'multi_image',
+    thumbnails: [reportMultiImage1, reportMultiImage2, reportMultiImage3],
     aiSummary:
       'Your lipid panel shows elevated LDL (bad cholesterol) and borderline high total cholesterol. HDL (good cholesterol) is normal. Your doctor may recommend dietary changes or exercise to improve these numbers.',
     biomarkers: [
@@ -81,6 +91,19 @@ const MOCK_REPORTS: Report[] = [
         isFlagged: false,
       },
     ],
+  },
+  {
+    id: 'rep-3',
+    patientId: 'pat-1',
+    title: 'Chest X-Ray Report',
+    type: 'XRAY',
+    date: '2026-01-22T11:00:00Z',
+    laboratory: 'National Medical Center',
+    fileType: 'pdf',
+    thumbnails: [],
+    aiSummary:
+      'The chest X-ray report has been analyzed. No significant abnormalities detected in the lung fields. Heart size appears normal. Please consult your doctor for a full clinical interpretation.',
+    biomarkers: [],
   },
 ];
 
@@ -147,6 +170,34 @@ export const reportsService = {
         MOCK_REPORTS.unshift(newReport); // Add to mock memory so it shows in list
         resolve(newReport);
       }, 2500); // 2.5 seconds delay to simulate real parsing
+    });
+  },
+
+  updateReport: async (id: string, data: Partial<Report>): Promise<Report> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const index = MOCK_REPORTS.findIndex((r) => r.id === id);
+        if (index > -1) {
+          MOCK_REPORTS[index] = { ...MOCK_REPORTS[index], ...data };
+          resolve(MOCK_REPORTS[index]);
+        } else {
+          reject(new Error('Report not found'));
+        }
+      }, 300);
+    });
+  },
+
+  deleteReport: async (id: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const initialLength = MOCK_REPORTS.length;
+        MOCK_REPORTS = MOCK_REPORTS.filter((r) => r.id !== id);
+        if (MOCK_REPORTS.length < initialLength) {
+          resolve();
+        } else {
+          reject(new Error('Report not found'));
+        }
+      }, 300);
     });
   },
 };

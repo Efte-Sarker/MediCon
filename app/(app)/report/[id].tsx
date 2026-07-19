@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius, Layout } from '../../../src/theme';
 import { reportsService } from '../../../src/services/api/reportsService';
 import { Report } from '../../../src/types/medical.types';
 import { BiomarkerRow } from '../../../src/components/medical/BiomarkerRow';
@@ -45,7 +45,7 @@ export default function ReportDetailScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </SafeAreaView>
     );
@@ -53,63 +53,61 @@ export default function ReportDetailScreen() {
 
   if (error || !report) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
         <MaterialCommunityIcons name="alert-circle-outline" size={48} color={Colors.danger} />
         <Text style={styles.errorText}>{error || 'Report not found.'}</Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>{t('[id].go_back') || 'Go Back'}</Text>
+        <TouchableOpacity style={styles.errorBackButton} onPress={() => router.back()}>
+          <Text style={styles.errorBackButtonText}>{t('[id].go_back') || 'Go Back'}</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
   }
 
   const formattedDate = new Date(report.date).toLocaleDateString('en-US', {
-    month: 'long',
+    month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 
   return (
-    <View style={styles.container}>
-      {/* Custom Header */}
-      <View style={[styles.header, { paddingTop: insets.top + Spacing.sm }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.headerIcon}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.surface} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>
-          {t('[id].report_details') || 'Report Details'}
-        </Text>
-        <View style={styles.headerIcon} />
+        <Text style={styles.headerTitle}>{t('[id].report_details') || 'Report Details'}</Text>
       </View>
 
       <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + Spacing.xl },
-        ]}
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
+        showsVerticalScrollIndicator={false}
       >
-        <View style={styles.metadataCard}>
-          <View style={styles.metadataRow}>
-            <MaterialCommunityIcons name="file-document-outline" size={24} color={Colors.primary} />
-            <View style={styles.metadataTextContainer}>
-              <Text style={styles.reportTitle}>{report.title}</Text>
-              <Text style={styles.reportSubtitle}>{report.laboratory || 'Unknown Laboratory'}</Text>
-            </View>
-          </View>
+        {/* Meta card */}
+        <View style={styles.metaCard}>
+          <Text style={styles.reportTitle}>{report.title}</Text>
           <View style={styles.divider} />
-          <View style={styles.metadataRow}>
-            <MaterialCommunityIcons name="calendar" size={20} color={Colors.textSecondary} />
-            <Text style={styles.dateText}>{formattedDate}</Text>
+          <View style={styles.metaRow}>
+            <View style={styles.metaLeft}>
+              <MaterialCommunityIcons name="flask-outline" size={18} color={Colors.primary} />
+              <View style={styles.metaText}>
+                <Text style={styles.metaLabel}>Laboratory</Text>
+                <Text style={styles.metaValue}>{report.laboratory || 'Unknown Laboratory'}</Text>
+              </View>
+            </View>
+            <View style={styles.metaRight}>
+              <Text style={styles.metaLabel}>Date</Text>
+              <Text style={styles.metaValue}>{formattedDate}</Text>
+            </View>
           </View>
         </View>
 
-        {report.aiSummary && (
-          <View style={styles.section}>
-            <AIDisclaimer />
-            <Text style={styles.aiSummaryText}>{report.aiSummary}</Text>
-          </View>
-        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -131,16 +129,23 @@ export default function ReportDetailScreen() {
             </View>
           )}
         </View>
+      </ScrollView>
 
-        {/* Placeholder for viewing original document */}
-        <TouchableOpacity style={styles.viewOriginalButton}>
-          <MaterialCommunityIcons name="eye-outline" size={20} color={Colors.primary} />
-          <Text style={styles.viewOriginalText}>
+      {/* Show Original fixed button at bottom */}
+      <View style={[styles.bottomFixedContainer, { paddingBottom: Spacing.base + insets.bottom }]}>
+        <TouchableOpacity
+          style={styles.showOriginalFullBtn}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="View original document"
+        >
+          <MaterialCommunityIcons name="file-eye-outline" size={18} color={Colors.surface} />
+          <Text style={styles.showOriginalFullBtnText}>
             {t('[id].view_original_document') || 'View Original Document'}
           </Text>
         </TouchableOpacity>
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -149,12 +154,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
-  centerContainer: {
+  loadingContainer: {
     flex: 1,
-    backgroundColor: Colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: Spacing.xl,
+    backgroundColor: Colors.background,
   },
   errorText: {
     fontFamily: FontFamily.medium,
@@ -164,85 +168,126 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: FontSize.md * 1.5,
   },
-  backButton: {
+  errorBackButton: {
     marginTop: Spacing.xl,
     backgroundColor: Colors.primary,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
   },
-  backButtonText: {
+  errorBackButtonText: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.md,
     color: Colors.surface,
   },
+
+  // Header
   header: {
-    backgroundColor: Colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingBottom: Spacing.md,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
+    backgroundColor: Colors.background,
+    gap: Spacing.xs,
   },
-  headerIcon: {
-    padding: Spacing.sm,
+  backButton: {
     width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
-    color: Colors.surface,
-    flex: 1,
-    textAlign: 'center',
+    color: Colors.textPrimary,
   },
-  scrollContainer: {
-    flex: 1,
-  },
+
+  // Scroll
   scrollContent: {
-    padding: Spacing.xl,
+    paddingHorizontal: Spacing.base,
+    paddingBottom: Layout.tabBarHeight + 80 + Spacing.xl,
   },
-  metadataCard: {
+
+  // Meta card
+  metaCard: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
+    padding: Spacing.base,
     marginBottom: Spacing.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  metadataRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metadataTextContainer: {
-    marginLeft: Spacing.md,
-    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
   },
   reportTitle: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  reportSubtitle: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
   },
   divider: {
     height: 1,
     backgroundColor: Colors.tertiary,
     marginVertical: Spacing.md,
   },
-  dateText: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  metaLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    flex: 1,
+    paddingRight: Spacing.md,
+  },
+  metaRight: {
+    alignItems: 'flex-end',
+  },
+  metaText: {
+    flex: 1,
+  },
+  metaLabel: {
     fontFamily: FontFamily.medium,
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    marginBottom: 2,
+  },
+  metaValue: {
+    fontFamily: FontFamily.bold,
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
-    marginLeft: Spacing.sm,
-    lineHeight: FontSize.sm * 1.5,
   },
+
+  // Fixed Bottom Button
+  bottomFixedContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.surface,
+    padding: Spacing.base,
+    borderTopWidth: 1,
+    borderTopColor: Colors.tertiary,
+  },
+  showOriginalFullBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.sm,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.lg,
+    paddingVertical: Spacing.md,
+    minHeight: 56,
+  },
+  showOriginalFullBtnText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.surface,
+    lineHeight: FontSize.base * 1.5,
+  },
+
+  // Existing sections
   section: {
     marginBottom: Spacing.xl,
   },
@@ -284,23 +329,5 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: FontSize.sm * 1.5,
-  },
-  viewOriginalButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.surface,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.tertiary,
-    marginBottom: Spacing.xl,
-  },
-  viewOriginalText: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.md,
-    color: Colors.primary,
-    marginLeft: Spacing.sm,
-    lineHeight: FontSize.md * 1.5,
   },
 });

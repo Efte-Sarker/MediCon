@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -22,11 +22,21 @@ import { useTranslation } from 'react-i18next';
 export default function UploadReportScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [selectedFile, setSelectedFile] = useState<{
     uri: string;
     type: string;
     name: string;
-  } | null>(null);
+  } | null>(() => {
+    if (params.uri && typeof params.uri === 'string') {
+      return {
+        uri: params.uri,
+        type: typeof params.type === 'string' ? params.type : 'image',
+        name: typeof params.name === 'string' ? params.name : 'upload',
+      };
+    }
+    return null;
+  });
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handlePickImage = async () => {
@@ -125,8 +135,7 @@ export default function UploadReportScreen() {
         </Text>
         <Text style={styles.processingSubtitle}>
           {t('upload.our_ai_is_scanning_the_documen') ||
-            `Our AI is scanning the document and extracting the clinical biomarkers. This may take a
-                          few seconds.`}
+            'Our AI is scanning the document and extracting the clinical biomarkers. This may take a few seconds.'}
         </Text>
       </SafeAreaView>
     );
@@ -139,11 +148,14 @@ export default function UploadReportScreen() {
     return (
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={handleDiscard} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('upload.review_document') || 'Review Document'}</Text>
-          <View style={{ width: 24 }} />
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={handleDiscard} style={styles.backButton}>
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+              {t('upload.review_document') || 'Review Document'}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.previewContainer}>
@@ -164,13 +176,11 @@ export default function UploadReportScreen() {
         <View style={styles.actionContainer}>
           <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handleDiscard}>
             <Text style={styles.secondaryButtonText}>
-              {t('upload.choose_different_file') || 'Choose Different File'}
+              {t('upload.choose_different_report') || 'Choose Different Report'}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, styles.primaryButton]} onPress={handleSubmit}>
-            <Text style={styles.primaryButtonText}>
-              {t('upload.submit_for_interpretation') || 'Submit for Interpretation'}
-            </Text>
+            <Text style={styles.primaryButtonText}>{t('upload.continue') || 'Continue'}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -183,18 +193,18 @@ export default function UploadReportScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <MaterialCommunityIcons name="close" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('upload.upload_report') || 'Upload Report'}</Text>
-        <View style={{ width: 24 }} />
+        <View style={styles.headerLeft}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <MaterialCommunityIcons name="close" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('upload.upload_report') || 'Upload Report'}</Text>
+        </View>
       </View>
 
       <View style={styles.selectionContainer}>
         <Text style={styles.instructions}>
           {t('upload.upload_a_lab_report_or_medical') ||
-            `Upload a lab report or medical document. Our AI will automatically extract the biomarkers
-                            and provide a plain-language summary.`}
+            'Upload a lab report or medical document. Our AI will automatically extract the biomarkers and provide a plain-language summary.'}
         </Text>
 
         <TouchableOpacity style={styles.optionCard} onPress={handlePickImage} activeOpacity={0.7}>
@@ -263,16 +273,22 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    paddingHorizontal: Spacing.base,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
   backButton: {
     padding: Spacing.xs,
-    marginLeft: -Spacing.xs,
   },
   headerTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,

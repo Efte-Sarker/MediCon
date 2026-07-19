@@ -113,6 +113,7 @@ export default function HospitalsScreen() {
                   { top: topPositions[index % 3] as any, left: leftPositions[index % 3] as any },
                 ]}
                 onPress={() => setSelectedHospital(hospital)}
+                activeOpacity={0.8}
               >
                 <View style={styles.markerContainer}>
                   <MaterialCommunityIcons

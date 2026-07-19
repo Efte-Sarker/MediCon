@@ -44,11 +44,11 @@ export default function ConsultationChatScreen() {
   useEffect(() => {
     const showSubscription = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      () => setKeyboardVisible(true)
+      () => setKeyboardVisible(true),
     );
     const hideSubscription = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => setKeyboardVisible(false)
+      () => setKeyboardVisible(false),
     );
 
     return () => {
@@ -169,7 +169,12 @@ export default function ConsultationChatScreen() {
           />
         </View>
 
-        <View style={[styles.inputWrapperContainer, { paddingBottom: isKeyboardVisible ? Spacing.md : insets.bottom + Spacing.md }]}>
+        <View
+          style={[
+            styles.inputWrapperContainer,
+            { paddingBottom: isKeyboardVisible ? Spacing.md : insets.bottom + Spacing.md },
+          ]}
+        >
           <View style={styles.inputWrapper}>
             <TextInput
               style={styles.textInput}

@@ -21,7 +21,7 @@ export const HospitalCard = ({
     <TouchableOpacity
       style={styles.card}
       onPress={onPress}
-      activeOpacity={0.7}
+      activeOpacity={0.9}
       accessibilityRole="button"
       accessibilityLabel={`View details for ${hospital.name}`}
     >

@@ -90,6 +90,9 @@ export interface Report {
   laboratory?: string;
   imageUrl?: string;
   fileUri?: string; // For newly uploaded documents/PDFs
+  fileType?: 'image' | 'multi_image' | 'pdf'; // Discriminates thumbnail rendering strategy
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  thumbnails?: any[]; // Local require() image sources for the card thumbnail grid
   biomarkers?: Biomarker[];
   aiSummary?: string;
 }

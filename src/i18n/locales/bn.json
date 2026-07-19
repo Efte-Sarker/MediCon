@@ -244,14 +244,16 @@
     "analyzing_report": "রিপোর্ট বিশ্লেষণ করা হচ্ছে...",
     "our_ai_is_scanning_the_documen": "আমাদের এআই ডকুমেন্ট স্ক্যান করছে এবং ক্লিনিকাল বায়োমার্কারগুলি বের করছে। এতে কয়েক সেকেন্ড সময় লাগতে পারে।",
     "review_document": "ডকুমেন্ট পর্যালোচনা করুন",
-    "choose_different_file": "ভিন্ন ফাইল চয়ন করুন",
-    "submit_for_interpretation": "ব্যাখ্যার জন্য জমা দিন",
+    "choose_different_file": "Choose Different Report",
+    "submit_for_interpretation": "Continue",
     "upload_report": "রিপোর্ট আপলোড করুন",
     "upload_a_lab_report_or_medical": "একটি ল্যাব রিপোর্ট বা মেডিকেল ডকুমেন্ট আপলোড করুন। আমাদের এআই স্বয়ংক্রিয়ভাবে বায়োমার্কারগুলি বের করবে এবং একটি সাধারণ-ভাষার সারাংশ প্রদান করবে।",
     "choose_from_gallery": "গ্যালারি থেকে চয়ন করুন",
     "upload_an_image_jpg_png": "একটি ছবি আপলোড করুন (JPG, PNG)",
     "upload_pdf_document": "PDF ডকুমেন্ট আপলোড করুন",
-    "browse_files_on_your_device": "আপনার ডিভাইসে ফাইল ব্রাউজ করুন"
+    "browse_files_on_your_device": "আপনার ডিভাইসে ফাইল ব্রাউজ করুন",
+    "choose_different_report": "Choose Different Report",
+    "continue": "Continue"
   },
   "theme": {
     "theme": "থিম"
