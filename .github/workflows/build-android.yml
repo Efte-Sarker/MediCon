@@ -64,13 +64,14 @@ jobs:
             -keypass medicon123 \
             -dname "CN=MediCon Demo, OU=Demo, O=MediCon, L=Dhaka, S=Dhaka, C=BD"
           
+          APK_PATH=$(find android/app/build/outputs/apk/release -maxdepth 1 -name "*.apk" | head -n 1)
           $ANDROID_HOME/build-tools/$(ls $ANDROID_HOME/build-tools/ | sort -V | tail -1)/apksigner sign \
             --ks medicon-demo.keystore \
             --ks-key-alias medicon \
             --ks-pass pass:medicon123 \
             --key-pass pass:medicon123 \
             --out android/app/build/outputs/apk/release/app-signed.apk \
-            android/app/build/outputs/apk/release/app-release-unsigned.apk
+            $APK_PATH
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
