@@ -46,7 +46,7 @@ jobs:
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon -x lint -x lintVitalAnalyzeRelease -x lintVitalRelease
+          ./gradlew assembleDebug --no-daemon -x lint -x lintDebug
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
           GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
@@ -55,5 +55,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: medicon-demo
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
           retention-days: 7
