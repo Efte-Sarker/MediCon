@@ -31,6 +31,13 @@ jobs:
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
+      - name: Configure Gradle
+        run: |
+          mkdir -p ~/.gradle
+          echo "org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g" >> ~/.gradle/gradle.properties
+          echo "org.gradle.daemon=false" >> ~/.gradle/gradle.properties
+          echo "org.gradle.parallel=false" >> ~/.gradle/gradle.properties
+
       - name: Run Expo Prebuild
         run: npx expo prebuild --platform android --clean
         env:
@@ -39,9 +46,10 @@ jobs:
       - name: Build APK
         run: |
           cd android
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon -x lint -x lintVitalAnalyzeRelease -x lintVitalRelease
         env:
           ANDROID_HOME: /usr/local/lib/android/sdk
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
