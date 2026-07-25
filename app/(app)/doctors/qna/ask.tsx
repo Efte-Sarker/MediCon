@@ -27,6 +27,7 @@ const SYMPTOM_AREAS = [
   { id: '7', label: 'General & Fever', department: 'General Medicine' },
   { id: '8', label: "Women's Health", department: 'Gynecology' },
   { id: '9', label: 'Other', department: 'General Medicine' },
+  { id: '10', label: 'Brain & Nerves', department: 'Neurology' },
 ];
 
 export default function AskQuestionScreen() {

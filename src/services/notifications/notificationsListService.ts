@@ -21,7 +21,7 @@ const mockNotifications: SystemNotification[] = [
     type: 'QNA_ANSWER',
     isRead: false,
     createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-    actionUrl: '/(app)/doctors/qna?openQuestionId=q-1',
+    actionUrl: '/(app)/(tabs)/ask-doctor?openQuestionId=q-1',
   },
   {
     id: 'n-3',

@@ -46,20 +46,25 @@ export default function QnaIndexScreen() {
       setError(null);
       const data = await qnaService.getPatientQuestions(userId);
       setQuestions(data);
-
-      if (openQuestionId) {
-        const targetQ = data.find((q) => q.id === openQuestionId);
-        if (targetQ) {
-          setSelectedQuestion(targetQ);
-          setSheetVisible(true);
-        }
-      }
     } catch (err) {
       setError(createAppError('NETWORK_ERROR', String(err)));
     } finally {
       setLoading(false);
     }
   }, [userId]);
+
+  // Handle auto-opening specific question from notification
+  React.useEffect(() => {
+    if (openQuestionId && questions.length > 0) {
+      const targetQ = questions.find((q) => q.id === openQuestionId);
+      if (targetQ) {
+        setSelectedQuestion(targetQ);
+        setSheetVisible(true);
+        // Clear the param so it doesn't re-trigger on subsequent tab visits
+        router.setParams({ openQuestionId: '' });
+      }
+    }
+  }, [openQuestionId, questions, router]);
 
   useFocusEffect(
     useCallback(() => {
