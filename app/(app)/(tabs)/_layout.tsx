@@ -1,11 +1,15 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { TouchableOpacity } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { Colors, FontSize, FontFamily } from '../../../src/theme';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { TouchableOpacity } from 'react-native';
+import { useAuthStore } from '../../../src/store/authStore';
 
 export default function TabsLayout() {
+  const role = useAuthStore((s) => s.role);
+  const isDoctor = role === 'doctor';
+
   return (
     <Tabs
       screenOptions={{
@@ -38,10 +42,13 @@ export default function TabsLayout() {
           ),
         }}
       />
+
+      {/* Patient Tabs */}
       <Tabs.Screen
         name="doctors"
         options={{
           title: 'Doctors',
+          href: isDoctor ? null : undefined,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="stethoscope" size={size} color={color} />
           ),
@@ -51,6 +58,7 @@ export default function TabsLayout() {
         name="prescriptions"
         options={{
           title: 'Prescription',
+          href: isDoctor ? null : undefined,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="clipboard-pulse-outline" size={size} color={color} />
           ),
@@ -60,8 +68,41 @@ export default function TabsLayout() {
         name="ask-doctor"
         options={{
           title: 'Ask Doctor',
+          href: isDoctor ? null : undefined,
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="chat-question-outline" size={size} color={color} />
+          ),
+        }}
+      />
+
+      {/* Doctor Tabs */}
+      <Tabs.Screen
+        name="schedule"
+        options={{
+          title: 'Schedule',
+          href: !isDoctor ? null : undefined,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="calendar-clock-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="patients"
+        options={{
+          title: 'Patients',
+          href: !isDoctor ? null : undefined,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account-group-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="qna-inbox"
+        options={{
+          title: 'Inbox',
+          href: !isDoctor ? null : undefined,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="inbox-outline" size={size} color={color} />
           ),
         }}
       />

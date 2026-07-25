@@ -271,45 +271,11 @@ export const EMERGENCY_PROTOCOLS: Record<string, EmergencyProtocol> = {
       ],
     },
   },
-  anaphylaxis: {
-    id: 'anaphylaxis',
-    title: 'Anaphylaxis (Severe Allergy)',
-    description: 'Use for severe allergic reactions causing difficulty breathing or swelling.',
-    iconName: 'alert-triangle',
-    callEmergencyServices: true,
-    color: Colors.danger,
-    steps: {
-      adult: [
-        {
-          id: '1',
-          instruction:
-            'Recognize the signs: difficulty breathing, swelling of the face/throat, severe hives, or dizziness.',
-        },
-        { id: '2', instruction: 'Call emergency services immediately.' },
-        {
-          id: '3',
-          instruction:
-            'Ask if the person has an epinephrine auto-injector (EpiPen). If they do, assist them in using it.',
-        },
-        {
-          id: '4',
-          instruction:
-            'To use the auto-injector: remove the safety cap, firmly push the tip against the outer thigh (can be done through clothing), and hold it there for the specified time (usually 3 to 10 seconds).',
-        },
-        { id: '5', instruction: 'Have the person sit or lie down in a comfortable position.' },
-        {
-          id: '6',
-          instruction:
-            'If symptoms do not improve after 5 to 10 minutes, and emergency services have not arrived, a second dose of epinephrine may be given if available.',
-        },
-      ],
-    },
-  },
+
   'heat-stroke': {
     id: 'heat-stroke',
     title: 'Heat Stroke',
-    description:
-      'Use when a person has a very high body temperature and altered mental state. This is a life-threatening emergency.',
+    description: 'Use when a person has a very high body temperature and altered mental state.',
     iconName: 'sun',
     callEmergencyServices: true,
     color: Colors.danger,

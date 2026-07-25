@@ -13,9 +13,13 @@ export default function SettingsLayout() {
         headerTintColor: Colors.primary,
         headerShadowVisible: false,
         headerBackVisible: true,
+        headerShown: false,
       }}
     >
-      <Stack.Screen name="index" options={{ title: t('settings.title') || 'Settings' }} />
+      <Stack.Screen
+        name="index"
+        options={{ headerShown: false, title: t('settings.title') || 'Settings' }}
+      />
       <Stack.Screen name="profile" options={{ title: t('settings.profile') || 'Profile' }} />
       <Stack.Screen name="language" options={{ title: t('settings.language') || 'Language' }} />
       <Stack.Screen

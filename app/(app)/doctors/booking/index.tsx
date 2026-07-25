@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../../src/theme';
 import { appointmentsService, TimeSlot } from '../../../../src/services/api/appointmentsService';
@@ -82,61 +82,67 @@ export default function BookingScreen() {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!doctor) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>
             {t('booking.doctor_not_found') || 'Doctor not found'}
           </Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {t('booking.book_appointment') || 'Book Appointment'}
-        </Text>
+    <View style={styles.container}>
+      {/* Header Wrapper */}
+      <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>
+            {t('booking.book_appointment') || 'Book Appointment'}
+          </Text>
+        </View>
       </View>
 
       <ScrollView
@@ -237,7 +243,7 @@ export default function BookingScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -246,13 +252,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  headerWrapper: {
+    backgroundColor: Colors.surface,
+    marginBottom: Spacing.lg,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    height: 60,
     gap: Spacing.xs,
   },
   backButton: {
@@ -280,7 +290,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
   },
   section: {
     marginBottom: Spacing.xl,

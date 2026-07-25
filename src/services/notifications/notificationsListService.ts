@@ -11,7 +11,7 @@ const mockNotifications: SystemNotification[] = [
     type: 'REMINDER',
     isRead: false,
     createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
-    actionUrl: '/(app)/doctors/booking',
+    actionUrl: '/(app)/(tabs)',
   },
   {
     id: 'n-2',
@@ -21,7 +21,7 @@ const mockNotifications: SystemNotification[] = [
     type: 'QNA_ANSWER',
     isRead: false,
     createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-    actionUrl: '/(app)/doctors/qna',
+    actionUrl: '/(app)/doctors/qna?openQuestionId=q-1',
   },
   {
     id: 'n-3',
@@ -31,7 +31,17 @@ const mockNotifications: SystemNotification[] = [
     type: 'SYSTEM',
     isRead: true,
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-    actionUrl: '/(app)/prescriptions',
+    actionUrl: '/(app)/(tabs)/prescriptions',
+  },
+  {
+    id: 'n-5',
+    userId: 'patient-1',
+    title: 'Medicine Time',
+    message: 'Reminder: Take your Paracetamol 500mg now.',
+    type: 'REMINDER',
+    isRead: true,
+    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 2 days ago
+    actionUrl: '/(app)/(tabs)/prescriptions?openActivePrescription=true',
   },
 ];
 
@@ -40,9 +50,10 @@ class NotificationsListService {
    * Fetch all notifications for a specific user.
    */
   async getNotifications(userId: string): Promise<SystemNotification[]> {
-    const data = mockNotifications
-      .filter((n) => n.userId === userId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // For mock purposes, return all notifications ignoring the specific userId filter
+    const data = [...mockNotifications].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
     return mockFetch(data);
   }

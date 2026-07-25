@@ -373,7 +373,7 @@ export const ActivePrescriptionView = ({
 
       <ScrollView
         style={styles.container}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 80 }]}
         showsVerticalScrollIndicator={false}
       >
         {periodGroups.map(renderPeriodBlock)}
@@ -381,7 +381,7 @@ export const ActivePrescriptionView = ({
 
       {/* Global Change Schedules Button (Fixed at Bottom) */}
       {periodGroups.length > 0 && (
-        <View style={[styles.bottomFixedContainer, { bottom: Spacing.base + insets.bottom }]}>
+        <View style={styles.bottomFixedContainer}>
           <TouchableOpacity
             style={styles.changeSchedulesBtn}
             onPress={() => setEditModalVisible(true)}
@@ -555,6 +555,7 @@ const styles = StyleSheet.create({
   // Fixed Bottom Button
   bottomFixedContainer: {
     position: 'absolute',
+    bottom: 0,
     left: 0,
     right: 0,
   },

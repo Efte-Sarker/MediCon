@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Shadows, Layout } from '@theme';
+import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '@theme';
 import {
   EMERGENCY_PROTOCOLS,
   getProtocolStepsForAge,
@@ -33,10 +33,6 @@ export default function PediatricProtocolScreen() {
   const hasSpecificVariant =
     ageBand === 'child' ? Boolean(protocol.steps.child) : Boolean(protocol.steps.infant);
 
-  const handleCall911 = () => {
-    Linking.openURL('tel:911').catch(() => {});
-  };
-
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
@@ -49,7 +45,7 @@ export default function PediatricProtocolScreen() {
           <MaterialCommunityIcons name="arrow-left" color={Colors.textPrimary} size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} accessibilityRole="header">
-          {protocol.title}
+          {t('pediatric.treating_child_infant', 'Treating Child or Infant')}
         </Text>
       </View>
 
@@ -77,22 +73,6 @@ export default function PediatricProtocolScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <Text style={styles.description}>{protocol.description}</Text>
-
-        {protocol.callEmergencyServices && (
-          <TouchableOpacity
-            style={styles.callButton}
-            onPress={handleCall911}
-            accessibilityRole="button"
-            accessibilityLabel="Call 911 immediately"
-          >
-            <MaterialCommunityIcons name="phone" color={Colors.surface} size={20} />
-            <Text style={styles.callButtonText}>
-              {t('[protocol].call_911_now') || 'Call 911 Now'}
-            </Text>
-          </TouchableOpacity>
-        )}
-
         {!hasSpecificVariant && (
           <View style={styles.infoBanner}>
             <MaterialCommunityIcons name="information" color={Colors.secondary} size={20} />
@@ -171,29 +151,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: Spacing.base,
     paddingBottom: Layout.tabBarHeight + Spacing.xl,
-  },
-  description: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.md,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.xl,
-    lineHeight: FontSize.md * 1.5,
-  },
-  callButton: {
-    flexDirection: 'row',
-    backgroundColor: Colors.danger,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.base,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.xl,
-    ...Shadows.md,
-  },
-  callButtonText: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.md,
-    color: Colors.surface,
   },
   infoBanner: {
     flexDirection: 'row',

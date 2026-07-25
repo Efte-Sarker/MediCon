@@ -1,13 +1,16 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, Modal, TouchableWithoutFeedback } from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Shadows } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Question } from '../../types/medical.types';
 import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../store/authStore';
 
 interface QuestionCardProps {
   question: Question;
-  isDoctorView?: boolean;
+  onPress: (question: Question) => void;
+  onEdit: (question: Question) => void;
+  onDelete: (question: Question) => void;
 }
 
 const getTimeAgo = (dateString: string) => {
@@ -22,47 +25,96 @@ const getTimeAgo = (dateString: string) => {
 
 export const QuestionCard = ({
   question,
-  isDoctorView = false,
+  onPress,
+  onEdit,
+  onDelete,
 }: QuestionCardProps): React.JSX.Element => {
   const { t } = useTranslation();
-  const isAnswered = question.answers.length > 0;
+  const userId = useAuthStore((s) => s.userId) || 'patient-1';
+  const isOwner = question.patientId === userId;
+  const answerCount = question.answers.length;
   const timeAgo = getTimeAgo(question.createdAt);
 
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [menuCoords, setMenuCoords] = useState({ x: 0, y: 0 });
+
+  const handleMenuPress = (event: any) => {
+    // Measure relative to screen for the Modal overlay
+    const { pageX, pageY } = event.nativeEvent;
+    setMenuCoords({ x: pageX - 120, y: pageY + 20 });
+    setMenuVisible(true);
+  };
+
+  const handleEdit = () => {
+    setMenuVisible(false);
+    onEdit(question);
+  };
+
+  const handleDelete = () => {
+    setMenuVisible(false);
+    onDelete(question);
+  };
+
   return (
-    <View style={styles.card}>
+    <>
+      <Pressable
+      style={({ pressed }) => [styles.card, pressed && { opacity: 0.7 }]}
+      onPress={() => onPress(question)}
+    >
+      {/* Row 1: Time, Badge, Menu */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <View style={[styles.badge, isAnswered ? styles.answeredBadge : styles.unansweredBadge]}>
-            <Text
-              style={[styles.badgeText, isAnswered ? styles.answeredText : styles.unansweredText]}
-            >
-              {isAnswered ? 'Answered' : 'Pending'}
-            </Text>
+          <Text style={styles.timestamp}>{timeAgo}</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{question.department}</Text>
           </View>
-          <Text style={styles.department}>{question.department}</Text>
+          {question.isAnonymous && (
+            <View style={[styles.badge, { backgroundColor: Colors.textTertiary + '20' }]}>
+              <Text style={[styles.badgeText, { color: Colors.textSecondary }]}>Anonymous</Text>
+            </View>
+          )}
         </View>
-        <Text style={styles.timestamp}>{timeAgo}</Text>
+        <TouchableOpacity
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPress={handleMenuPress}
+        >
+          <MaterialCommunityIcons name="dots-horizontal" size={20} color={Colors.textSecondary} style={{ opacity: 0.5 }} />
+        </TouchableOpacity>
       </View>
 
-      <Text style={styles.content}>{question.content}</Text>
+      {/* Row 2: Question Content */}
+      <Text style={styles.content}>
+        {question.content}
+      </Text>
 
-      {isAnswered && (
-        <View style={styles.answersContainer}>
-          {question.answers.map((answer, index) => (
-            <View key={answer.id} style={[styles.answerItem, index > 0 && styles.answerDivider]}>
-              <View style={styles.answerHeader}>
-                <MaterialCommunityIcons name="doctor" size={16} color={Colors.primary} />
-                <Text style={styles.doctorName}>
-                  {t('questioncard.doctor_response') || 'Doctor Response'}
-                </Text>
-              </View>
-              <Text style={styles.answerContent}>{answer.content}</Text>
-              <Text style={styles.answerTime}>{getTimeAgo(answer.createdAt)}</Text>
-            </View>
-          ))}
+      {/* Row 3: Response count */}
+      {answerCount > 0 && (
+        <View style={styles.footer}>
+          <Text style={styles.responseCount}>
+            {answerCount} {answerCount === 1 ? 'doctor response' : 'doctors responses'}
+          </Text>
         </View>
       )}
-    </View>
+    </Pressable>
+
+      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+          <View style={styles.menuOverlay}>
+            <View style={[styles.menuContainer, { top: menuCoords.y, left: menuCoords.x }]}>
+              <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
+                <MaterialCommunityIcons name="pencil-outline" size={20} color={Colors.textPrimary} />
+                <Text style={styles.menuItemText}>{t('common.edit', 'Edit')}</Text>
+              </TouchableOpacity>
+              <View style={styles.menuDivider} />
+              <TouchableOpacity style={styles.menuItem} onPress={handleDelete}>
+                <MaterialCommunityIcons name="trash-can-outline" size={20} color={Colors.danger} />
+                <Text style={[styles.menuItemText, { color: Colors.danger }]}>{t('common.delete', 'Delete')}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </>
   );
 };
 
@@ -71,7 +123,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
-    ...Shadows.sm,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    // No shadows as requested!
   },
   header: {
     flexDirection: 'row',
@@ -84,78 +138,63 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.sm,
   },
-  badge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: 2,
-    borderRadius: BorderRadius.full,
-  },
-  answeredBadge: {
-    backgroundColor: Colors.success + '20',
-  },
-  unansweredBadge: {
-    backgroundColor: Colors.warning + '20',
-  },
-  badgeText: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.xs,
-  },
-  answeredText: {
-    color: Colors.success,
-  },
-  unansweredText: {
-    color: Colors.warning,
-  },
-  department: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-  },
   timestamp: {
     fontFamily: FontFamily.regular,
     fontSize: FontSize.xs,
     color: Colors.textTertiary,
   },
+  badge: {
+    backgroundColor: Colors.primary + '15',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+  },
+  badgeText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.xs,
+    color: Colors.primary,
+  },
   content: {
-    fontFamily: FontFamily.regular,
+    fontFamily: FontFamily.medium,
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     lineHeight: FontSize.base * 1.5,
   },
-  answersContainer: {
-    marginTop: Spacing.md,
-    paddingTop: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.tertiary,
+  footer: {
+    marginTop: Spacing.sm,
   },
-  answerItem: {
-    gap: Spacing.xs,
-  },
-  answerDivider: {
-    marginTop: Spacing.md,
-    paddingTop: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.tertiary,
-  },
-  answerHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.xs,
-  },
-  doctorName: {
-    fontFamily: FontFamily.semiBold,
+  responseCount: {
+    fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.primary,
   },
-  answerContent: {
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    lineHeight: FontSize.sm * 1.5,
+  menuOverlay: {
+    flex: 1,
   },
-  answerTime: {
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-    lineHeight: FontSize.xs * 1.5,
+  menuContainer: {
+    position: 'absolute',
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    width: 140,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    paddingVertical: Spacing.xs,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    gap: Spacing.sm,
+  },
+  menuItemText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    color: Colors.textPrimary,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: Colors.border,
+    marginHorizontal: Spacing.xs,
   },
 });

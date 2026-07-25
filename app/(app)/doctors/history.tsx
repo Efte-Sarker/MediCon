@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontFamily, FontSize } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 export default function ConsultationHistoryScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [history, setHistory] = useState<ConsultationHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,18 +55,20 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Consultation History</Text>
+    <View style={styles.container}>
+      {/* Header Wrapper */}
+      <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Consultation History</Text>
+        </View>
       </View>
 
       {loading ? (
@@ -95,11 +98,14 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
         <FlashList
           data={history}
           renderItem={renderItem}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: Math.max(insets.bottom, Spacing.md) },
+          ]}
           showsVerticalScrollIndicator={false}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -109,13 +115,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  headerWrapper: {
+    backgroundColor: Colors.surface,
+    marginBottom: Spacing.lg,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    height: 60,
     gap: Spacing.xs,
   },
   backButton: {

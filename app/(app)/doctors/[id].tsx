@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { doctorsService, Doctor, DoctorExperienceEntry } from '@services/api/doctorsService';
@@ -61,47 +61,51 @@ export default function DoctorDetailScreen(): React.JSX.Element {
   // ── Loading state ─────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <View style={styles.headerRight} />
+      <View style={styles.container}>
+        <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Profile</Text>
+            <View style={styles.headerRight} />
+          </View>
         </View>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   // ── Error / not-found state ───────────────────────────────────────────────
   if (!doctor) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profile</Text>
-          <View style={styles.headerRight} />
+      <View style={styles.container}>
+        <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Profile</Text>
+            <View style={styles.headerRight} />
+          </View>
         </View>
         <View style={styles.centerContainer}>
           <MaterialCommunityIcons name="alert-circle-outline" size={48} color={Colors.danger} />
           <Text style={styles.errorText}>Doctor not found</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -113,32 +117,34 @@ export default function DoctorDetailScreen(): React.JSX.Element {
     doctor.image ?? require('../../../src/assets/images/doctors/doctorPlaceholder1.png');
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* ── App Bar ──────────────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      {/* ── App Bar Wrapper ──────────────────────────────────────────────────────── */}
+      <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={styles.headerTitle}>Profile</Text>
 
-        <TouchableOpacity
-          style={styles.shareButton}
-          onPress={handleShare}
-          accessibilityRole="button"
-          accessibilityLabel="Share doctor profile"
-        >
-          <MaterialCommunityIcons
-            name="share-variant-outline"
-            size={22}
-            color={Colors.textPrimary}
-          />
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.shareButton}
+            onPress={handleShare}
+            accessibilityRole="button"
+            accessibilityLabel="Share doctor profile"
+          >
+            <MaterialCommunityIcons
+              name="share-variant-outline"
+              size={22}
+              color={Colors.textPrimary}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* ── Profile Card — fixed (does not scroll) ───────────────────── */}
@@ -263,7 +269,7 @@ export default function DoctorDetailScreen(): React.JSX.Element {
           <Text style={styles.btnPrimaryText}>See Doctor Now</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -436,6 +442,9 @@ const styles = StyleSheet.create({
   },
 
   // ── App Bar ──────────────────────────────────────────────────────────────
+  headerWrapper: {
+    backgroundColor: Colors.surface,
+  },
   // paddingLeft: 5 mirrors back-button's visual left offset.
   // paddingRight: 5 mirrors that exactly so share icon sits symmetrically.
   header: {
@@ -444,7 +453,6 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
     gap: Spacing.xs,
   },
   backButton: {
@@ -495,6 +503,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: Colors.surface,
     padding: Spacing.base,
+    paddingTop: 0,
     gap: Spacing.base,
     // No shadow — removed per spec
   },

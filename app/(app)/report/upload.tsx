@@ -12,7 +12,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { reportsService } from '../../../src/services/api/reportsService';
@@ -23,6 +23,7 @@ export default function UploadReportScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams();
+  const insets = useSafeAreaInsets();
   const [selectedFile, setSelectedFile] = useState<{
     uri: string;
     type: string;
@@ -146,9 +147,15 @@ export default function UploadReportScreen() {
   // ----------------------------------------------------
   if (selectedFile) {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
+      <View style={styles.container}>
+        <View
+          style={{
+            backgroundColor: Colors.surface,
+            paddingTop: insets.top,
+            marginBottom: Spacing.lg,
+          }}
+        >
+          <View style={styles.header}>
             <TouchableOpacity onPress={handleDiscard} style={styles.backButton}>
               <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
@@ -173,7 +180,7 @@ export default function UploadReportScreen() {
           )}
         </View>
 
-        <View style={styles.actionContainer}>
+        <View style={[styles.actionContainer, { paddingBottom: Spacing.xl + insets.bottom }]}>
           <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={handleDiscard}>
             <Text style={styles.secondaryButtonText}>
               {t('upload.choose_different_report') || 'Choose Different Report'}
@@ -183,7 +190,7 @@ export default function UploadReportScreen() {
             <Text style={styles.primaryButtonText}>{t('upload.continue') || 'Continue'}</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -191,9 +198,15 @@ export default function UploadReportScreen() {
   // Render Selection screen
   // ----------------------------------------------------
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
+    <View style={styles.container}>
+      <View
+        style={{
+          backgroundColor: Colors.surface,
+          paddingTop: insets.top,
+          marginBottom: Spacing.lg,
+        }}
+      >
+        <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
             <MaterialCommunityIcons name="close" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
@@ -201,7 +214,7 @@ export default function UploadReportScreen() {
         </View>
       </View>
 
-      <View style={styles.selectionContainer}>
+      <View style={[styles.selectionContainer, { paddingBottom: Spacing.xl + insets.bottom }]}>
         <Text style={styles.instructions}>
           {t('upload.upload_a_lab_report_or_medical') ||
             'Upload a lab report or medical document. Our AI will automatically extract the biomarkers and provide a plain-language summary.'}
@@ -241,7 +254,7 @@ export default function UploadReportScreen() {
           <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.textTertiary} />
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -273,19 +286,18 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.base,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
+    backgroundColor: Colors.surface,
+    gap: Spacing.xs,
   },
   backButton: {
-    padding: Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     flex: 1,

@@ -16,6 +16,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { hospitalsService } from '../../../src/services/api/hospitalsService';
 import { Hospital } from '../../../src/types/medical.types';
 import { HospitalCard } from '../../../src/components/cards/HospitalCard';
+import { SymptomSearchBar } from '../../../src/components/forms/SymptomSearchBar';
 import { useTranslation } from 'react-i18next';
 
 const USE_MOCK_MAP = true; // Temporary flag for Phase 1 without a real API key
@@ -171,14 +172,23 @@ export default function HospitalsScreen() {
     <View style={styles.container}>
       {renderMap()}
 
-      <TouchableOpacity
-        style={[styles.backButton, { top: Math.max(insets.top, Spacing.base) + Spacing.sm }]}
-        onPress={() => router.back()}
-        accessibilityRole="button"
-        accessibilityLabel="Go back"
-      >
-        <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-      </TouchableOpacity>
+      <View style={[styles.floatingHeader, { top: Math.max(insets.top, Spacing.base) + Spacing.sm }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+        </TouchableOpacity>
+        
+        <View style={styles.searchBarWrapper}>
+          <SymptomSearchBar
+            interactive
+            placeholder="Search hospitals"
+          />
+        </View>
+      </View>
 
       {/* Bottom Sheet Overlay for Selected Hospital */}
       {selectedHospital && (
@@ -254,29 +264,48 @@ const styles = StyleSheet.create({
     padding: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 3,
   },
   mockMarker: {
     position: 'absolute',
   },
   bottomOverlay: {
     position: 'absolute',
-    bottom: Spacing.base,
-    left: Spacing.base,
-    right: Spacing.base,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: Spacing.md,
   },
-  backButton: {
+  floatingHeader: {
     position: 'absolute',
     left: Spacing.base,
-    backgroundColor: Colors.surface,
-    padding: Spacing.sm,
-    borderRadius: 24,
+    right: Spacing.base,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.base,
+    zIndex: 10,
+  },
+  searchBarWrapper: {
+    flex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 4,
+    elevation: 3,
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
+    backgroundColor: Colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
 });

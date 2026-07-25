@@ -233,15 +233,15 @@ export default function PrescriptionDetailsScreen() {
 
   if (loading || !prescription) {
     return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+      <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={styles.loadingContainer} edges={['top']}>
+      <View style={styles.loadingContainer}>
         <ErrorState
           message={error.message}
           onRetry={() => {
@@ -250,7 +250,7 @@ export default function PrescriptionDetailsScreen() {
             router.replace(`/(app)/prescriptions/${id}`);
           }}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -277,18 +277,26 @@ export default function PrescriptionDetailsScreen() {
   const hasOriginal = Boolean(prescription.imageUrl);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Prescription Details</Text>
+      <View
+        style={{
+          backgroundColor: Colors.surface,
+          paddingTop: insets.top,
+          marginBottom: Spacing.lg,
+        }}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Prescription Details</Text>
+        </View>
       </View>
 
       <ScrollView
@@ -410,7 +418,7 @@ export default function PrescriptionDetailsScreen() {
           )}
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -434,8 +442,9 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
     gap: Spacing.xs,
+    height: 60,
   },
   backButton: {
     width: 44,

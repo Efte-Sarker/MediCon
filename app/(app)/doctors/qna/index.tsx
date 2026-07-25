@@ -1,41 +1,44 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useCallback } from 'react';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, TouchableWithoutFeedback, ScrollView, Image, Dimensions } from 'react-native';
+import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '@theme';
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius, Shadows } from '@theme';
 import { useAuthStore } from '../../../../src/store/authStore';
 import { qnaService } from '../../../../src/services/api/qnaService';
-import { doctorsService } from '../../../../src/services/api/doctorsService';
 import { QuestionCard } from '../../../../src/components/medical/QuestionCard';
-import { AnswerComposer } from '../../../../src/components/medical/AnswerComposer';
-import { Question } from '../../../../src/types/medical.types';
+import { Question, QuestionAnswer } from '../../../../src/types/medical.types';
 import { createAppError, AppError } from '../../../../src/utils/errors';
 import { ErrorState } from '../../../../src/components/ui/ErrorState';
+import { DraggableBottomSheet } from '../../../../src/components/ui/DraggableBottomSheet';
 import { useTranslation } from 'react-i18next';
 
+const getTimeAgo = (dateString: string) => {
+  const diff = Date.now() - new Date(dateString).getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days > 0) return `${days}d ago`;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours > 0) return `${hours}h ago`;
+  const minutes = Math.floor(diff / (1000 * 60));
+  return `${minutes}m ago`;
+};
+
 export default function QnaIndexScreen() {
-  const role = useAuthStore((s) => s.role);
-
-  if (role === 'doctor') {
-    return <DoctorInboxScreen />;
-  }
-
-  // Enforces DoD: Patient session cannot navigate into Doctor inbox
-  return <PatientQnAScreen />;
-}
-
-// ------------------------------------------------------------------
-// PATIENT VIEW
-// ------------------------------------------------------------------
-function PatientQnAScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const userId = useAuthStore((s) => s.userId) || 'patient-1';
+  
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AppError | null>(null);
+  const { openQuestionId } = useLocalSearchParams<{ openQuestionId?: string }>();
+
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [isQuestionExpanded, setIsQuestionExpanded] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -43,6 +46,14 @@ function PatientQnAScreen() {
       setError(null);
       const data = await qnaService.getPatientQuestions(userId);
       setQuestions(data);
+
+      if (openQuestionId) {
+        const targetQ = data.find((q) => q.id === openQuestionId);
+        if (targetQ) {
+          setSelectedQuestion(targetQ);
+          setSheetVisible(true);
+        }
+      }
     } catch (err) {
       setError(createAppError('NETWORK_ERROR', String(err)));
     } finally {
@@ -55,6 +66,26 @@ function PatientQnAScreen() {
       loadData();
     }, [loadData]),
   );
+
+  const handleCardPress = (question: Question) => {
+    setSelectedQuestion(question);
+    setIsQuestionExpanded(false); // Reset expansion state for new questions
+    setShowReadMore(false); // Reset read more visibility
+    setSheetVisible(true);
+  };
+
+  const handleEdit = (question: Question) => {
+    router.push(`/(app)/doctors/qna/ask?editId=${question.id}`);
+  };
+
+  const handleDelete = async (question: Question) => {
+    try {
+      await qnaService.deleteQuestion(question.id, userId);
+      loadData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -87,155 +118,118 @@ function PatientQnAScreen() {
             data={questions}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
+            ItemSeparatorComponent={() => <View style={{ height: Spacing.sm }} />}
             ListEmptyComponent={() => (
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="forum-outline" size={64} color="#CBD5E1" />
+                <MaterialCommunityIcons
+                  name="forum-outline"
+                  size={64}
+                  color={Colors.textTertiary}
+                />
                 <Text style={styles.emptyText}>
                   {t('qna.you_havent_asked_any_questions') ||
                     "You haven't asked any questions yet."}
                 </Text>
               </View>
             )}
-            renderItem={({ item }) => <QuestionCard question={item} />}
+            renderItem={({ item }) => (
+              <QuestionCard
+                question={item}
+                onPress={handleCardPress}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            )}
           />
         </View>
       )}
 
-      {/* Fixed Action Button */}
-      <View style={[styles.bottomFixedContainer, { bottom: Spacing.base }]}>
-        <TouchableOpacity
-          style={styles.standardButton}
-          onPress={() => router.push('/(app)/doctors/qna/ask')}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="Ask a new question"
+      {/* Doctor Responses Bottom Sheet */}
+      {selectedQuestion && (
+        <DraggableBottomSheet
+          visible={sheetVisible}
+          onClose={() => setSheetVisible(false)}
+          title="Doctor Responses"
+          height={Dimensions.get('window').height * 0.7}
         >
-          <Text style={styles.standardButtonText}>Ask Your Question</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-}
+          <View style={styles.sheetQuestionHeader}>
+            <Text style={styles.sheetTime}>{getTimeAgo(selectedQuestion.createdAt)}</Text>
+            
+            {/* Hidden Text for precise line measurement */}
+            <Text
+              style={[styles.sheetQuestionText, { position: 'absolute', opacity: 0, zIndex: -1 }]}
+              onTextLayout={(e) => {
+                setShowReadMore(e.nativeEvent.lines.length > 2);
+              }}
+            >
+              {selectedQuestion.content}
+            </Text>
 
-// ------------------------------------------------------------------
-// DOCTOR INBOX VIEW
-// ------------------------------------------------------------------
-function DoctorInboxScreen() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const userId = useAuthStore((s) => s.userId) || 'doctor-1'; // fallback to mock doctor
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<AppError | null>(null);
-  const [department, setDepartment] = useState<string>('');
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
-
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Fetch doctor details to get their department
-      const doc = await doctorsService.getDoctorDetails(userId);
-      if (doc) {
-        setDepartment(doc.department);
-        const data = await qnaService.getDoctorInbox(doc.department);
-        setQuestions(data);
-      } else {
-        throw new Error('Doctor not found');
-      }
-    } catch (err) {
-      setError(createAppError('NETWORK_ERROR', String(err)));
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData();
-  }, [loadData]);
-
-  const handleAnswer = async (questionId: string, content: string) => {
-    try {
-      setSubmittingId(questionId);
-      const newAnswer = await qnaService.answerQuestion(questionId, userId, content);
-
-      // Optimistically update the list
-      setQuestions((prev) =>
-        prev.map((q) => {
-          if (q.id === questionId) {
-            return { ...q, answers: [...q.answers, newAnswer] };
-          }
-          return q;
-        }),
-      );
-    } catch (err) {
-      const e = createAppError('NETWORK_ERROR', String(err));
-      // could use Alert.alert here, but simple alert is fine
-      alert(e.message);
-    } finally {
-      setSubmittingId(null);
-    }
-  };
-
-  return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={styles.headerTitle}>{t('qna.department_inbox') || 'Department Inbox'}</Text>
-          {department ? <Text style={styles.headerSubtitle}>{department}</Text> : null}
-        </View>
-        <View style={styles.headerRight} />
-      </View>
-
-      {loading && !error ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      ) : error ? (
-        <View style={styles.centerContainer}>
-          <ErrorState message={error.message} onRetry={loadData} />
-        </View>
-      ) : (
-        <View style={styles.listContainer}>
-          <FlashList
-            data={questions}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={{ height: Spacing.xl }} />}
-            ListEmptyComponent={() => (
-              <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons
-                  name="inbox-outline"
-                  size={48}
-                  color={Colors.textTertiary}
-                />
-                <Text style={styles.emptyText}>
-                  {t(
-                    'qna.no_questions_in_your_departmen',
-                    'No questions in your department inbox.',
-                  )}
-                </Text>
-              </View>
+            <Text 
+              style={styles.sheetQuestionText} 
+              numberOfLines={isQuestionExpanded ? undefined : 2}
+            >
+              {selectedQuestion.content}
+            </Text>
+            {showReadMore && (
+              <TouchableOpacity onPress={() => setIsQuestionExpanded(!isQuestionExpanded)} style={{ marginTop: Spacing.xs }}>
+                <Text style={styles.readMoreText}>{isQuestionExpanded ? 'Read less' : 'Read more'}</Text>
+              </TouchableOpacity>
             )}
-            renderItem={({ item }) => (
-              <View style={styles.questionItemWrapper}>
-                <QuestionCard question={item} isDoctorView />
-                {item.answers.length === 0 && (
-                  <View style={styles.composerWrapper}>
-                    <AnswerComposer
-                      loading={submittingId === item.id}
-                      onSubmit={(content) => handleAnswer(item.id, content)}
-                    />
+          </View>
+          {selectedQuestion.answers.length > 0 ? (
+            <ScrollView style={styles.sheetScroll} showsVerticalScrollIndicator={false}>
+              <View style={styles.responsesList}>
+                {selectedQuestion.answers.map((answer) => (
+                  <View key={answer.id} style={styles.responseCard}>
+                    <TouchableOpacity
+                      style={styles.doctorHeader}
+                      onPress={() => {
+                        setSheetVisible(false);
+                        router.push(`/(app)/doctors/${answer.doctorId}`);
+                      }}
+                    >
+                      <Image
+                        source={require('../../../../src/assets/images/doctors/doctorPlaceholder1.png')} // fallback
+                        style={styles.doctorImage}
+                      />
+                      <View style={styles.doctorInfo}>
+                        <Text style={styles.doctorName}>Dr. {answer.doctorId}</Text>
+                        <View style={styles.doctorSubInfo}>
+                          <View style={styles.doctorBadge}>
+                            <Text style={styles.doctorBadgeText}>{selectedQuestion.department}</Text>
+                          </View>
+                        </View>
+                      </View>
+                      <Text style={styles.doctorTime}>{getTimeAgo(answer.createdAt)}</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.answerContent}>{answer.content}</Text>
                   </View>
-                )}
+                ))}
               </View>
-            )}
-          />
+            </ScrollView>
+          ) : (
+            <View style={[styles.emptySheetContainer, { paddingBottom: insets.bottom * 2 }]}>
+              <MaterialCommunityIcons name="information-outline" size={48} color={Colors.textPrimary} style={{ marginBottom: Spacing.sm, opacity: 0.5 }} />
+              <Text style={styles.alertText}>{t('qna.no_doctors_response_yet', 'No doctors response yet.')}</Text>
+            </View>
+          )}
+        </DraggableBottomSheet>
+      )}
+
+      {/* Floating Action Button */}
+      {!sheetVisible && (
+        <View style={[styles.speedDialContainer, { bottom: Spacing.base }]}>
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => router.push('/(app)/doctors/qna/ask')}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Ask a new question"
+          >
+            <MaterialCommunityIcons name="pencil-outline" size={20} color={Colors.primary} />
+            <Text style={styles.fabText}>{t('qna.ask_question', 'Ask Question')}</Text>
+          </TouchableOpacity>
         </View>
       )}
     </SafeAreaView>
@@ -253,15 +247,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
-    marginBottom: Spacing.md,
     backgroundColor: Colors.background,
-  },
-  backButton: {
-    padding: Spacing.xs,
-    marginLeft: -Spacing.xs,
-  },
-  headerTitleContainer: {
-    alignItems: 'center',
   },
   headerTitle: {
     fontSize: FontSize.xxl,
@@ -270,14 +256,6 @@ const styles = StyleSheet.create({
   headerTitleBold: {
     fontFamily: FontFamily.extraBold,
     fontWeight: '900',
-  },
-  headerSubtitle: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.sm,
-    color: Colors.primary,
-  },
-  headerRight: {
-    width: 32, // to balance the back button
   },
   centerContainer: {
     flex: 1,
@@ -290,47 +268,153 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.base,
-    paddingBottom: Spacing.xxl * 4, // More padding to account for fixed bottom button
-    flexGrow: 1, // ensure the empty state can be centered vertically
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xxl * 2 + 80, // Space for FAB
+    flexGrow: 1,
   },
   emptyContainer: {
     flex: 1,
+    padding: Spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
-    gap: Spacing.xs,
+    gap: Spacing.sm,
   },
   emptyText: {
     fontFamily: FontFamily.medium,
-    fontSize: FontSize.md,
+    fontSize: FontSize.sm,
     color: Colors.textSecondary,
     textAlign: 'center',
-    lineHeight: FontSize.md * 1.5,
+    lineHeight: FontSize.sm * 1.5,
   },
-  bottomFixedContainer: {
-    position: 'absolute',
-    left: Spacing.base,
-    right: Spacing.base,
+  
+  // Sheet Styles
+  sheetQuestionHeader: {
+    paddingHorizontal: Spacing.xl,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
+    marginBottom: Spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.tertiary,
   },
-  standardButton: {
+  sheetTime: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+    marginBottom: Spacing.xs,
+  },
+  sheetQuestionText: {
+    fontFamily: FontFamily.semiBold,
+    fontWeight: '600',
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    lineHeight: FontSize.base * 1.5,
+  },
+  readMoreText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+  },
+  sheetScroll: {
+    maxHeight: 500, // to let it scroll within the modal
+  },
+  responsesList: {
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xxl,
+    gap: Spacing.lg,
+  },
+  responseCard: {
+    backgroundColor: Colors.surface, // changed from background to surface for cards
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+  },
+  doctorHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.md,
-    minHeight: 56,
+    marginBottom: Spacing.sm,
   },
-  standardButtonText: {
+  doctorImage: {
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.sm, // Square-ish
+    backgroundColor: Colors.tertiary,
+    marginRight: Spacing.md,
+  },
+  doctorInfo: {
+    flex: 1,
+  },
+  doctorName: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.base,
-    color: Colors.surface,
+    color: Colors.textPrimary,
+    marginBottom: 2,
   },
-  questionItemWrapper: {
-    gap: Spacing.md,
+  doctorSubInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
   },
-  composerWrapper: {
-    // slight inset or just match card styles to attach it visually
-    marginTop: -Spacing.sm,
+  doctorBadge: {
+    backgroundColor: Colors.primary + '15',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.full,
+  },
+  doctorBadgeText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.xs,
+    color: Colors.primary,
+  },
+  doctorTime: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.xs,
+    color: Colors.textTertiary,
+  },
+  answerContent: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.base,
+    color: Colors.textSecondary,
+    lineHeight: FontSize.base * 1.5,
+  },
+
+  // Alert Styles
+  emptySheetContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: 0.5,
+  },
+  alertText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    textAlign: 'center',
+  },
+  // FAB Styles
+  speedDialContainer: {
+    position: 'absolute',
+    right: Spacing.base,
+    alignItems: 'flex-end',
+    zIndex: 10,
+  },
+  fab: {
+    backgroundColor: Colors.background,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.sm,
+    paddingLeft: Spacing.base,
+    paddingRight: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    height: 56,
+    justifyContent: 'center',
+  },
+  fabText: {
+    marginLeft: Spacing.xs,
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.primary,
   },
 });

@@ -14,7 +14,7 @@ import {
   Image,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../../src/theme';
 import {
@@ -205,16 +205,18 @@ export default function BookingDigestScreen() {
 
   if (loading || !doctor) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={[styles.headerWrap, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -252,21 +254,25 @@ export default function BookingDigestScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <View style={styles.container}>
         {/* Header matching Consultation History & Profile (no extra bottom margin) */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-            accessibilityRole="button"
-          >
-            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('digest.review_confirm') || 'Review & Confirm'}</Text>
+        <View style={[styles.headerWrap, { paddingTop: insets.top }]}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+              {t('digest.review_confirm') || 'Review & Confirm'}
+            </Text>
+          </View>
         </View>
 
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
           showsVerticalScrollIndicator={false}
         >
           {/* Doctor Card */}
@@ -719,7 +725,7 @@ export default function BookingDigestScreen() {
             </Animated.View>
           </View>
         </Modal>
-      </SafeAreaView>
+      </View>
     </View>
   );
 }
@@ -729,14 +735,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  headerWrap: {
+    backgroundColor: Colors.surface,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
     gap: Spacing.xs,
+    height: 60,
   },
   backButton: {
     width: 44,
@@ -757,8 +767,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: Spacing.md,
-    paddingBottom: 100, // Enough to clear the floating button
-    paddingTop: 0,
+    paddingTop: Spacing.md,
   },
   card: {
     backgroundColor: Colors.surface,

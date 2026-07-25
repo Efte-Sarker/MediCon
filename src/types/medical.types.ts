@@ -75,10 +75,13 @@ export interface AdherenceRecord {
 export interface Biomarker {
   id: string;
   name: string;
-  value: number;
+  value: number | string;
   unit: string;
   referenceRange: string;
   isFlagged: boolean;
+  category?: string;
+  testGroup?: string;
+  subGroup?: string;
 }
 
 export interface Report {
@@ -111,6 +114,7 @@ export interface Question {
   id: string;
   patientId: string;
   department: string;
+  symptomId?: string;
   content: string;
   isAnonymous?: boolean;
   createdAt: string; // ISO 8601

@@ -1,31 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Colors, Spacing, FontFamily, FontSize } from '../../../src/theme';
-import { AIDisclaimer } from '../../../src/components/medical/AIDisclaimer';
+import { FlashList } from '@shopify/flash-list';
+import { useTranslation } from 'react-i18next';
+
+import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { symptomTriageService } from '../../../src/services/ai/symptomTriageService';
 import { Doctor } from '../../../src/services/api/doctorsService';
 import { DoctorCard } from '../../../src/components/cards/DoctorCard';
-import { Button } from '../../../src/components/ui/Button';
-import { useTranslation } from 'react-i18next';
+import { DraggableBottomSheet } from '../../../src/components/ui/DraggableBottomSheet';
+
+type FilterType = 'all' | 'male' | 'female';
 
 export default function SymptomResultsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { q } = useLocalSearchParams();
   const query = typeof q === 'string' ? q : '';
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterGender, setFilterGender] = useState<FilterType>('all');
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -42,65 +47,144 @@ export default function SymptomResultsScreen() {
     };
 
     fetchDoctors();
-
     return () => {
       isMounted = false;
     };
   }, [query]);
 
+  // Mock gender filtering based on names for demo purposes
+  const filteredDoctors = doctors.filter((doc) => {
+    if (filterGender === 'all') return true;
+    const name = doc.fullName.toLowerCase();
+    const isFemale = name.includes('sarah') || name.includes('emily') || name.includes('lisa');
+    if (filterGender === 'female') return isFemale;
+    if (filterGender === 'male') return !isFemale;
+    return true;
+  });
+
+  const renderItem = useCallback(
+    ({ item }: { item: Doctor }) => (
+      <View style={styles.gridItemContainer}>
+        <DoctorCard
+          doctor={item}
+          variant="online"
+          fullWidth
+          onPress={() => router.push(`/(app)/doctors/${item.id}`)}
+          onBookPress={() =>
+            router.push(`/(app)/doctors/booking/digest?doctorId=${item.id}&type=video`)
+          }
+          hideSectionLabel
+        />
+      </View>
+    ),
+    [router]
+  );
+
+  const count = filteredDoctors.length;
+  const doctorWord = count === 1 ? 'doctor' : 'doctors';
+  const resultsCountText =
+    filterGender === 'all'
+      ? `${count} ${doctorWord} available`
+      : filterGender === 'male'
+      ? `${count} male ${doctorWord} available`
+      : `${count} female ${doctorWord} available`;
+
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {t('results.ai_recommendations') || 'AI Recommendations'}
-        </Text>
+    <View style={styles.container}>
+      {/* Header — matching My Reports / Departments */}
+      <View style={[styles.headerWrapper, { paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {query || t('results.ai_recommendations') || 'Results'}
+          </Text>
+        </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <AIDisclaimer />
-
-        <Text style={styles.sectionTitle}>
-          {t('results.doctors_for') || 'Doctors for "'}
-          {query}"
-        </Text>
-
-        {loading ? (
-          <ActivityIndicator size="large" color={Colors.primary} style={styles.loader} />
-        ) : (
-          <View style={styles.doctorsList}>
-            {doctors.length === 0 ? (
+      {loading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      ) : (
+        <FlashList
+          data={filteredDoctors}
+          renderItem={renderItem}
+          numColumns={2}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: Math.max(insets.bottom, Spacing.md) },
+          ]}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View style={styles.listHeader}>
+              <Text style={styles.resultsCount}>{resultsCountText}</Text>
+              <TouchableOpacity
+                style={styles.filterButton}
+                onPress={() => setIsFilterOpen(true)}
+                activeOpacity={0.7}
+              >
+                <MaterialCommunityIcons name="tune-variant" size={20} color={Colors.textPrimary} />
+                <Text style={styles.filterButtonText}>Filter doctors</Text>
+              </TouchableOpacity>
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>
                 {t('results.no_matching_doctors_found_for_') ||
                   'No matching doctors found for these symptoms.'}
               </Text>
-            ) : (
-              doctors.map((doctor) => (
-                <View key={doctor.id} style={styles.doctorItem}>
-                  <DoctorCard
-                    doctor={doctor}
-                    onPress={() => {
-                      // Navigate to doctor profile when built
-                    }}
-                  />
-                  <View style={styles.actions}>
-                    <Button
-                      label={t('results.book_consultation') || 'Book Consultation'}
-                      onPress={() => {
-                        // Navigate to booking flow
-                        router.push('/(app)/(tabs)/doctors');
-                      }}
-                    />
-                  </View>
-                </View>
-              ))
-            )}
-          </View>
-        )}
-      </ScrollView>
-    </SafeAreaView>
+            </View>
+          }
+          estimatedItemSize={250}
+        />
+      )}
+
+      {/* Filter Bottom Sheet */}
+      <DraggableBottomSheet
+        visible={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+      >
+        <View style={styles.filterContent}>
+          {(['all', 'male', 'female'] as FilterType[]).map((type, index, array) => (
+            <TouchableOpacity
+              key={type}
+              style={[
+                styles.filterOption,
+                index === array.length - 1 && { borderBottomWidth: 0 }
+              ]}
+              onPress={() => {
+                setFilterGender(type);
+                setIsFilterOpen(false);
+              }}
+            >
+              <Text
+                style={[
+                  styles.filterOptionText,
+                  filterGender === type && styles.filterOptionTextActive,
+                ]}
+              >
+                {type === 'all'
+                  ? 'All doctors'
+                  : type === 'male'
+                  ? 'Male doctors'
+                  : 'Female doctors'}
+              </Text>
+              {filterGender === type && (
+                <MaterialCommunityIcons name="check" size={24} color={Colors.primary} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </DraggableBottomSheet>
+    </View>
   );
 }
 
@@ -109,54 +193,106 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background,
   },
+  headerWrapper: {
+    backgroundColor: Colors.surface,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.xl,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.background,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
+    paddingVertical: Spacing.sm,
+    height: 60,
+    gap: Spacing.xs,
   },
   backButton: {
-    marginRight: Spacing.md,
-    padding: Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
-    fontFamily: FontFamily.bold,
-    fontSize: FontSize.xl,
-    color: Colors.textPrimary,
-  },
-  scrollContent: {
-    padding: Spacing.xl,
-    paddingBottom: Spacing.xxxl,
-  },
-  sectionTitle: {
+    flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
-    marginBottom: Spacing.lg,
-    marginTop: Spacing.xl,
   },
-  loader: {
-    marginTop: Spacing.xxxl,
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  doctorsList: {
-    gap: Spacing.xl,
+  listContent: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.md,
+    paddingTop: 0,
   },
-  doctorItem: {
-    gap: Spacing.sm,
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 0,
+    marginBottom: Spacing.md,
+    marginTop: Spacing.md,
   },
-  actions: {
+  resultsCount: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+  },
+  filterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
     paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
   },
-  bookButton: {
-    width: '100%',
+  filterButtonText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    color: Colors.textPrimary,
+  },
+  gridItemContainer: {
+    flex: 1,
+    paddingHorizontal: Spacing.sm / 2, // Horizontal spacing for 2 columns
+    paddingBottom: Spacing.md, // Vertical spacing
+  },
+  emptyContainer: {
+    padding: Spacing.xl,
+    alignItems: 'center',
   },
   emptyText: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     textAlign: 'center',
-    marginTop: Spacing.xxl,
     lineHeight: FontSize.md * 1.5,
+  },
+  filterContent: {
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    gap: Spacing.sm,
+  },
+  filterOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.tertiary,
+  },
+  filterOptionText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+  },
+  filterOptionTextActive: {
+    color: Colors.primary,
+    fontFamily: FontFamily.bold,
   },
 });

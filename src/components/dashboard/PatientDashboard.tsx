@@ -92,11 +92,13 @@ export const PatientDashboard = (): React.JSX.Element => {
             label={t('dashboard.hospitals') || 'Hospitals'}
             onPress={() => router.push('/(app)/(tabs)/hospitals')}
           />
+          {/* 
           <QuickAction
             icon="pill"
             label={t('dashboard.meds') || 'Medicines'}
-            onPress={() => router.push('/(app)/(tabs)/prescriptions')}
+            onPress={() => router.push('/(app)/medicine')}
           />
+          */}
           <QuickAction
             icon="chat-processing-outline"
             label={t('dashboard.aiChat') || 'AI Chat'}
@@ -227,10 +229,10 @@ const styles = StyleSheet.create({
   quickActionItem: {
     alignItems: 'center',
     gap: Spacing.sm,
-    width: '24%',
+    width: '32%',
   },
   quickActionIcon: {
-    width: 68,
+    width: '100%',
     height: 68,
     borderRadius: BorderRadius.lg,
     backgroundColor: Colors.tertiary,

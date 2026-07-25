@@ -9,7 +9,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -32,6 +32,7 @@ const SYMPTOM_AREAS = [
 export default function AskQuestionScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { editId } = useLocalSearchParams();
   const insets = useSafeAreaInsets();
   const userId = useAuthStore((s) => s.userId) || 'patient-1';
 
@@ -40,13 +41,37 @@ export default function AskQuestionScreen() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  React.useEffect(() => {
+    const fetchQuestion = async () => {
+      if (editId && typeof editId === 'string') {
+        const data = await qnaService.getPatientQuestions(userId);
+        const q = data.find((q) => q.id === editId);
+        if (q) {
+          setContent(q.content);
+          if (q.symptomId) {
+            setSymptomId(q.symptomId);
+          } else {
+            const dept = SYMPTOM_AREAS.find((s) => s.department === q.department);
+            if (dept) setSymptomId(dept.id);
+          }
+          setIsAnonymous(!!q.isAnonymous);
+        }
+      }
+    };
+    fetchQuestion();
+  }, [editId, userId]);
+
   const handleSubmit = async () => {
     const department = SYMPTOM_AREAS.find((s) => s.id === symptomId)?.department;
     if (!department || !content.trim()) return;
 
     try {
       setSubmitting(true);
-      await qnaService.askQuestion(userId, department, content.trim(), isAnonymous);
+      if (editId && typeof editId === 'string') {
+        await qnaService.updateQuestion(editId, userId, content.trim(), department, isAnonymous, symptomId);
+      } else {
+        await qnaService.askQuestion(userId, department, content.trim(), isAnonymous, symptomId);
+      }
       // On success, go back to QnA index
       router.back();
     } catch {
@@ -57,12 +82,30 @@ export default function AskQuestionScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('ask.ask_your_question', 'Ask Your Question')}</Text>
+    <View style={styles.container}>
+      {/* Header Wrapper for Status Bar */}
+      <View
+        style={{
+          backgroundColor: Colors.surface,
+          paddingTop: insets.top,
+          marginBottom: Spacing.md,
+        }}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>
+            {editId
+              ? t('ask.edit_your_question', 'Edit Your Question')
+              : t('ask.ask_your_question', 'Ask Your Question')}
+          </Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -186,12 +229,12 @@ export default function AskQuestionScreen() {
             <ActivityIndicator color={Colors.surface} />
           ) : (
             <Text style={styles.standardButtonText}>
-              {t('ask.submit_question', 'Submit Question')}
+              {editId ? t('ask.update_question', 'Update Question') : t('ask.submit_question', 'Submit Question')}
             </Text>
           )}
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -206,7 +249,7 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
     gap: Spacing.xs,
   },
   backButton: {

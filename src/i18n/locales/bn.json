@@ -183,7 +183,7 @@
   "emergency": {
     "call_911": "৯১১ এ কল করুন",
     "emergency_triage": "জরুরি ট্রায়াজ",
-    "select_a_situation_for_immedia": "তাত্ক্ষণিক অফলাইন নির্দেশনার জন্য একটি পরিস্থিতি নির্বাচন করুন"
+    "life_threatening_instruction": "গুরুতর জরুরি অবস্থার জন্য ৯১১ এ কল করুন, অথবা অফলাইন নির্দেশনার জন্য একটি পরিস্থিতি বেছে নিন।"
   },
   "protocol": {
     "protocol": "প্রোটোকল"
@@ -354,5 +354,39 @@
     "language": "ভাষা",
     "languageSelection": "ভাষা নির্বাচন করুন",
     "logout": "লগ আউট"
+  },
+  "profile": {
+    "fullName": "পুরো নাম",
+    "fullNamePlaceholder": "আপনার পুরো নাম লিখুন",
+    "phone": "ফোন নম্বর",
+    "phonePlaceholder": "আপনার ফোন নম্বর লিখুন"
+  },
+  "search": {
+    "placeholder": "উপসর্গ দিয়ে খুঁজুন...",
+    "suggestions_title": "সাধারণ স্বাস্থ্য সমস্যা",
+    "fever_cold": "জ্বর/ঠান্ডা",
+    "allergies": "অ্যালার্জি",
+    "child_health": "শিশু রোগ",
+    "weight": "ওজন হ্রাস/বৃদ্ধি",
+    "skin_problems": "চুলকানি, ব্রণ ও ত্বকের সমস্যা",
+    "hair_loss": "চুল পড়া ও খুশকি",
+    "acidity": "অ্যাসিডিটি ও বদহজম",
+    "diarrhoea": "ডায়রিয়া ও কোষ্ঠকাঠিন্য",
+    "nose_ear_throat": "নাক, কান ও গলার সমস্যা",
+    "stress_depression": "মানসিক চাপ বা বিষণ্নতা",
+    "joint_pain": "জয়েন্ট/পেশির ব্যথা",
+    "stomach_pain": "পেট ব্যথা/শরীর ব্যথা",
+    "headache": "মাথা ব্যথা/মাইগ্রেন",
+    "eye_problems": "চোখের সমস্যা",
+    "hormonal": "হরমোনজনিত সমস্যা",
+    "sexual_health": "যৌন সমস্যা",
+    "menstrual": "পিরিয়ড/গাইনি সমস্যা",
+    "pregnancy": "গর্ভাবস্থার সমস্যা",
+    "kidney": "কিডনির সমস্যা",
+    "chest_heart": "বুকে ব্যথা/হার্টের সমস্যা",
+    "breathing_asthma": "শ্বাসকষ্ট/অ্যাজমা",
+    "uti": "ইউরিন ইনফেকশন",
+    "diabetes": "ডায়াবেটিস",
+    "blood_pressure": "রক্তচাপ"
   }
 }

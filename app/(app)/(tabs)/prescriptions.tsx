@@ -1,18 +1,16 @@
 // 1. IMPORTS
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
   Alert,
   ActivityIndicator,
   RefreshControl,
-  PanResponder,
-  Animated,
+  Platform,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -24,6 +22,7 @@ import { PrescriptionCard } from '../../../src/components/medical/PrescriptionCa
 import { ActivePrescriptionView } from '../../../src/components/medical/ActivePrescriptionView';
 import { createAppError, AppError } from '../../../src/utils/errors';
 import { ErrorState } from '../../../src/components/ui/ErrorState';
+import { DraggableBottomSheet } from '../../../src/components/ui/DraggableBottomSheet';
 
 // 2. TYPES
 
@@ -33,8 +32,8 @@ type ActiveTab = 'doctors' | 'uploads';
 
 export default function PrescriptionsScreen(): React.JSX.Element {
   const router = useRouter();
+  const { openActivePrescription } = useLocalSearchParams<{ openActivePrescription?: string }>();
   const insets = useSafeAreaInsets();
-  const [panY] = useState(() => new Animated.Value(0));
 
   // ── Tab state ───────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<ActiveTab>('doctors');
@@ -112,12 +111,6 @@ export default function PrescriptionsScreen(): React.JSX.Element {
       await prescriptionsService.schedulePrescription(rx.id);
       if (isMountedRef.current) {
         setScheduledId(rx.id);
-        if (previousId) {
-          Alert.alert(
-            'Prescription Scheduled',
-            'The previous prescription has been automatically unscheduled. Only one prescription can be active at a time.',
-          );
-        }
       }
     } catch {
       if (isMountedRef.current) {
@@ -165,34 +158,21 @@ export default function PrescriptionsScreen(): React.JSX.Element {
     }
   };
 
-  // Reset panY when modal opens
   useEffect(() => {
-    if (quickViewVisible) {
-      panY.setValue(0);
+    if (openActivePrescription === 'true') {
+      handleOpenQuickView();
+      router.setParams({ openActivePrescription: '' });
     }
-  }, [quickViewVisible, panY]);
-
-  const [handlePanResponder] = useState(() =>
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 5,
-      onPanResponderMove: Animated.event([null, { dy: panY }], { useNativeDriver: false }),
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dy > 50) {
-          setQuickViewVisible(false);
-        } else {
-          Animated.spring(panY, {
-            toValue: 0,
-            useNativeDriver: false,
-          }).start();
-        }
-      },
-    }),
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openActivePrescription]);
 
   // ── Render helpers ──────────────────────────────────────────────────────────
 
   const currentList = activeTab === 'doctors' ? doctorRxs : uploadedRxs;
+  const scheduledRx = useMemo(() => {
+    if (!scheduledId) return null;
+    return doctorRxs.find(rx => rx.id === scheduledId) || uploadedRxs.find(rx => rx.id === scheduledId) || null;
+  }, [scheduledId, doctorRxs, uploadedRxs]);
 
   const renderItem = useCallback(
     ({ item }: { item: Prescription }): React.JSX.Element => (
@@ -330,92 +310,6 @@ export default function PrescriptionsScreen(): React.JSX.Element {
     );
   }
 
-  // ── Quick-view modal ────────────────────────────────────────────────────────
-
-  const renderQuickViewModal = (): React.JSX.Element => (
-    <Modal
-      visible={quickViewVisible}
-      transparent
-      animationType="fade"
-      onRequestClose={() => setQuickViewVisible(false)}
-      statusBarTranslucent
-    >
-      <View style={styles.modalBackdrop}>
-        <TouchableOpacity
-          style={styles.modalDismissArea}
-          onPress={() => setQuickViewVisible(false)}
-          accessibilityRole="button"
-          accessibilityLabel="Close quick view"
-        />
-        <Animated.View
-          style={[
-            styles.modalSheet,
-            {
-              transform: [
-                {
-                  translateY: panY.interpolate({
-                    inputRange: [0, 1000],
-                    outputRange: [0, 1000],
-                    extrapolate: 'clamp',
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          {/* Sheet drag indicator and header area */}
-          <View style={styles.dragArea} {...handlePanResponder.panHandlers}>
-            <View style={styles.sheetHandle} />
-          </View>
-
-          {/* Sheet header */}
-          <View style={styles.sheetHeader}>
-            <View style={styles.sheetHeaderLeft}>
-              <Text style={styles.sheetTitle}>Active Prescription</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => setQuickViewVisible(false)}
-              hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <MaterialCommunityIcons name="close" size={22} color={Colors.textSecondary} />
-            </TouchableOpacity>
-          </View>
-
-          {/* One-prescription-at-a-time notice */}
-          <View style={styles.singleRxNotice}>
-            <MaterialCommunityIcons
-              name="information-outline"
-              size={13}
-              color={Colors.textTertiary}
-            />
-            <Text style={styles.singleRxNoticeText}>
-              Only one prescription can be active at a time.
-            </Text>
-          </View>
-
-          {/* Content */}
-          {quickViewLoading ? (
-            <View style={styles.centeredFlex}>
-              <ActivityIndicator size="large" color={Colors.primary} />
-            </View>
-          ) : !activePrescription ? (
-            <View style={[styles.quickViewEmpty, { paddingBottom: insets.bottom }]}>
-              <MaterialCommunityIcons name="clipboard-outline" size={64} color="#CBD5E1" />
-              <Text style={styles.quickViewEmptyTitle}>No prescription scheduled</Text>
-              <Text style={styles.quickViewEmptySubtitle}>
-                Set one to view your medicine schedule.
-              </Text>
-            </View>
-          ) : (
-            <ActivePrescriptionView prescription={activePrescription} />
-          )}
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-
   // ── Upload button (floating in "My Uploads" tab when non-empty) ─────────────
   const showUploadFab = activeTab === 'uploads' && uploadedRxs.length > 0;
 
@@ -455,7 +349,7 @@ export default function PrescriptionsScreen(): React.JSX.Element {
               <Text
                 style={[styles.quickViewBtnTitle, !scheduledId && styles.quickViewBtnTitleEmpty]}
               >
-                {scheduledId ? 'Active Schedule' : 'Active Schedule'}
+                {scheduledId ? 'View scheduled medicines' : 'Active Schedule'}
               </Text>
               <Text
                 style={[
@@ -463,7 +357,7 @@ export default function PrescriptionsScreen(): React.JSX.Element {
                   !scheduledId && styles.quickViewBtnSubtitleEmpty,
                 ]}
               >
-                {scheduledId ? 'View scheduled medicines' : 'Select a prescription from below'}
+                {scheduledId ? (scheduledRx?.doctorName || 'Prescription Schedule') : 'Select a prescription from below'}
               </Text>
             </View>
           </View>
@@ -510,7 +404,43 @@ export default function PrescriptionsScreen(): React.JSX.Element {
       )}
 
       {/* Quick-view modal */}
-      {renderQuickViewModal()}
+      <DraggableBottomSheet
+        visible={quickViewVisible}
+        onClose={() => setQuickViewVisible(false)}
+        title="Active Prescription"
+        height="75%"
+      >
+        <View style={{ flex: 1, paddingHorizontal: Spacing.base, paddingBottom: Spacing.md }}>
+          {/* One-prescription-at-a-time notice */}
+          <View style={styles.singleRxNotice}>
+            <MaterialCommunityIcons
+              name="information-outline"
+              size={13}
+              color={Colors.textTertiary}
+            />
+            <Text style={styles.singleRxNoticeText}>
+              Only one prescription can be active at a time.
+            </Text>
+          </View>
+
+          {/* Content */}
+          {quickViewLoading ? (
+            <View style={styles.centeredFlex}>
+              <ActivityIndicator size="large" color={Colors.primary} />
+            </View>
+          ) : !activePrescription ? (
+            <View style={[styles.quickViewEmpty, { paddingBottom: insets.bottom || Spacing.xl }]}>
+              <MaterialCommunityIcons name="clipboard-outline" size={64} color="#CBD5E1" />
+              <Text style={styles.quickViewEmptyTitle}>No prescription scheduled</Text>
+              <Text style={styles.quickViewEmptySubtitle}>
+                Set one to view your medicine schedule.
+              </Text>
+            </View>
+          ) : (
+            <ActivePrescriptionView prescription={activePrescription} />
+          )}
+        </View>
+      </DraggableBottomSheet>
     </SafeAreaView>
   );
 }
@@ -568,10 +498,11 @@ const styles = StyleSheet.create({
   tabText: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
-    color: Colors.textTertiary,
+    color: Colors.textPrimary,
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
+    fontWeight: 'bold',
     color: Colors.primary,
   },
 
@@ -746,6 +677,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.xs,
     marginBottom: Spacing.md,
+    marginTop: 3,
+    paddingLeft: Spacing.sm,
   },
   singleRxNoticeText: {
     fontFamily: FontFamily.regular,

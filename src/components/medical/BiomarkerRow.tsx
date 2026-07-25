@@ -7,49 +7,63 @@ import { useTranslation } from 'react-i18next';
 
 interface BiomarkerRowProps {
   biomarker: Biomarker;
+  isLast?: boolean;
 }
 
-export function BiomarkerRow({ biomarker }: BiomarkerRowProps) {
+export function BiomarkerRow({ biomarker, isLast }: BiomarkerRowProps) {
   const { t } = useTranslation();
   const valueColor = biomarker.isFlagged ? Colors.danger : Colors.textPrimary;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.nameContainer}>
-        {biomarker.isFlagged && (
-          <MaterialCommunityIcons
-            name="alert-circle"
-            size={16}
-            color={Colors.danger}
-            style={styles.icon}
-          />
-        )}
-        <Text style={[styles.name, biomarker.isFlagged && styles.nameFlagged]}>
-          {biomarker.name}
-        </Text>
-      </View>
+    <View style={[styles.container, isLast && { borderBottomWidth: 0 }]}>
+      <View style={styles.topRow}>
+        <View style={styles.nameContainer}>
+          {biomarker.isFlagged && (
+            <MaterialCommunityIcons
+              name="alert-circle"
+              size={16}
+              color={Colors.danger}
+              style={styles.icon}
+            />
+          )}
+          <Text style={[styles.name, biomarker.isFlagged && styles.nameFlagged]}>
+            {biomarker.name}
+          </Text>
+        </View>
 
-      <View style={styles.detailsContainer}>
         <View style={styles.valueRow}>
           <Text style={[styles.value, { color: valueColor }]}>{biomarker.value}</Text>
-          <Text style={styles.unit}>{biomarker.unit}</Text>
+          {biomarker.unit ? <Text style={styles.unit}>{biomarker.unit}</Text> : null}
         </View>
-        <Text style={styles.reference}>
-          {t('biomarkerrow.ref') || 'Ref:'} {biomarker.referenceRange}
-        </Text>
       </View>
+
+      {biomarker.referenceRange ? (
+        <View style={styles.bottomRow}>
+          <Text style={styles.referenceLabel}>Reference Intervals:</Text>
+          <Text style={styles.referenceValue}>{biomarker.referenceRange}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: Colors.tertiary,
+    gap: Spacing.xs,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  bottomRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
   },
   nameContainer: {
     flex: 1,
@@ -69,9 +83,6 @@ const styles = StyleSheet.create({
     color: Colors.danger,
     fontFamily: FontFamily.bold,
   },
-  detailsContainer: {
-    alignItems: 'flex-end',
-  },
   valueRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -79,17 +90,24 @@ const styles = StyleSheet.create({
   },
   value: {
     fontFamily: FontFamily.bold,
-    fontSize: FontSize.lg,
+    fontWeight: 'bold',
+    fontSize: FontSize.base,
   },
   unit: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
   },
-  reference: {
+  referenceLabel: {
     fontFamily: FontFamily.regular,
     fontSize: FontSize.xs,
-    color: Colors.textTertiary,
-    marginTop: 2,
+    color: Colors.textSecondary,
+  },
+  referenceValue: {
+    flex: 1,
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.xs,
+    color: '#000000',
+    textAlign: 'right',
   },
 });

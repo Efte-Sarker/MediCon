@@ -13,10 +13,31 @@ let mockQuestions: Question[] = [
     answers: [
       {
         id: 'a-1',
-        doctorId: 'doctor-1',
+        doctorId: 'Robert',
         content:
-          'Yes, a mild increase in heart rate can be a temporary side effect of this medication. However, if it exceeds 100 bpm at rest or you feel palpitations, please schedule an appointment.',
+          'Yes, a mild increase in heart rate can be a temporary side effect of this medication as your body adjusts. However, if your resting heart rate exceeds 100 bpm or if you experience any chest pain, please schedule an appointment immediately.',
         createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 'a-2',
+        doctorId: 'Emily',
+        content:
+          'This is a common reaction during the first few days of starting this specific drug class. I recommend tracking your pulse twice a day and ensuring you stay well-hydrated.',
+        createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 'a-3',
+        doctorId: 'William',
+        content:
+          'It is typically nothing to worry about in the short term. Make sure you are avoiding excess caffeine and stimulants while your body acclimates to the new dosage.',
+        createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: 'a-4',
+        doctorId: 'Sarah',
+        content:
+          'An elevated pulse is an expected physiological response initially. Please continue monitoring it. Seek emergency care only if you begin to feel dizzy, short of breath, or faint.',
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       },
     ],
   },
@@ -36,6 +57,15 @@ let mockQuestions: Question[] = [
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     answers: [],
   },
+  {
+    id: 'q-4',
+    patientId: 'patient-1',
+    department: 'Dermatology',
+    content: 'I have been experiencing severe dry skin and redness on my hands. What kind of moisturizer should I use?',
+    isAnonymous: true,
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    answers: [],
+  },
 ];
 
 class QnaService {
@@ -44,7 +74,7 @@ class QnaService {
    */
   async getPatientQuestions(patientId: string): Promise<Question[]> {
     const data = [...mockQuestions]
-      .filter((q) => q.patientId === patientId)
+      .filter((q) => q.patientId === patientId || q.patientId === 'patient-1')
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     return mockFetch(data);
@@ -69,11 +99,13 @@ class QnaService {
     department: string,
     content: string,
     isAnonymous?: boolean,
+    symptomId?: string,
   ): Promise<Question> {
     const newQuestion: Question = {
       id: `q-${Date.now()}`,
       patientId,
       department,
+      symptomId,
       content,
       isAnonymous,
       createdAt: new Date().toISOString(),
@@ -106,6 +138,51 @@ class QnaService {
 
     question.answers.push(newAnswer);
     return mockFetch(newAnswer);
+  }
+  /**
+   * Patient deletes their own question.
+   */
+  async deleteQuestion(questionId: string, patientId: string): Promise<void> {
+    const index = mockQuestions.findIndex(
+      (q) => q.id === questionId && (q.patientId === patientId || q.patientId === 'patient-1')
+    );
+    if (index === -1) {
+      throw new Error('Question not found or unauthorized');
+    }
+    mockQuestions.splice(index, 1);
+    return mockFetch(undefined);
+  }
+
+  /**
+   * Patient updates their own question.
+   */
+  async updateQuestion(
+    questionId: string,
+    patientId: string,
+    content: string,
+    department: string,
+    isAnonymous?: boolean,
+    symptomId?: string,
+  ): Promise<Question> {
+    const index = mockQuestions.findIndex((q) => q.id === questionId && (q.patientId === patientId || q.patientId === 'patient-1'));
+    if (index === -1) {
+      throw new Error('Question not found or unauthorized');
+    }
+
+    const updatedQuestion = {
+      ...mockQuestions[index],
+      content,
+      department,
+    };
+    if (symptomId) {
+      updatedQuestion.symptomId = symptomId;
+    }
+    if (isAnonymous !== undefined) {
+      updatedQuestion.isAnonymous = isAnonymous;
+    }
+
+    mockQuestions[index] = updatedQuestion;
+    return mockFetch(updatedQuestion);
   }
 }
 

@@ -5,9 +5,10 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout, Shadows } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useDoctorDashboard } from '../../hooks/useDoctorDashboard';
 import { AppointmentQueueCard } from '../cards/AppointmentQueueCard';
-import { useTranslation } from 'react-i18next';
+import { useAuthStore } from '../../store/authStore';
 
 // 2. TYPES
 /* No external props — this is a self-contained dashboard. */
@@ -17,125 +18,94 @@ export const DoctorDashboard = (): React.JSX.Element => {
   const { t } = useTranslation();
   const router = useRouter();
   const { todayQueue, metrics } = useDoctorDashboard();
+  const fullName = 'Dr. Smith';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>
-            {t('doctordashboard.doctor_dashboard') || 'Doctor Dashboard'}
-          </Text>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>MediCon</Text>
           <Text style={styles.subtitle}>
-            {t('doctordashboard.welcome_back_dr_smith') || 'Welcome back, Dr. Smith'}
+            {fullName}
+            {' • '}
+            {t('doctordashboard.specialty') || 'Cardiology'}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={() => router.push('/(app)/settings/')}
-          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-        >
-          <MaterialCommunityIcons name="cog-outline" size={28} color={Colors.textSecondary} />
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/notifications')}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('dashboard.notifications') || 'Notifications'}
+          >
+            <MaterialCommunityIcons name="bell-outline" size={24} color={Colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => router.push('/(app)/settings/')}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+            accessibilityRole="button"
+            accessibilityLabel={t('dashboard.settings') || 'Settings'}
+          >
+            <MaterialCommunityIcons
+              name="account-outline"
+              size={27.6}
+              color={Colors.textSecondary}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <QuickAction
-            icon="calendar-clock"
-            label={t('doctordashboard.schedule') || 'Schedule'}
-            onPress={() => {
-              // Future: Navigation to Schedule
-            }}
-          />
-          <QuickAction
-            icon="inbox-outline"
-            label={t('doctordashboard.qa_inbox') || 'Q&A Inbox'}
-            onPress={() => router.push('/(app)/doctors/qna/')}
-          />
-          <QuickAction
-            icon="account-group-outline"
-            label={t('doctordashboard.patients') || 'Patients'}
-            onPress={() => {
-              // Future: Navigation to Patients list
-            }}
-          />
-        </View>
-
-        {/* Metrics Summary */}
-        <View style={styles.metricsContainer}>
-          <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>{metrics.pending}</Text>
-            <Text style={styles.metricLabel}>{t('doctordashboard.pending') || 'Pending'}</Text>
+        {/* Today at a Glance — stat banner */}
+        <View style={styles.statBanner}>
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{metrics.pending}</Text>
+            <Text style={styles.statLabel}>{t('doctordashboard.pending') || 'Pending'}</Text>
           </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>{metrics.completed}</Text>
-            <Text style={styles.metricLabel}>{t('doctordashboard.completed') || 'Completed'}</Text>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{metrics.completed}</Text>
+            <Text style={styles.statLabel}>{t('doctordashboard.completed') || 'Completed'}</Text>
           </View>
-          <View style={styles.metricDivider} />
-          <View style={styles.metricItem}>
-            <Text style={styles.metricValue}>{metrics.total}</Text>
-            <Text style={styles.metricLabel}>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statValue}>{metrics.total}</Text>
+            <Text style={styles.statLabel}>
               {t('doctordashboard.total_today') || 'Total Today'}
             </Text>
           </View>
         </View>
 
         {/* Today's Queue */}
-        <View style={styles.queueSection}>
+        <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
             {t('doctordashboard.todays_queue') || "Today's Queue"}
           </Text>
-
-          {todayQueue.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <MaterialCommunityIcons name="calendar-check" size={32} color={Colors.textTertiary} />
-              <Text style={styles.emptyText}>
-                {t('doctordashboard.no_appointments_today') || 'No appointments today'}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.queueContainer}>
-              {todayQueue.map((appointment) => (
-                <AppointmentQueueCard
-                  key={appointment.id}
-                  appointment={appointment}
-                  onPress={() => {
-                    // Future: Navigate to consultation details
-                  }}
-                />
-              ))}
-            </View>
-          )}
         </View>
+
+        {todayQueue.length === 0 ? (
+          <View style={styles.emptyState}>
+            <MaterialCommunityIcons name="calendar-check" size={24} color={Colors.textTertiary} />
+            <Text style={styles.emptyText}>
+              {t('doctordashboard.no_appointments_today') || 'No appointments today'}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.queueContainer}>
+            {todayQueue.map((appointment) => (
+              <AppointmentQueueCard
+                key={appointment.id}
+                appointment={appointment}
+                onPress={() => router.push('/(app)/doctor/consultation/' + appointment.id)}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-// --- Internal sub-component (not exported, single-use) ---
-
-interface QuickActionProps {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  label: string;
-  onPress: () => void;
-}
-
-const QuickAction = ({ icon, label, onPress }: QuickActionProps): React.JSX.Element => (
-  <TouchableOpacity
-    style={styles.quickActionItem}
-    onPress={onPress}
-    activeOpacity={0.7}
-    accessibilityRole="button"
-    accessibilityLabel={label}
-  >
-    <View style={styles.quickActionIcon}>
-      <MaterialCommunityIcons name={icon} size={24} color={Colors.primary} />
-    </View>
-    <Text style={styles.quickActionLabel}>{label}</Text>
-  </TouchableOpacity>
-);
 
 // 4. STYLES
 const styles = StyleSheet.create({
@@ -147,104 +117,94 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.md,
+    paddingHorizontal: Spacing.base,
     paddingVertical: Spacing.sm,
   },
+  headerLeft: {
+    flex: 1,
+  },
   greeting: {
-    fontFamily: FontFamily.bold,
+    fontFamily: FontFamily.extraBold,
+    fontWeight: '900',
     fontSize: FontSize.xxl,
-    color: Colors.textPrimary,
+    color: Colors.primary,
   },
   subtitle: {
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.base,
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
     color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+    marginTop: 2,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
   },
   scrollContent: {
     paddingHorizontal: Spacing.base,
     paddingBottom: Layout.tabBarHeight + Spacing.base,
   },
-  quickActions: {
+  statBanner: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.xl,
-  },
-  quickActionItem: {
-    alignItems: 'center',
-    gap: Spacing.xs,
-    flex: 1,
-  },
-  quickActionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...Shadows.sm,
-  },
-  quickActionLabel: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-  },
-  metricsContainer: {
-    flexDirection: 'row',
-    backgroundColor: Colors.surface,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    marginBottom: Spacing.xl,
     alignItems: 'center',
     justifyContent: 'space-between',
-    ...Shadows.sm,
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.base,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.xl,
+    ...Shadows.md,
   },
-  metricItem: {
+  statItem: {
     flex: 1,
     alignItems: 'center',
   },
-  metricDivider: {
+  statDivider: {
     width: 1,
     height: '70%',
-    backgroundColor: Colors.tertiary,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
   },
-  metricValue: {
+  statValue: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.xl,
-    color: Colors.primary,
+    color: Colors.surface,
   },
-  metricLabel: {
+  statLabel: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.xs,
-    color: Colors.textSecondary,
+    color: Colors.surface,
+    opacity: 0.85,
     marginTop: 2,
   },
-  queueSection: {
-    flex: 1,
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
   },
   sectionTitle: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    paddingHorizontal: Spacing.xs,
   },
   queueContainer: {
     gap: Spacing.base,
   },
-  emptyContainer: {
-    padding: Spacing.xl,
+  emptyState: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.md,
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
     ...Shadows.sm,
   },
   emptyText: {
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
-    lineHeight: FontSize.sm * 1.5,
   },
 });

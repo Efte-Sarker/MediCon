@@ -1,7 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Image, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { hospitalsService } from '../../../src/services/api/hospitalsService';
@@ -31,6 +39,7 @@ export default function HospitalDetailScreen() {
     title: '',
     content: '',
   });
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     (async () => {
@@ -69,9 +78,20 @@ export default function HospitalDetailScreen() {
     );
   }
 
-  const renderHeader = () => (
-    <View style={styles.headerContainer}>
-      <View style={styles.imageContainer}>
+  const IMAGE_HEIGHT = 280;
+  const HEADER_OFFSET = insets.top + IMAGE_HEIGHT * 0.3;
+  const SPACER_HEIGHT = IMAGE_HEIGHT - HEADER_OFFSET - 24;
+
+  const borderRadius = scrollY.interpolate({
+    inputRange: [0, Math.max(1, SPACER_HEIGHT)],
+    outputRange: [0, BorderRadius.xl],
+    extrapolate: 'clamp',
+  });
+
+  return (
+    <View style={styles.container}>
+      {/* 1. Fixed Background Image */}
+      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, height: IMAGE_HEIGHT }}>
         {hospital.imageUrl ? (
           <Image source={{ uri: hospital.imageUrl }} style={styles.image} />
         ) : (
@@ -79,100 +99,92 @@ export default function HospitalDetailScreen() {
             <MaterialCommunityIcons name="hospital-building" size={48} color={Colors.primary} />
           </View>
         )}
-
-        {/* Back Button Overlay */}
-        <TouchableOpacity
-          style={[styles.floatingBackButton, { top: insets.top + Spacing.sm }]}
-          onPress={() => router.back()}
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
       </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.name}>{hospital.name}</Text>
+      {/* 2. Floating Back Button */}
+      <TouchableOpacity
+        style={[styles.floatingBackButton, { top: insets.top + Spacing.sm, zIndex: 10 }]}
+        onPress={() => router.back()}
+      >
+        <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+      </TouchableOpacity>
 
-        {/* Hospital Facilities / Badges */}
-        <View style={styles.tagsContainer}>
-          {hospital.hasEmergencyRoom && (
-            <View style={[styles.imageBadge, styles.imageBadgeDanger]}>
-              <MaterialCommunityIcons name="heart-pulse" size={12} color={Colors.surface} />
-              <Text style={styles.imageBadgeDangerText}>
-                {t('[id].er_available') || 'Emergency Room Available'}
-              </Text>
-            </View>
-          )}
-          {hospital.isOpen24x7 && (
-            <View style={styles.imageBadge}>
-              <MaterialCommunityIcons name="clock-outline" size={12} color={Colors.primary} />
-              <Text style={styles.imageBadgeText}>{t('[id].24x7_open') || '24x7 Open'}</Text>
-            </View>
-          )}
+      {/* 3. Animated Native ScrollView */}
+      <Animated.ScrollView
+        style={{ flex: 1, marginTop: HEADER_OFFSET }}
+        stickyHeaderIndices={[1]}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
+          useNativeDriver: false,
+        })}
+      >
+        {/* Index 0: Transparent Spacer */}
+        <View style={{ height: SPACER_HEIGHT }} />
+
+        {/* Index 1: Main Hospital Name Card (Unchanged) */}
+        <View style={styles.stickyHeader}>
+          <Text style={styles.name}>{hospital.name}</Text>
         </View>
 
-        {/* 2-column info grid */}
-        <View style={styles.infoGrid}>
-          {/* Address — full width */}
-          <View style={[styles.infoTile, styles.infoTileFullWidth]}>
-            <View style={styles.infoTileIcon}>
-              <MaterialCommunityIcons name="map-marker" size={18} color={Colors.primary} />
-            </View>
-            <View style={styles.infoTileContent}>
-              <Text style={styles.infoTileLabel}>Address</Text>
-              <Text style={styles.infoTileValue} numberOfLines={2}>
-                {hospital.address}
-              </Text>
-            </View>
-          </View>
-
-          {/* Phone */}
-          <View style={styles.infoTile}>
-            <View style={styles.infoTileIcon}>
-              <MaterialCommunityIcons name="phone" size={16} color={Colors.primary} />
-            </View>
-            <View style={styles.infoTileContent}>
-              <View style={styles.labelRow}>
-                <Text style={styles.infoTileLabel}>Contact</Text>
-                <TouchableOpacity
-                  onPress={() =>
-                    setInfoModalConfig({
-                      visible: true,
-                      title: 'Contact',
-                      content:
-                        'The general reception/front-desk number of the hospital. You call this for booking an appointment, asking about visiting hours, inquiring about a department, billing and administrative queries.',
-                    })
-                  }
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <MaterialCommunityIcons
-                    name="help-circle-outline"
-                    size={14}
-                    color={Colors.textTertiary}
-                  />
-                </TouchableOpacity>
+        {/* Index 2: Scrollable Content (Key Details & Available Doctors) */}
+        <Animated.View
+          style={[
+            styles.scrollableContent,
+            {
+              paddingBottom: insets.bottom + Spacing.xl,
+              borderTopLeftRadius: borderRadius,
+              borderTopRightRadius: borderRadius,
+            },
+          ]}
+        >
+          <View style={styles.tagsContainer}>
+            {hospital.hasEmergencyRoom && (
+              <View style={[styles.imageBadge, styles.imageBadgeDanger]}>
+                <MaterialCommunityIcons name="heart-pulse" size={12} color={Colors.surface} />
+                <Text style={styles.imageBadgeDangerText}>
+                  {t('[id].er_available') || 'Emergency Room Available'}
+                </Text>
               </View>
-              <Text style={styles.infoTileValue}>{hospital.contactNumber}</Text>
-            </View>
+            )}
+            {hospital.isOpen24x7 && (
+              <View style={styles.imageBadge}>
+                <MaterialCommunityIcons name="clock-outline" size={12} color={Colors.primary} />
+                <Text style={styles.imageBadgeText}>{t('[id].24x7_open') || '24x7 Open'}</Text>
+              </View>
+            )}
           </View>
 
-          {/* Emergency — shown only if available */}
-          {hospital.emergencyNumber ? (
-            <View style={[styles.infoTile, styles.infoTileDanger]}>
-              <View style={[styles.infoTileIcon, styles.infoTileIconDanger]}>
-                <MaterialCommunityIcons name="ambulance" size={16} color={Colors.danger} />
+          {/* 2-column info grid */}
+          <View style={styles.infoGrid}>
+            {/* Address — full width */}
+            <View style={[styles.infoTile, styles.infoTileFullWidth]}>
+              <View style={styles.infoTileIcon}>
+                <MaterialCommunityIcons name="map-marker" size={18} color={Colors.primary} />
+              </View>
+              <View style={styles.infoTileContent}>
+                <Text style={styles.infoTileLabel}>Address</Text>
+                <Text style={styles.infoTileValue} numberOfLines={2}>
+                  {hospital.address}
+                </Text>
+              </View>
+            </View>
+
+            {/* Phone */}
+            <View style={styles.infoTile}>
+              <View style={styles.infoTileIcon}>
+                <MaterialCommunityIcons name="phone" size={16} color={Colors.primary} />
               </View>
               <View style={styles.infoTileContent}>
                 <View style={styles.labelRow}>
-                  <Text style={[styles.infoTileLabel, { color: 'rgba(208, 42, 65, 0.6)' }]}>
-                    Emergency
-                  </Text>
+                  <Text style={styles.infoTileLabel}>Contact</Text>
                   <TouchableOpacity
                     onPress={() =>
                       setInfoModalConfig({
                         visible: true,
-                        title: 'Emergency',
+                        title: 'Contact',
                         content:
-                          'A dedicated hotline routed directly to the ER triage desk — bypassing reception entirely. You call this when someone is having a life-threatening situation, you need an ambulance dispatched immediately, or a patient needs to be pre-alerted before arrival so the ER team is ready.',
+                          'The general reception/front-desk number of the hospital. You call this for booking an appointment, asking about visiting hours, inquiring about a department, billing and administrative queries.',
                       })
                     }
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -180,65 +192,83 @@ export default function HospitalDetailScreen() {
                     <MaterialCommunityIcons
                       name="help-circle-outline"
                       size={14}
-                      color="rgba(208, 42, 65, 0.6)"
+                      color={Colors.textTertiary}
                     />
                   </TouchableOpacity>
                 </View>
-                <Text style={[styles.infoTileValue, { color: Colors.danger }]}>
-                  {hospital.emergencyNumber}
-                </Text>
+                <Text style={styles.infoTileValue}>{hospital.contactNumber}</Text>
               </View>
             </View>
+
+            {/* Emergency */}
+            {hospital.emergencyNumber ? (
+              <View style={[styles.infoTile, styles.infoTileDanger]}>
+                <View style={[styles.infoTileIcon, styles.infoTileIconDanger]}>
+                  <MaterialCommunityIcons name="ambulance" size={16} color={Colors.danger} />
+                </View>
+                <View style={styles.infoTileContent}>
+                  <View style={styles.labelRow}>
+                    <Text style={[styles.infoTileLabel, { color: 'rgba(208, 42, 65, 0.6)' }]}>
+                      Emergency
+                    </Text>
+                    <TouchableOpacity
+                      onPress={() =>
+                        setInfoModalConfig({
+                          visible: true,
+                          title: 'Emergency',
+                          content:
+                            'A dedicated hotline routed directly to the ER triage desk — bypassing reception entirely. You call this when someone is having a life-threatening situation, you need an ambulance dispatched immediately, or a patient needs to be pre-alerted before arrival so the ER team is ready.',
+                        })
+                      }
+                      hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                    >
+                      <MaterialCommunityIcons
+                        name="help-circle-outline"
+                        size={14}
+                        color="rgba(208, 42, 65, 0.6)"
+                      />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={[styles.infoTileValue, { color: Colors.danger }]}>
+                    {hospital.emergencyNumber}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View style={[styles.infoTile, { opacity: 0 }]} />
+            )}
+          </View>
+
+          <Text style={styles.sectionTitle}>
+            {t('[id].available_doctors') || 'Available Doctors'}
+          </Text>
+
+          {doctors.length > 0 ? (
+            <View style={styles.doctorsGrid}>
+              {doctors.map((item) => (
+                <View key={item.id} style={styles.doctorCardWrapper}>
+                  <DoctorCard
+                    doctor={item}
+                    variant="online"
+                    fullWidth
+                    onPress={() => router.push(`/(app)/doctors/${item.id}`)}
+                    onBookPress={() =>
+                      router.push(`/(app)/doctors/booking/digest?doctorId=${item.id}&type=video`)
+                    }
+                  />
+                </View>
+              ))}
+            </View>
           ) : (
-            /* Placeholder to keep even grid when no emergency number */
-            <View style={[styles.infoTile, { opacity: 0 }]} />
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>
+                {t('[id].no_doctors_currently_listed_fo') ||
+                  'No doctors currently listed for this hospital.'}
+              </Text>
+            </View>
           )}
-        </View>
-
-        <Text style={styles.sectionTitle}>
-          {t('[id].available_doctors') || 'Available Doctors'}
-        </Text>
-      </View>
-    </View>
-  );
-
-  return (
-    <View style={styles.container}>
-      <FlashList
-        data={doctors}
-        numColumns={2}
-        renderItem={({ item, index }) => (
-          <View
-            style={{
-              flex: 1,
-              paddingLeft: index % 2 === 0 ? Spacing.md : Spacing.md / 2,
-              paddingRight: index % 2 === 0 ? Spacing.md / 2 : Spacing.md,
-            }}
-          >
-            <DoctorCard
-              doctor={item}
-              variant="online"
-              fullWidth
-              onPress={() => router.push(`/(app)/doctors/${item.id}`)}
-              onBookPress={() =>
-                router.push(`/(app)/doctors/booking/digest?doctorId=${item.id}&type=video`)
-              }
-            />
-          </View>
-        )}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={{ paddingBottom: insets.bottom + Spacing.xl }}
-        ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
-        ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {t('[id].no_doctors_currently_listed_fo') ||
-                'No doctors currently listed for this hospital.'}
-            </Text>
-          </View>
-        )}
-      />
+        </Animated.View>
+      </Animated.ScrollView>
 
       <Modal
         visible={infoModalConfig.visible}
@@ -314,14 +344,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  infoContainer: {
-    paddingTop: Spacing.xl,
-    paddingHorizontal: Spacing.xl,
-    paddingBottom: Spacing.sm,
-    backgroundColor: Colors.surface,
+  stickyHeader: {
+    paddingTop: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xs,
+    backgroundColor: Colors.background,
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
-    marginTop: -20, // Overlap the image slightly
+    zIndex: 2,
+  },
+  scrollableContent: {
+    backgroundColor: Colors.background,
+    paddingHorizontal: Spacing.lg,
+    marginTop: -24,
+    paddingTop: 24,
+    zIndex: 1,
   },
   name: {
     fontFamily: FontFamily.bold,
@@ -334,7 +371,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.sm,
-    marginBottom: Spacing.xl,
+    marginBottom: 20, // matches Spacing.base (16) + Spacing.xs (4) from hospital name
   },
   infoTile: {
     flex: 1,
@@ -421,7 +458,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
     marginTop: 0,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   emptyContainer: {
     padding: Spacing.xl,
@@ -438,5 +475,14 @@ const styles = StyleSheet.create({
     fontSize: FontSize.md,
     color: Colors.textSecondary,
     lineHeight: FontSize.md * 1.5,
+  },
+  doctorsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  doctorCardWrapper: {
+    width: '48%',
+    marginBottom: Spacing.md,
   },
 });

@@ -15,7 +15,6 @@ import { Colors, Spacing, FontFamily, FontSize, BorderRadius, Layout } from '../
 import { reportsService } from '../../../src/services/api/reportsService';
 import { Report } from '../../../src/types/medical.types';
 import { BiomarkerRow } from '../../../src/components/medical/BiomarkerRow';
-import { AIDisclaimer } from '../../../src/components/medical/AIDisclaimer';
 import { useTranslation } from 'react-i18next';
 
 export default function ReportDetailScreen() {
@@ -23,6 +22,9 @@ export default function ReportDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
+  type ActiveTab = 'analysis' | 'results';
+  const [activeTab, setActiveTab] = useState<ActiveTab>('analysis');
 
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,25 +72,28 @@ export default function ReportDetailScreen() {
   });
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('[id].report_details') || 'Report Details'}</Text>
+    <View style={styles.container}>
+      {/* Header Wrapper for Status Bar */}
+      <View
+        style={{
+          backgroundColor: Colors.surface,
+          paddingTop: insets.top,
+        }}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('[id].report_details') || 'Report Details'}</Text>
+        </View>
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={{ paddingHorizontal: Spacing.base, paddingTop: Spacing.lg }}>
         {/* Meta card */}
         <View style={styles.metaCard}>
           <Text style={styles.reportTitle}>{report.title}</Text>
@@ -108,27 +113,146 @@ export default function ReportDetailScreen() {
           </View>
         </View>
 
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            {t('[id].detected_biomarkers') || 'Detected Biomarkers'}
-          </Text>
-
-          {report.biomarkers && report.biomarkers.length > 0 ? (
-            <View style={styles.biomarkerList}>
-              {report.biomarkers.map((biomarker) => (
-                <BiomarkerRow key={biomarker.id} biomarker={biomarker} />
-              ))}
-            </View>
-          ) : (
-            <View style={styles.emptyBiomarkers}>
-              <Text style={styles.emptyBiomarkersText}>
-                {t('[id].no_specific_biomarkers_were_ex') ||
-                  'No specific biomarkers were extracted from this report.'}
-              </Text>
-            </View>
-          )}
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'analysis' && styles.tabActive]}
+            onPress={() => setActiveTab('analysis')}
+            activeOpacity={1}
+            accessibilityRole="tab"
+          >
+            <Text style={[styles.tabText, activeTab === 'analysis' && styles.tabTextActive]}>
+              Report Analysis
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'results' && styles.tabActive]}
+            onPress={() => setActiveTab('results')}
+            activeOpacity={1}
+            accessibilityRole="tab"
+          >
+            <Text style={[styles.tabText, activeTab === 'results' && styles.tabTextActive]}>
+              Test Results
+            </Text>
+          </TouchableOpacity>
         </View>
+      </View>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + insets.bottom }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {activeTab === 'results' && (
+          <View style={styles.section}>
+            {report.biomarkers && report.biomarkers.length > 0 ? (
+              (() => {
+                const groupedData: {
+                  category: string;
+                  testGroups: {
+                    testGroup: string;
+                    subGroups: {
+                      subGroup: string;
+                      biomarkers: typeof report.biomarkers;
+                    }[];
+                  }[];
+                }[] = [];
+
+                report.biomarkers.forEach((b) => {
+                  const catName = b.category || 'General';
+                  const testName = b.testGroup || 'Tests';
+                  const subName = b.subGroup || 'All';
+
+                  let catObj = groupedData.find((c) => c.category === catName);
+                  if (!catObj) {
+                    catObj = { category: catName, testGroups: [] };
+                    groupedData.push(catObj);
+                  }
+
+                  let testObj = catObj.testGroups.find((t) => t.testGroup === testName);
+                  if (!testObj) {
+                    testObj = { testGroup: testName, subGroups: [] };
+                    catObj.testGroups.push(testObj);
+                  }
+
+                  let subObj = testObj.subGroups.find((s) => s.subGroup === subName);
+                  if (!subObj) {
+                    subObj = { subGroup: subName, biomarkers: [] };
+                    testObj.subGroups.push(subObj);
+                  }
+
+                  subObj.biomarkers.push(b);
+                });
+
+                return (
+                  <View>
+                    {groupedData.map((cat, catIdx) => (
+                      <View
+                        key={`cat-${catIdx}`}
+                        style={[styles.categoryBlock, catIdx === 0 && { marginTop: 0 }]}
+                      >
+                        {cat.category !== 'General' && (
+                          <Text style={styles.categoryTitle}>{cat.category}</Text>
+                        )}
+
+                        {cat.testGroups.map((tg, tgIdx) => (
+                          <View
+                            key={`tg-${tgIdx}`}
+                            style={[
+                              styles.testGroupBlock,
+                              tgIdx === cat.testGroups.length - 1 && { marginBottom: 0 },
+                            ]}
+                          >
+                            {tg.testGroup !== 'Tests' && (
+                              <Text style={styles.testGroupTitle}>{tg.testGroup}</Text>
+                            )}
+
+                            {tg.subGroups.map((sg, sgIdx) => (
+                              <View
+                                key={`sg-${sgIdx}`}
+                                style={[
+                                  styles.subGroupBlock,
+                                  sgIdx === tg.subGroups.length - 1 && { marginBottom: 0 },
+                                ]}
+                              >
+                                {sg.subGroup !== 'All' && (
+                                  <Text style={styles.subGroupTitle}>{sg.subGroup}</Text>
+                                )}
+
+                                <View style={styles.biomarkerList}>
+                                  {sg.biomarkers.map((b, bIdx) => (
+                                    <BiomarkerRow
+                                      key={b.id}
+                                      biomarker={b}
+                                      isLast={bIdx === sg.biomarkers.length - 1}
+                                    />
+                                  ))}
+                                </View>
+                              </View>
+                            ))}
+                          </View>
+                        ))}
+                      </View>
+                    ))}
+                  </View>
+                );
+              })()
+            ) : (
+              <View style={styles.emptyBiomarkers}>
+                <Text style={styles.emptyBiomarkersText}>
+                  {t('[id].no_specific_biomarkers_were_ex') ||
+                    'No specific biomarkers were extracted from this report.'}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+        {activeTab === 'analysis' && report.aiSummary && (
+          <View style={styles.section}>
+            <View style={styles.aiSummaryContainer}>
+              <Text style={styles.aiSummaryText}>{report.aiSummary}</Text>
+            </View>
+          </View>
+        )}
       </ScrollView>
 
       {/* Show Original fixed button at bottom */}
@@ -145,7 +269,7 @@ export default function ReportDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -188,7 +312,7 @@ const styles = StyleSheet.create({
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    backgroundColor: Colors.surface,
     gap: Spacing.xs,
   },
   backButton: {
@@ -215,13 +339,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.base,
-    marginBottom: Spacing.xl,
     borderWidth: 1,
     borderColor: Colors.tertiary,
   },
   reportTitle: {
     fontFamily: FontFamily.bold,
-    fontSize: FontSize.lg,
+    fontSize: FontSize.md,
     color: Colors.textPrimary,
   },
   divider: {
@@ -297,23 +420,101 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
-  aiSummaryText: {
-    fontFamily: FontFamily.regular,
-    fontSize: FontSize.base,
-    color: Colors.textPrimary,
-    lineHeight: FontSize.base * 1.5,
+  aiSummaryContainer: {
     backgroundColor: Colors.surface,
-    padding: Spacing.lg,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.lg,
     borderWidth: 1,
     borderColor: Colors.tertiary,
   },
+  aiSummaryTitle: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.lg,
+    color: Colors.primary,
+    marginBottom: Spacing.md,
+  },
+  aiSummaryText: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    textAlign: 'justify',
+    lineHeight: 24,
+  },
   biomarkerList: {
     backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    paddingHorizontal: Spacing.lg,
+    paddingHorizontal: Spacing.lg - 2,
     borderWidth: 1,
     borderColor: Colors.tertiary,
+  },
+  categoryBlock: {
+    marginTop: Spacing.lg,
+  },
+  categoryTitle: {
+    fontFamily: FontFamily.bold,
+    fontWeight: 'bold',
+    fontSize: FontSize.lg,
+    color: Colors.primary,
+    textAlign: 'center',
+    marginBottom: Spacing.md,
+  },
+
+  // ── Tab bar ──────────────────────────────────────────────────────────────────
+  tabBar: {
+    flexDirection: 'row',
+    marginTop: Spacing.lg,
+    marginBottom: Spacing.lg,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    padding: 0,
+    gap: 0,
+  },
+  tab: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.xs,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    minHeight: 44,
+  },
+  tabActive: {
+    backgroundColor: Colors.tertiaryLight,
+  },
+  tabText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    color: Colors.textPrimary,
+  },
+  tabTextActive: {
+    fontFamily: FontFamily.bold,
+    fontWeight: 'bold',
+    color: Colors.primary,
+  },
+
+  testGroupBlock: {
+    marginBottom: Spacing.md,
+  },
+  testGroupTitle: {
+    fontFamily: FontFamily.bold,
+    fontWeight: 'bold',
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    marginBottom: Spacing.sm,
+  },
+  subGroupBlock: {
+    marginBottom: Spacing.md,
+  },
+  subGroupTitle: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.xs,
+    marginLeft: Spacing.xs,
   },
   emptyBiomarkers: {
     backgroundColor: Colors.surface,

@@ -5,7 +5,8 @@
     "retry": "Retry",
     "loading": "Loading...",
     "error": "An error occurred",
-    "empty": "No data available"
+    "empty": "No data available",
+    "add": "Add"
   },
   "navigation": {
     "home": "Home",
@@ -198,7 +199,7 @@
   "emergency": {
     "call_911": "Call 911",
     "emergency_triage": "Emergency Triage",
-    "select_a_situation_for_immedia": "Select a situation for immediate offline guidance"
+    "life_threatening_instruction": "Call 911 for severe emergencies, or\nchoose a situation for offline guidance."
   },
   "protocol": {
     "protocol": "Protocol"
@@ -369,5 +370,39 @@
     "language": "Language",
     "languageSelection": "Select Language",
     "logout": "Log out"
+  },
+  "profile": {
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter your full name",
+    "phone": "Phone Number",
+    "phonePlaceholder": "Enter your phone number"
+  },
+  "search": {
+    "placeholder": "Search by symptoms...",
+    "suggestions_title": "Common health concerns",
+    "fever_cold": "Fever & Cold",
+    "allergies": "Allergies",
+    "child_health": "Child Health",
+    "weight": "Weight Loss/Gain",
+    "skin_problems": "Itching, Acne & Skin Problems",
+    "hair_loss": "Hair Loss & Dandruff",
+    "acidity": "Acidity & Indigestion",
+    "diarrhoea": "Diarrhoea & Constipation",
+    "nose_ear_throat": "Nose, Ear & Throat Problems",
+    "stress_depression": "Stress & Depression",
+    "joint_pain": "Joint & Muscle Pain",
+    "stomach_pain": "Stomach Pain & Body Pain",
+    "headache": "Headache & Migraine",
+    "eye_problems": "Eye Problems",
+    "hormonal": "Hormonal Disorders",
+    "sexual_health": "Sexual Health",
+    "menstrual": "Menstrual & Gynaecological Problems",
+    "pregnancy": "Pregnancy-Related Problems",
+    "kidney": "Kidney Problems",
+    "chest_heart": "Chest Pain & Heart Problems",
+    "breathing_asthma": "Breathing Problems & Asthma",
+    "uti": "Urinary Tract Infection (UTI)",
+    "diabetes": "Diabetes",
+    "blood_pressure": "High Blood Pressure"
   }
 }

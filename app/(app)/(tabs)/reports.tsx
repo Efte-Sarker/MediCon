@@ -21,7 +21,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
 import { Report } from '../../../src/types/medical.types';
@@ -138,11 +138,11 @@ export default function ReportsScreen() {
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      () => setIsKeyboardVisible(true)
+      () => setIsKeyboardVisible(true),
     );
     const keyboardDidHideListener = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => setIsKeyboardVisible(false)
+      () => setIsKeyboardVisible(false),
     );
     return () => {
       keyboardDidShowListener.remove();
@@ -277,18 +277,23 @@ export default function ReportsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <View style={styles.container}>
       <Tabs.Screen options={{ tabBarStyle: { display: 'none' } }} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
+      {/* Header Wrapper for Status Bar */}
+      <View
+        style={{
+          backgroundColor: Colors.surface,
+          paddingTop: insets.top,
+          marginBottom: Spacing.lg,
+        }}
+      >
+        <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => router.back()}
-            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            accessibilityLabel="Go back"
-            accessibilityRole="button"
             style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
           >
             <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
@@ -453,11 +458,7 @@ export default function ReportsScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.optionIconBg}>
-                <MaterialCommunityIcons
-                  name="pencil-outline"
-                  size={20}
-                  color={Colors.primary}
-                />
+                <MaterialCommunityIcons name="pencil-outline" size={20} color={Colors.primary} />
               </View>
               <Text style={styles.optionText}>Rename</Text>
             </TouchableOpacity>
@@ -468,11 +469,7 @@ export default function ReportsScreen() {
               activeOpacity={0.7}
             >
               <View style={[styles.optionIconBg, styles.optionIconBgDestructive]}>
-                <MaterialCommunityIcons
-                  name="delete-outline"
-                  size={20}
-                  color={Colors.emergency}
-                />
+                <MaterialCommunityIcons name="delete-outline" size={20} color={Colors.emergency} />
               </View>
               <Text style={[styles.optionText, styles.optionTextDestructive]}>Delete</Text>
             </TouchableOpacity>
@@ -532,7 +529,7 @@ export default function ReportsScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -545,19 +542,18 @@ const styles = StyleSheet.create({
   // ── Header ──────────────────────────────────────────────────────────────────
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: Spacing.base,
+    paddingRight: Spacing.base,
+    paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.sm,
+    backgroundColor: Colors.surface,
+    gap: Spacing.xs,
   },
   backButton: {
-    padding: Spacing.xs,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     flex: 1,
@@ -572,7 +568,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: Spacing.base,
-    paddingTop: Spacing.xs,
     paddingBottom: Spacing.xl + 80, // Space for FAB
   },
   cardWrapper: {

@@ -61,6 +61,8 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.medium,
     fontSize: FontSize.sm,
     color: Colors.textSecondary,
+    includeFontPadding: false,
+    paddingTop: 0,
   },
   input: {
     height: Layout.inputHeight,

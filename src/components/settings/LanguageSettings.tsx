@@ -2,10 +2,10 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useSettingsStore, LanguageCode } from '../../../src/store/settingsStore';
-import { Colors, Spacing, FontFamily, FontSize } from '../../../src/theme';
+import { useSettingsStore, LanguageCode } from '../../store/settingsStore';
+import { Colors, Spacing, FontFamily, FontSize } from '../../theme';
 
-export default function LanguageScreen() {
+export function LanguageSettings() {
   const { t } = useTranslation();
   const language = useSettingsStore((s) => s.language);
   const setLanguage = useSettingsStore((s) => s.setLanguage);
@@ -17,14 +17,18 @@ export default function LanguageScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('settings.languageSelection') || 'Select Language'}</Text>
+      <Text style={styles.description}>{t('settings.languageSelection') || 'Select Language'}</Text>
       <View style={styles.list}>
-        {languages.map((lang) => {
+        {languages.map((lang, index) => {
           const isSelected = language === lang.code;
           return (
             <TouchableOpacity
               key={lang.code}
-              style={[styles.item, isSelected && styles.itemSelected]}
+              style={[
+                styles.item,
+                isSelected && styles.itemSelected,
+                index !== languages.length - 1 && styles.itemBorder,
+              ]}
               onPress={() => setLanguage(lang.code)}
             >
               <Text style={[styles.label, isSelected && styles.labelSelected]}>{lang.label}</Text>
@@ -41,16 +45,15 @@ export default function LanguageScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    padding: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    paddingBottom: Spacing.xl,
   },
-  title: {
-    fontFamily: FontFamily.medium,
-    fontSize: FontSize.lg,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    marginTop: Spacing.sm,
+  description: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.sm,
+    lineHeight: FontSize.sm * 1.5,
   },
   list: {
     backgroundColor: Colors.surface,
@@ -62,6 +65,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: Spacing.md,
+  },
+  itemBorder: {
     borderBottomWidth: 1,
     borderBottomColor: Colors.tertiary,
   },

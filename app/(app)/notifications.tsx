@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize } from '@theme';
@@ -59,17 +59,25 @@ export default function NotificationsScreen() {
     }
     if (notification.actionUrl) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      router.push(notification.actionUrl as any);
+      router.replace(notification.actionUrl as any);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('notifications.title') || 'Notifications'}</Text>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      <View
+        style={{
+          backgroundColor: Colors.surface,
+          paddingTop: insets.top,
+          marginBottom: Spacing.md,
+        }}
+      >
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('notifications.title') || 'Notifications'}</Text>
+        </View>
       </View>
 
       {loading && !error ? (
@@ -95,7 +103,6 @@ export default function NotificationsScreen() {
             data={notifications}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
-            ItemSeparatorComponent={() => <View style={{ height: Spacing.md }} />}
             renderItem={({ item }) => (
               <NotificationCard
                 notification={item}
@@ -106,7 +113,7 @@ export default function NotificationsScreen() {
           />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -116,12 +123,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
   },
   header: {
+    height: 60,
     flexDirection: 'row',
     alignItems: 'center',
     paddingRight: Spacing.base,
     paddingLeft: 5,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
     gap: Spacing.xs,
   },
   backButton: {
@@ -146,7 +153,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    padding: Spacing.xl,
     paddingBottom: Spacing.xxl * 3,
   },
   emptyText: {
