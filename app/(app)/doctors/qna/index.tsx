@@ -1,5 +1,16 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal, TouchableWithoutFeedback, ScrollView, Image, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Modal,
+  TouchableWithoutFeedback,
+  ScrollView,
+  Image,
+  Dimensions,
+} from 'react-native';
 import { useRouter, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
@@ -29,7 +40,7 @@ export default function QnaIndexScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const userId = useAuthStore((s) => s.userId) || 'patient-1';
-  
+
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AppError | null>(null);
@@ -159,7 +170,7 @@ export default function QnaIndexScreen() {
         >
           <View style={styles.sheetQuestionHeader}>
             <Text style={styles.sheetTime}>{getTimeAgo(selectedQuestion.createdAt)}</Text>
-            
+
             {/* Hidden Text for precise line measurement */}
             <Text
               style={[styles.sheetQuestionText, { position: 'absolute', opacity: 0, zIndex: -1 }]}
@@ -170,15 +181,20 @@ export default function QnaIndexScreen() {
               {selectedQuestion.content}
             </Text>
 
-            <Text 
-              style={styles.sheetQuestionText} 
+            <Text
+              style={styles.sheetQuestionText}
               numberOfLines={isQuestionExpanded ? undefined : 2}
             >
               {selectedQuestion.content}
             </Text>
             {showReadMore && (
-              <TouchableOpacity onPress={() => setIsQuestionExpanded(!isQuestionExpanded)} style={{ marginTop: Spacing.xs }}>
-                <Text style={styles.readMoreText}>{isQuestionExpanded ? 'Read less' : 'Read more'}</Text>
+              <TouchableOpacity
+                onPress={() => setIsQuestionExpanded(!isQuestionExpanded)}
+                style={{ marginTop: Spacing.xs }}
+              >
+                <Text style={styles.readMoreText}>
+                  {isQuestionExpanded ? 'Read less' : 'Read more'}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -202,7 +218,9 @@ export default function QnaIndexScreen() {
                         <Text style={styles.doctorName}>Dr. {answer.doctorId}</Text>
                         <View style={styles.doctorSubInfo}>
                           <View style={styles.doctorBadge}>
-                            <Text style={styles.doctorBadgeText}>{selectedQuestion.department}</Text>
+                            <Text style={styles.doctorBadgeText}>
+                              {selectedQuestion.department}
+                            </Text>
                           </View>
                         </View>
                       </View>
@@ -215,8 +233,15 @@ export default function QnaIndexScreen() {
             </ScrollView>
           ) : (
             <View style={[styles.emptySheetContainer, { paddingBottom: insets.bottom * 2 }]}>
-              <MaterialCommunityIcons name="information-outline" size={48} color={Colors.textPrimary} style={{ marginBottom: Spacing.sm, opacity: 0.5 }} />
-              <Text style={styles.alertText}>{t('qna.no_doctors_response_yet', 'No doctors response yet.')}</Text>
+              <MaterialCommunityIcons
+                name="information-outline"
+                size={48}
+                color={Colors.textPrimary}
+                style={{ marginBottom: Spacing.sm, opacity: 0.5 }}
+              />
+              <Text style={styles.alertText}>
+                {t('qna.no_doctors_response_yet', 'No doctors response yet.')}
+              </Text>
             </View>
           )}
         </DraggableBottomSheet>
@@ -291,7 +316,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: FontSize.sm * 1.5,
   },
-  
+
   // Sheet Styles
   sheetQuestionHeader: {
     paddingHorizontal: Spacing.xl,

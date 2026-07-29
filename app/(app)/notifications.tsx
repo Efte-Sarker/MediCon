@@ -104,11 +104,7 @@ export default function NotificationsScreen() {
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.listContent}
             renderItem={({ item }) => (
-              <NotificationCard
-                notification={item}
-                onToggleRead={handleToggleRead}
-                onPress={handlePress}
-              />
+              <NotificationCard notification={item} onPress={handlePress} />
             )}
           />
         </View>

@@ -13,7 +13,12 @@ interface SymptomSearchBarProps {
   placeholder?: string;
 }
 
-export function SymptomSearchBar({ interactive = false, onSubmit, autoFocus = false, placeholder }: SymptomSearchBarProps) {
+export function SymptomSearchBar({
+  interactive = false,
+  onSubmit,
+  autoFocus = false,
+  placeholder,
+}: SymptomSearchBarProps) {
   const router = useRouter();
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
@@ -113,7 +118,11 @@ export function SymptomSearchBar({ interactive = false, onSubmit, autoFocus = fa
       <TextInput
         ref={inputRef}
         style={styles.input}
-        placeholder={isRecording ? (t('search.listening') || 'Listening...') : (placeholder || t('search.placeholder') || 'Search by symptoms...')}
+        placeholder={
+          isRecording
+            ? t('search.listening') || 'Listening...'
+            : placeholder || t('search.placeholder') || 'Search by symptoms...'
+        }
         placeholderTextColor={isRecording ? Colors.primary : Colors.textTertiary}
         value={query}
         onChangeText={setQuery}

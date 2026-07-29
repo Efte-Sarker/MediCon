@@ -69,7 +69,14 @@ export default function AskQuestionScreen() {
     try {
       setSubmitting(true);
       if (editId && typeof editId === 'string') {
-        await qnaService.updateQuestion(editId, userId, content.trim(), department, isAnonymous, symptomId);
+        await qnaService.updateQuestion(
+          editId,
+          userId,
+          content.trim(),
+          department,
+          isAnonymous,
+          symptomId,
+        );
       } else {
         await qnaService.askQuestion(userId, department, content.trim(), isAnonymous, symptomId);
       }
@@ -230,7 +237,9 @@ export default function AskQuestionScreen() {
             <ActivityIndicator color={Colors.surface} />
           ) : (
             <Text style={styles.standardButtonText}>
-              {editId ? t('ask.update_question', 'Update Question') : t('ask.submit_question', 'Submit Question')}
+              {editId
+                ? t('ask.update_question', 'Update Question')
+                : t('ask.submit_question', 'Submit Question')}
             </Text>
           )}
         </TouchableOpacity>

@@ -15,36 +15,35 @@ const mockNotification: SystemNotification = {
 
 describe('NotificationCard', () => {
   it('renders correctly with unread state', async () => {
-    await render(<NotificationCard notification={mockNotification} onToggleRead={jest.fn()} />);
+    await render(<NotificationCard notification={mockNotification} />);
 
     expect(screen.getByText('Test Notification')).toBeTruthy();
     expect(screen.getByText('This is a test notification message.')).toBeTruthy();
     expect(screen.getByLabelText('Mark as read')).toBeTruthy();
   });
 
-  it('renders correctly with read state', async () => {
+  it('renders correctly with read notification', async () => {
     const readNotification = { ...mockNotification, isRead: true };
-    await render(<NotificationCard notification={readNotification} onToggleRead={jest.fn()} />);
+    await render(<NotificationCard notification={readNotification} />);
 
     expect(screen.getByLabelText('Mark as unread')).toBeTruthy();
   });
 
   it('calls onToggleRead when toggle button is pressed', async () => {
-    const onToggleReadMock = jest.fn();
-    await render(
-      <NotificationCard notification={mockNotification} onToggleRead={onToggleReadMock} />,
+    const onPressMock = jest.fn();
+    const { getByRole } = await render(
+      <NotificationCard notification={mockNotification} onPress={onPressMock} />,
     );
 
-    fireEvent.press(screen.getByTestId('toggle-read-n-test'));
-    expect(onToggleReadMock).toHaveBeenCalledWith('n-test');
+    fireEvent.press(getByRole('button'));
+    expect(onPressMock).toHaveBeenCalledWith(mockNotification);
   });
 
-  it('calls onPress when the card is pressed', async () => {
+  it('navigates to actionUrl when pressed and notification is read', async () => {
     const onPressMock = jest.fn();
-    await render(
+    const { getByRole } = await render(
       <NotificationCard
-        notification={mockNotification}
-        onToggleRead={jest.fn()}
+        notification={{ ...mockNotification, isRead: true }}
         onPress={onPressMock}
       />,
     );

@@ -12,6 +12,7 @@ interface AuthState {
   userId: string | null;
   login: (data: { token: string; role: UserRole; status: UserStatus; userId: string }) => void;
   logout: () => void;
+  setRole: (role: UserRole) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -35,6 +36,7 @@ export const useAuthStore = create<AuthState>()(
           status: null,
           userId: null,
         }),
+      setRole: (role: UserRole) => set({ role }),
     }),
     {
       name: 'auth-storage',

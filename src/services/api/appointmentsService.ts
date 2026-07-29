@@ -1,3 +1,6 @@
+import { useScheduleStore } from '../../store/scheduleStore';
+import { doctorsService } from './doctorsService';
+
 export type ConsultationType = 'in-person' | 'video';
 
 export interface TimeSlot {
@@ -32,22 +35,50 @@ export interface BookingResult {
 
 class AppointmentsService {
   /**
-   * Mock getting available slots for a given doctor and date.
+   * Get available slots for a given doctor and date, applying capacity and exception logic.
    */
   async getAvailableSlots(doctorId: string, date: string): Promise<TimeSlot[]> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Generate mock slots
-        resolve([
-          { id: 't1', time: '09:00 AM', isAvailable: true },
-          { id: 't2', time: '09:30 AM', isAvailable: false },
-          { id: 't3', time: '10:00 AM', isAvailable: true },
-          { id: 't4', time: '11:00 AM', isAvailable: true },
-          { id: 't5', time: '02:00 PM', isAvailable: true },
-          { id: 't6', time: '03:30 PM', isAvailable: false },
-          { id: 't7', time: '04:00 PM', isAvailable: true },
-        ]);
-      }, 500);
+    // 1. Fetch doctor to get avgConsultationMinutes
+    const doctor = await doctorsService.getDoctorDetails(doctorId);
+    if (!doctor) return [];
+
+    // Assuming a 60-minute time block for slots.
+    // Capacity = 60 / avgConsultationMinutes
+    const capacity = Math.floor(60 / doctor.avgConsultationMinutes);
+
+    // 2. Determine day of week
+    const d = new Date(date);
+    const dayOfWeek = d.getDay(); // 0 (Sun) to 6 (Sat)
+
+    // 3. Get from Zustand store
+    const store = useScheduleStore.getState();
+    const regularSlots = store.regularSchedule[dayOfWeek] || [];
+    const exceptionsForDate = store.scheduleExceptions[date] || {};
+    const bookingsForDate = store.bookings[date] || {};
+
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    // 4. Map to TimeSlot array
+    return regularSlots.map((timeStr, index) => {
+      const isExceptionDisabled = exceptionsForDate[timeStr] === false;
+      const currentBookings = bookingsForDate[timeStr] || 0;
+      let isFull = currentBookings >= capacity;
+
+      // Mock visualization: Scatter disabled slots pseudo-randomly based on date and index
+      // so it looks natural and not aligned in the same columns.
+      const dayOfMonth = d.getDate();
+      const pseudoRandom = (dayOfMonth * 31 + index * 17) % 10;
+      if (pseudoRandom < 2) {
+        // roughly 20% chance for a slot to be disabled
+        isFull = true;
+      }
+
+      return {
+        id: timeStr,
+        time: timeStr,
+        isAvailable: !isExceptionDisabled && !isFull,
+      };
     });
   }
 
@@ -78,6 +109,10 @@ class AppointmentsService {
    * Mock booking the appointment.
    */
   async bookAppointment(details: BookingDetails): Promise<BookingResult> {
+    // Increment booking in the store
+    const store = useScheduleStore.getState();
+    store.incrementBooking(details.date, details.timeSlotId);
+
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({

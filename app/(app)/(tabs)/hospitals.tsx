@@ -66,7 +66,7 @@ export default function HospitalsScreen() {
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
         <Text style={styles.loadingText}>
-          {t('hospitals.locating_nearby_hospitals') || 'Locating nearby hospitals...'}
+          {t('hospitals.locating_nearby_hospitals', 'Locating nearby hospitals...')}
         </Text>
       </View>
     );
@@ -77,18 +77,16 @@ export default function HospitalsScreen() {
       <View style={styles.centerContainer}>
         <MaterialCommunityIcons name="map-marker-off" size={64} color={Colors.textTertiary} />
         <Text style={styles.errorTitle}>
-          {t('hospitals.location_unavailable') || 'Location Unavailable'}
+          {t('hospitals.location_unavailable', 'Location Unavailable')}
         </Text>
         <Text style={styles.errorSubtitle}>
-          {t('hospitals.we_need_access_to_your_locatio') ||
-            `We need access to your location to find nearby hospitals and emergency centers. Please
-                          enable location services in your device settings.`}
+          {t('hospitals.we_need_access_to_your_locatio', 'We need access to your location to find nearby hospitals.')}
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
           onPress={() => router.replace('/(app)/(tabs)/hospitals')}
         >
-          <Text style={styles.retryButtonText}>{t('hospitals.retry') || 'Retry'}</Text>
+          <Text style={styles.retryButtonText}>{t('hospitals.retry', 'Retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -172,7 +170,9 @@ export default function HospitalsScreen() {
     <View style={styles.container}>
       {renderMap()}
 
-      <View style={[styles.floatingHeader, { top: Math.max(insets.top, Spacing.base) + Spacing.sm }]}>
+      <View
+        style={[styles.floatingHeader, { top: Math.max(insets.top, Spacing.base) + Spacing.sm }]}
+      >
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
@@ -181,12 +181,9 @@ export default function HospitalsScreen() {
         >
           <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
-        
+
         <View style={styles.searchBarWrapper}>
-          <SymptomSearchBar
-            interactive
-            placeholder="Search hospitals"
-          />
+          <SymptomSearchBar interactive placeholder="Search hospitals" />
         </View>
       </View>
 

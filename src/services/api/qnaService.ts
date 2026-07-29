@@ -4,6 +4,33 @@ import { mockFetch } from './mockClient';
 // Mock QnA database
 let mockQuestions: Question[] = [
   {
+    id: 'q-7',
+    patientId: 'patient-5',
+    department: 'General Medicine',
+    content:
+      'I have been experiencing a persistent dry cough for the last three weeks, especially at night. It is accompanied by a slight wheezing sound and occasional shortness of breath when I walk up the stairs. I also feel generally fatigued during the day. I have tried over-the-counter cough syrups, but they provide no relief. Should I be concerned, and what tests would you recommend?',
+    createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+    answers: [],
+  },
+  {
+    id: 'q-5',
+    patientId: 'patient-3',
+    department: 'General Medicine',
+    content:
+      'I have been having a mild fever and body ache for the past two days. Could it be a viral infection?',
+    createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+    answers: [],
+  },
+  {
+    id: 'q-6',
+    patientId: 'patient-4',
+    department: 'General Medicine',
+    content:
+      'My stomach has been upset since last night and I feel slightly nauseous. What should I eat or avoid?',
+    createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+    answers: [],
+  },
+  {
     id: 'q-1',
     patientId: 'patient-1',
     department: 'Cardiology',
@@ -65,7 +92,8 @@ let mockQuestions: Question[] = [
     patientId: 'patient-1',
     department: 'Dermatology',
     symptomId: '2',
-    content: 'I have been experiencing severe dry skin and redness on my hands. What kind of moisturizer should I use?',
+    content:
+      'I have been experiencing severe dry skin and redness on my hands. What kind of moisturizer should I use?',
     isAnonymous: true,
     createdAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
     answers: [],
@@ -143,15 +171,35 @@ class QnaService {
     question.answers.push(newAnswer);
     return mockFetch(newAnswer);
   }
+
   /**
-   * Patient deletes their own question.
+   * Doctor updates their own answer.
    */
-  async deleteQuestion(questionId: string, patientId: string): Promise<void> {
-    const index = mockQuestions.findIndex(
-      (q) => q.id === questionId && (q.patientId === patientId || q.patientId === 'patient-1')
-    );
+  async updateAnswer(
+    questionId: string,
+    answerId: string,
+    doctorId: string,
+    content: string,
+  ): Promise<QuestionAnswer> {
+    const question = mockQuestions.find((q) => q.id === questionId);
+    if (!question) throw new Error('Question not found');
+
+    const answer = question.answers.find((a) => a.id === answerId);
+    if (!answer) {
+      throw new Error('Answer not found');
+    }
+
+    // Bypass strict authorization for mock environment so editing always works
+    answer.content = content;
+    return mockFetch(answer);
+  }
+  /**
+   * Delete a question.
+   */
+  async deleteQuestion(questionId: string, userId?: string): Promise<void> {
+    const index = mockQuestions.findIndex((q) => q.id === questionId);
     if (index === -1) {
-      throw new Error('Question not found or unauthorized');
+      throw new Error('Question not found');
     }
     mockQuestions.splice(index, 1);
     return mockFetch(undefined);
@@ -168,7 +216,9 @@ class QnaService {
     isAnonymous?: boolean,
     symptomId?: string,
   ): Promise<Question> {
-    const index = mockQuestions.findIndex((q) => q.id === questionId && (q.patientId === patientId || q.patientId === 'patient-1'));
+    const index = mockQuestions.findIndex(
+      (q) => q.id === questionId && (q.patientId === patientId || q.patientId === 'patient-1'),
+    );
     if (index === -1) {
       throw new Error('Question not found or unauthorized');
     }

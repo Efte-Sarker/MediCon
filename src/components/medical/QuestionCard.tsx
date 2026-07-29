@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Pressable, Modal, TouchableWithoutFeedback } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Pressable,
+  Modal,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Shadows } from '@theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Question } from '../../types/medical.types';
@@ -58,57 +66,71 @@ export const QuestionCard = ({
   return (
     <>
       <Pressable
-      style={({ pressed }) => [styles.card, pressed && { opacity: 0.7 }]}
-      onPress={() => onPress(question)}
-    >
-      {/* Row 1: Time, Badge, Menu */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Text style={styles.timestamp}>{timeAgo}</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{question.department}</Text>
-          </View>
-          {question.isAnonymous && (
-            <View style={[styles.badge, { backgroundColor: Colors.textTertiary + '20' }]}>
-              <Text style={[styles.badgeText, { color: Colors.textSecondary }]}>Anonymous</Text>
+        style={({ pressed }) => [styles.card, pressed && { opacity: 0.7 }]}
+        onPress={() => onPress(question)}
+      >
+        {/* Row 1: Time, Badge, Menu */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.timestamp}>{timeAgo}</Text>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{question.department}</Text>
             </View>
-          )}
+            {question.isAnonymous && (
+              <View style={[styles.badge, { backgroundColor: Colors.textTertiary + '20' }]}>
+                <Text style={[styles.badgeText, { color: Colors.textSecondary }]}>Anonymous</Text>
+              </View>
+            )}
+          </View>
+          <TouchableOpacity
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={handleMenuPress}
+          >
+            <MaterialCommunityIcons
+              name="dots-horizontal"
+              size={20}
+              color={Colors.textSecondary}
+              style={{ opacity: 0.5 }}
+            />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          onPress={handleMenuPress}
-        >
-          <MaterialCommunityIcons name="dots-horizontal" size={20} color={Colors.textSecondary} style={{ opacity: 0.5 }} />
-        </TouchableOpacity>
-      </View>
 
-      {/* Row 2: Question Content */}
-      <Text style={styles.content}>
-        {question.content}
-      </Text>
+        {/* Row 2: Question Content */}
+        <Text style={styles.content}>{question.content}</Text>
 
-      {/* Row 3: Response count */}
-      {answerCount > 0 && (
-        <View style={styles.footer}>
-          <Text style={styles.responseCount}>
-            {answerCount} {answerCount === 1 ? 'doctor response' : 'doctors responses'}
-          </Text>
-        </View>
-      )}
-    </Pressable>
+        {/* Row 3: Response count */}
+        {answerCount > 0 && (
+          <View style={styles.footer}>
+            <Text style={styles.responseCount}>
+              {answerCount} {answerCount === 1 ? 'doctor response' : 'doctors responses'}
+            </Text>
+          </View>
+        )}
+      </Pressable>
 
-      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
         <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
           <View style={styles.menuOverlay}>
             <View style={[styles.menuContainer, { top: menuCoords.y, left: menuCoords.x }]}>
               <TouchableOpacity style={styles.menuItem} onPress={handleEdit}>
-                <MaterialCommunityIcons name="pencil-outline" size={20} color={Colors.textPrimary} />
+                <MaterialCommunityIcons
+                  name="pencil-outline"
+                  size={20}
+                  color={Colors.textPrimary}
+                />
                 <Text style={styles.menuItemText}>{t('common.edit', 'Edit')}</Text>
               </TouchableOpacity>
               <View style={styles.menuDivider} />
               <TouchableOpacity style={styles.menuItem} onPress={handleDelete}>
                 <MaterialCommunityIcons name="trash-can-outline" size={20} color={Colors.danger} />
-                <Text style={[styles.menuItemText, { color: Colors.danger }]}>{t('common.delete', 'Delete')}</Text>
+                <Text style={[styles.menuItemText, { color: Colors.danger }]}>
+                  {t('common.delete', 'Delete')}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -194,7 +216,7 @@ const styles = StyleSheet.create({
   },
   menuDivider: {
     height: 1,
-    backgroundColor: Colors.border,
+    backgroundColor: Colors.tertiary,
     marginHorizontal: Spacing.xs,
   },
 });

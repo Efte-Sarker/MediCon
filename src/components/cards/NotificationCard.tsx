@@ -9,10 +9,7 @@ interface NotificationCardProps {
   onPress?: (notification: SystemNotification) => void;
 }
 
-export const NotificationCard = ({
-  notification,
-  onPress,
-}: NotificationCardProps) => {
+export const NotificationCard = ({ notification, onPress }: NotificationCardProps) => {
   const isAppointment = notification.title.toLowerCase().includes('appointment');
   const isMedicine = notification.type === 'REMINDER' && !isAppointment;
   const isPrescription = notification.title.toLowerCase().includes('prescription');
@@ -21,7 +18,7 @@ export const NotificationCard = ({
     if (isAppointment) return 'clock-outline';
     if (isMedicine) return 'pill';
     if (isPrescription) return 'file-document-outline';
-    
+
     switch (notification.type) {
       case 'CONFIRMATION':
         return 'check-circle-outline';
@@ -46,7 +43,7 @@ export const NotificationCard = ({
     if (isAppointment) return '#6B21A8'; // Dark purple
     if (isMedicine) return '#C2410C'; // Dark orange
     if (isPrescription) return '#166534'; // Dark green
-    
+
     switch (notification.type) {
       case 'QNA_ANSWER':
         return '#991B1B'; // Dark red

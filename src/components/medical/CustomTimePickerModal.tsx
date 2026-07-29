@@ -7,6 +7,7 @@ export interface CustomTimePickerModalProps {
   visible: boolean;
   initialTimeStr: string;
   title: string;
+  subtitle?: string;
   onSave: (timeStr: string) => void;
   onCancel: () => void;
 }
@@ -75,6 +76,7 @@ export const CustomTimePickerModal = ({
   visible,
   initialTimeStr,
   title,
+  subtitle,
   onSave,
   onCancel,
 }: CustomTimePickerModalProps) => {
@@ -162,6 +164,7 @@ export const CustomTimePickerModal = ({
       <View style={styles.pickerModalBackdrop}>
         <View style={styles.pickerModalContent}>
           <Text style={styles.pickerModalTitle}>{title}</Text>
+          {subtitle ? <Text style={styles.pickerModalSubtitle}>{subtitle}</Text> : null}
 
           <TouchableOpacity
             style={styles.modeToggleBtn}
@@ -267,6 +270,13 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
+  },
+  pickerModalSubtitle: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginBottom: Spacing.lg,
+    marginTop: -Spacing.sm,
   },
   modeToggleBtn: {
     flexDirection: 'row',

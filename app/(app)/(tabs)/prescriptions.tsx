@@ -171,7 +171,11 @@ export default function PrescriptionsScreen(): React.JSX.Element {
   const currentList = activeTab === 'doctors' ? doctorRxs : uploadedRxs;
   const scheduledRx = useMemo(() => {
     if (!scheduledId) return null;
-    return doctorRxs.find(rx => rx.id === scheduledId) || uploadedRxs.find(rx => rx.id === scheduledId) || null;
+    return (
+      doctorRxs.find((rx) => rx.id === scheduledId) ||
+      uploadedRxs.find((rx) => rx.id === scheduledId) ||
+      null
+    );
   }, [scheduledId, doctorRxs, uploadedRxs]);
 
   const renderItem = useCallback(
@@ -357,7 +361,9 @@ export default function PrescriptionsScreen(): React.JSX.Element {
                   !scheduledId && styles.quickViewBtnSubtitleEmpty,
                 ]}
               >
-                {scheduledId ? (scheduledRx?.doctorName || 'Prescription Schedule') : 'Select a prescription from below'}
+                {scheduledId
+                  ? scheduledRx?.doctorName || 'Prescription Schedule'
+                  : 'Select a prescription from below'}
               </Text>
             </View>
           </View>

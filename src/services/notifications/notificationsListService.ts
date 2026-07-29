@@ -52,7 +52,7 @@ class NotificationsListService {
   async getNotifications(userId: string): Promise<SystemNotification[]> {
     // For mock purposes, return all notifications ignoring the specific userId filter
     const data = [...mockNotifications].sort(
-      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
     return mockFetch(data);

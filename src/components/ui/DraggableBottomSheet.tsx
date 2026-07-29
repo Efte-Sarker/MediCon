@@ -79,7 +79,7 @@ export function DraggableBottomSheet({
           style={[
             styles.modalSheet,
             { paddingBottom: insets.bottom || Spacing.md },
-            height ? { height } : undefined,
+            height ? { height: height as any } : undefined,
             {
               transform: [
                 {
@@ -108,7 +108,9 @@ export function DraggableBottomSheet({
           ) : null}
 
           {/* Content */}
-          <View style={[styles.contentContainer, height ? { flex: 1 } : undefined]}>{children}</View>
+          <View style={[styles.contentContainer, height ? { flex: 1 } : undefined]}>
+            {children}
+          </View>
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>

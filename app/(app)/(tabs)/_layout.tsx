@@ -36,7 +36,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: isDoctor ? 'Dashboard' : 'Home',
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="home-outline" size={size + 3} color={color} />
           ),
@@ -77,16 +77,6 @@ export default function TabsLayout() {
 
       {/* Doctor Tabs */}
       <Tabs.Screen
-        name="schedule"
-        options={{
-          title: 'Schedule',
-          href: !isDoctor ? null : undefined,
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar-clock-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="patients"
         options={{
           title: 'Patients',
@@ -97,12 +87,22 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="qna-inbox"
+        name="schedule"
         options={{
-          title: 'Inbox',
+          title: 'Schedule',
           href: !isDoctor ? null : undefined,
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="inbox-outline" size={size} color={color} />
+            <MaterialCommunityIcons name="calendar-clock-outline" size={size - 2} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="qna-inbox"
+        options={{
+          title: 'Q&A Inbox',
+          href: !isDoctor ? null : undefined,
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="inbox-outline" size={size - 2} color={color} />
           ),
         }}
       />

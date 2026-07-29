@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Animated,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -78,11 +71,7 @@ export default function SearchScreen() {
 
           {/* Reuse SymptomSearchBar in interactive mode */}
           <View style={styles.searchBarWrapper}>
-            <SymptomSearchBar
-              interactive
-              autoFocus
-              onSubmit={handleSubmit}
-            />
+            <SymptomSearchBar interactive autoFocus onSubmit={handleSubmit} />
           </View>
         </View>
       </View>

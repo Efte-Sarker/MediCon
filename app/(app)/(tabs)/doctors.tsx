@@ -85,7 +85,7 @@ export default function DoctorsScreen(): React.JSX.Element {
         <TouchableOpacity
           onPress={() => router.push('/(app)/settings/')}
           hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-          accessibilityLabel={t('dashboard.settings') || 'Settings'}
+          accessibilityLabel={t('dashboard.settings', 'Settings')}
           accessibilityRole="button"
         >
           <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
@@ -102,15 +102,15 @@ export default function DoctorsScreen(): React.JSX.Element {
         <View style={[styles.section, { marginTop: 0 }]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              {t('doctors.consultation_history') || 'Consultation History'}
+              {t('doctors.consultation_history', 'Consultation History')}
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(app)/doctors/history')}
               hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
               accessibilityRole="button"
-              accessibilityLabel={t('doctors.view_all_history') || 'View all consultation history'}
+              accessibilityLabel={t('doctors.view_all_history', 'View all consultation history')}
             >
-              <Text style={styles.viewAllText}>{t('doctors.view_all') || 'view all'}</Text>
+              <Text style={styles.viewAllText}>{t('doctors.view_all', 'view all')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -120,7 +120,7 @@ export default function DoctorsScreen(): React.JSX.Element {
             <View style={styles.emptySection}>
               <MaterialCommunityIcons name="history" size={28} color={Colors.textTertiary} />
               <Text style={styles.emptyText}>
-                {t('doctors.no_consultations_yet') || 'No consultations yet'}
+                {t('doctors.no_consultations_yet', 'No consultations yet')}
               </Text>
             </View>
           ) : (
@@ -149,14 +149,14 @@ export default function DoctorsScreen(): React.JSX.Element {
         {/* Department Cards — 3-column grid */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{t('doctors.departments') || 'Departments'}</Text>
+            <Text style={styles.sectionTitle}>{t('doctors.departments', 'Departments')}</Text>
             <TouchableOpacity
               onPress={() => router.push('/(app)/doctors/departments')}
               hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
               accessibilityRole="button"
-              accessibilityLabel={t('doctors.view_all_departments') || 'View all departments'}
+              accessibilityLabel={t('doctors.view_all_departments', 'View all departments')}
             >
-              <Text style={styles.viewAllText}>{t('doctors.view_all') || 'view all'}</Text>
+              <Text style={styles.viewAllText}>{t('doctors.view_all', 'view all')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -198,15 +198,15 @@ export default function DoctorsScreen(): React.JSX.Element {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              {t('doctors.online_doctors') || 'Online Doctors'}
+              {t('doctors.online_doctors', 'Online Doctors')}
             </Text>
             <TouchableOpacity
               onPress={() => router.push('/(app)/doctors/')}
               hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
               accessibilityRole="button"
-              accessibilityLabel={t('doctors.view_all_doctors') || 'View all doctors'}
+              accessibilityLabel={t('doctors.view_all_doctors', 'View all doctors')}
             >
-              <Text style={styles.viewAllText}>{t('doctors.view_all') || 'view all'}</Text>
+              <Text style={styles.viewAllText}>{t('doctors.view_all', 'view all')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -216,7 +216,7 @@ export default function DoctorsScreen(): React.JSX.Element {
             <View style={styles.emptySection}>
               <MaterialCommunityIcons name="doctor" size={28} color={Colors.textTertiary} />
               <Text style={styles.emptyText}>
-                {t('doctors.no_doctors_online') || 'No doctors online right now'}
+                {t('doctors.no_doctors_online', 'No doctors online right now')}
               </Text>
             </View>
           ) : (

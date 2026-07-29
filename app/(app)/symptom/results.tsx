@@ -5,11 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
@@ -77,7 +77,7 @@ export default function SymptomResultsScreen() {
         />
       </View>
     ),
-    [router]
+    [router],
   );
 
   const count = filteredDoctors.length;
@@ -86,8 +86,8 @@ export default function SymptomResultsScreen() {
     filterGender === 'all'
       ? `${count} ${doctorWord} available`
       : filterGender === 'male'
-      ? `${count} male ${doctorWord} available`
-      : `${count} female ${doctorWord} available`;
+        ? `${count} male ${doctorWord} available`
+        : `${count} female ${doctorWord} available`;
 
   return (
     <View style={styles.container}>
@@ -113,7 +113,7 @@ export default function SymptomResultsScreen() {
           <ActivityIndicator size="large" color={Colors.primary} />
         </View>
       ) : (
-        <FlashList
+        <FlatList
           data={filteredDoctors}
           renderItem={renderItem}
           numColumns={2}
@@ -143,23 +143,16 @@ export default function SymptomResultsScreen() {
               </Text>
             </View>
           }
-          estimatedItemSize={250}
         />
       )}
 
       {/* Filter Bottom Sheet */}
-      <DraggableBottomSheet
-        visible={isFilterOpen}
-        onClose={() => setIsFilterOpen(false)}
-      >
+      <DraggableBottomSheet visible={isFilterOpen} onClose={() => setIsFilterOpen(false)}>
         <View style={styles.filterContent}>
           {(['all', 'male', 'female'] as FilterType[]).map((type, index, array) => (
             <TouchableOpacity
               key={type}
-              style={[
-                styles.filterOption,
-                index === array.length - 1 && { borderBottomWidth: 0 }
-              ]}
+              style={[styles.filterOption, index === array.length - 1 && { borderBottomWidth: 0 }]}
               onPress={() => {
                 setFilterGender(type);
                 setIsFilterOpen(false);
@@ -174,8 +167,8 @@ export default function SymptomResultsScreen() {
                 {type === 'all'
                   ? 'All doctors'
                   : type === 'male'
-                  ? 'Male doctors'
-                  : 'Female doctors'}
+                    ? 'Male doctors'
+                    : 'Female doctors'}
               </Text>
               {filterGender === type && (
                 <MaterialCommunityIcons name="check" size={24} color={Colors.primary} />

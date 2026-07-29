@@ -27,7 +27,6 @@ export const AppointmentQueueCard = ({
     hour12: true,
   });
 
-  const isVideo = appointment.format === 'video';
   const isCompleted = appointment.status === 'completed';
   const isInProgress = appointment.status === 'in-progress';
 
@@ -54,7 +53,6 @@ export const AppointmentQueueCard = ({
           <Text style={styles.timeText}>{formattedTime}</Text>
         </View>
         <View style={styles.badges}>
-          <Badge label={isVideo ? 'Video' : 'In-person'} variant={isVideo ? 'info' : 'default'} />
           <Badge label={statusLabel} variant={statusBadgeVariant} />
         </View>
       </View>
@@ -67,13 +65,6 @@ export const AppointmentQueueCard = ({
           <Text style={styles.patientDetails}>
             {appointment.age} {t('appointmentqueuecard.yrs') || 'yrs •'} {appointment.gender}
           </Text>
-        </View>
-        <View style={styles.iconContainer}>
-          <MaterialCommunityIcons
-            name={isVideo ? 'video' : 'hospital-building'}
-            size={24}
-            color={isCompleted ? Colors.textTertiary : Colors.primary}
-          />
         </View>
       </View>
 
