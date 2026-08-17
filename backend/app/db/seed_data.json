@@ -1,0 +1,481 @@
+{
+    "hospitals": [
+        {
+            "id": "hosp_001",
+            "name": "Square Hospital Ltd.",
+            "address": "18/F, Bir Uttam Qazi Nuruzzaman Sarak, West Panthapath, Dhaka 1205",
+            "latitude": 23.7533,
+            "longitude": 90.3813,
+            "contactNumber": "+8809610009610",
+            "emergencyNumber": "+8801713141447",
+            "hasEmergencyRoom": true,
+            "isOpen24x7": true,
+            "imageUrl": "https://example.com/square.jpg"
+        },
+        {
+            "id": "hosp_002",
+            "name": "Evercare Hospital Dhaka",
+            "address": "Plot: 81, Block: E, Bashundhara R/A, Dhaka 1229",
+            "latitude": 23.8078,
+            "longitude": 90.4326,
+            "contactNumber": "+8809666710678",
+            "emergencyNumber": "+880255037242",
+            "hasEmergencyRoom": true,
+            "isOpen24x7": true,
+            "imageUrl": "https://example.com/evercare.jpg"
+        },
+        {
+            "id": "hosp_003",
+            "name": "Labaid Specialized Hospital",
+            "address": "House 06, Road 04, Dhanmondi, Dhaka 1205",
+            "latitude": 23.7417,
+            "longitude": 90.3831,
+            "contactNumber": "+88029676356",
+            "emergencyNumber": "+8801713333333",
+            "hasEmergencyRoom": true,
+            "isOpen24x7": true,
+            "imageUrl": "https://example.com/labaid.jpg"
+        },
+        {
+            "id": "hosp_004",
+            "name": "Evercare Hospital Chattogram",
+            "address": "Plot No. H1, Ananna Residential Area, Hathazari, Chattogram",
+            "latitude": 22.392,
+            "longitude": 91.8318,
+            "contactNumber": "+8809612310663",
+            "emergencyNumber": "+8801321155211",
+            "hasEmergencyRoom": true,
+            "isOpen24x7": true,
+            "imageUrl": "https://example.com/evercare_ctg.jpg"
+        }
+    ],
+    "doctors": [
+        {
+            "id": "doc_101",
+            "userId": "usr_doc_101",
+            "fullName": "Dr. Ahmed Hasan",
+            "phoneNumber": "+8801711122334",
+            "gender": "Male",
+            "dateOfBirth": "1975-04-12",
+            "department": "Cardiology",
+            "licenseNumber": "BD-CARD-101",
+            "consultationFee": 1500.0,
+            "followUpFee": 1000.0,
+            "followUpDays": 7,
+            "isOnline": true,
+            "rating": 4.8,
+            "reviewCount": 342,
+            "about": "Senior Consultant in Cardiology with over 20 years of experience. Specialized in Interventional Cardiology and Heart Failure management.",
+            "experience": "20 Years",
+            "degrees": [
+                "MBBS",
+                "MD (Cardiology)",
+                "FCPS (Medicine)"
+            ],
+            "medicalCollege": "Dhaka Medical College",
+            "bmdcNumber": "A-12345",
+            "workingHospital": "Square Hospital Ltd.",
+            "workingHospitalId": "hosp_001",
+            "totalPatients": 5400,
+            "avgConsultationMinutes": 15,
+            "services": [
+                "ECG",
+                "Echocardiography",
+                "Angiogram",
+                "Heart Failure Clinic"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [
+                {
+                    "id": "exp_1",
+                    "hospitalName": "National Institute of Cardiovascular Diseases (NICVD)",
+                    "designation": "Associate Professor",
+                    "department": "Cardiology",
+                    "status": "Previous",
+                    "period": "2010 - 2018"
+                }
+            ],
+            "image": null
+        },
+        {
+            "id": "doc_102",
+            "userId": "usr_doc_102",
+            "fullName": "Dr. Nusrat Jahan",
+            "phoneNumber": "+8801811223344",
+            "gender": "Female",
+            "dateOfBirth": "1982-09-25",
+            "department": "Gynecology",
+            "licenseNumber": "BD-GYN-102",
+            "consultationFee": 1200.0,
+            "followUpFee": 800.0,
+            "followUpDays": 14,
+            "isOnline": false,
+            "rating": 4.9,
+            "reviewCount": 512,
+            "about": "Expert in high-risk pregnancy and laparoscopic gynecological surgeries.",
+            "experience": "15 Years",
+            "degrees": [
+                "MBBS",
+                "FCPS (OBGYN)",
+                "MCPS"
+            ],
+            "medicalCollege": "Sir Salimullah Medical College",
+            "bmdcNumber": "A-23456",
+            "workingHospital": "Square Hospital Ltd.",
+            "workingHospitalId": "hosp_001",
+            "totalPatients": 8200,
+            "avgConsultationMinutes": 20,
+            "services": [
+                "Pregnancy Checkup",
+                "PCOS Management",
+                "Laparoscopic Surgery"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_103",
+            "userId": "usr_doc_103",
+            "fullName": "Dr. Tariqur Rahman",
+            "phoneNumber": "+8801911334455",
+            "gender": "Male",
+            "dateOfBirth": "1978-02-18",
+            "department": "Neurology",
+            "licenseNumber": "BD-NEU-103",
+            "consultationFee": 2000.0,
+            "followUpFee": 1500.0,
+            "followUpDays": 7,
+            "isOnline": true,
+            "rating": 4.7,
+            "reviewCount": 189,
+            "about": "Specialist in Stroke Medicine and Epilepsy.",
+            "experience": "18 Years",
+            "degrees": [
+                "MBBS",
+                "MD (Neurology)"
+            ],
+            "medicalCollege": "Mymensingh Medical College",
+            "bmdcNumber": "A-34567",
+            "workingHospital": "Evercare Hospital Dhaka",
+            "workingHospitalId": "hosp_002",
+            "totalPatients": 3100,
+            "avgConsultationMinutes": 25,
+            "services": [
+                "Stroke Management",
+                "Epilepsy Treatment",
+                "Migraine Clinic"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_104",
+            "userId": "usr_doc_104",
+            "fullName": "Dr. Farhana Amin",
+            "phoneNumber": "+8801555445566",
+            "gender": "Female",
+            "dateOfBirth": "1985-11-05",
+            "department": "Pediatrics",
+            "licenseNumber": "BD-PED-104",
+            "consultationFee": 1000.0,
+            "followUpFee": 800.0,
+            "followUpDays": 7,
+            "isOnline": true,
+            "rating": 4.9,
+            "reviewCount": 670,
+            "about": "Consultant Pediatrician with a special interest in Neonatology and child nutrition.",
+            "experience": "12 Years",
+            "degrees": [
+                "MBBS",
+                "DCH",
+                "FCPS (Pediatrics)"
+            ],
+            "medicalCollege": "Sylhet MAG Osmani Medical College",
+            "bmdcNumber": "A-45678",
+            "workingHospital": "Evercare Hospital Dhaka",
+            "workingHospitalId": "hosp_002",
+            "totalPatients": 9500,
+            "avgConsultationMinutes": 15,
+            "services": [
+                "Vaccination",
+                "Neonatal Care",
+                "Growth Monitoring"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_105",
+            "userId": "usr_doc_105",
+            "fullName": "Dr. Kamrul Islam",
+            "phoneNumber": "+8801722556677",
+            "gender": "Male",
+            "dateOfBirth": "1970-08-30",
+            "department": "Orthopedics",
+            "licenseNumber": "BD-ORT-105",
+            "consultationFee": 1500.0,
+            "followUpFee": 1000.0,
+            "followUpDays": 14,
+            "isOnline": false,
+            "rating": 4.6,
+            "reviewCount": 420,
+            "about": "Joint Replacement Surgeon. Expert in Trauma and Arthroscopic Surgery.",
+            "experience": "25 Years",
+            "degrees": [
+                "MBBS",
+                "MS (Orthopedics)"
+            ],
+            "medicalCollege": "Rajshahi Medical College",
+            "bmdcNumber": "A-56789",
+            "workingHospital": "Labaid Specialized Hospital",
+            "workingHospitalId": "hosp_003",
+            "totalPatients": 12000,
+            "avgConsultationMinutes": 15,
+            "services": [
+                "Knee Replacement",
+                "Hip Replacement",
+                "Fracture Management"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_106",
+            "userId": "usr_doc_106",
+            "fullName": "Dr. Sharmin Akter",
+            "phoneNumber": "+8801922667788",
+            "gender": "Female",
+            "dateOfBirth": "1988-03-14",
+            "department": "Dermatology",
+            "licenseNumber": "BD-DER-106",
+            "consultationFee": 1200.0,
+            "followUpFee": 800.0,
+            "followUpDays": 14,
+            "isOnline": true,
+            "rating": 4.8,
+            "reviewCount": 890,
+            "about": "Aesthetic Dermatologist and Laser Specialist.",
+            "experience": "10 Years",
+            "degrees": [
+                "MBBS",
+                "DDV",
+                "MD (Dermatology)"
+            ],
+            "medicalCollege": "Shaheed Suhrawardy Medical College",
+            "bmdcNumber": "A-67890",
+            "workingHospital": "Labaid Specialized Hospital",
+            "workingHospitalId": "hosp_003",
+            "totalPatients": 15000,
+            "avgConsultationMinutes": 10,
+            "services": [
+                "Laser Treatment",
+                "Acne Treatment",
+                "Hair Fall Solution"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_107",
+            "userId": "usr_doc_107",
+            "fullName": "Dr. Mahbubul Alam",
+            "phoneNumber": "+8801822778899",
+            "gender": "Male",
+            "dateOfBirth": "1972-06-22",
+            "department": "Endocrinology",
+            "licenseNumber": "BD-END-107",
+            "consultationFee": 1500.0,
+            "followUpFee": 1000.0,
+            "followUpDays": 21,
+            "isOnline": true,
+            "rating": 4.9,
+            "reviewCount": 612,
+            "about": "Diabetes and Thyroid specialist.",
+            "experience": "22 Years",
+            "degrees": [
+                "MBBS",
+                "MD (Endocrinology)",
+                "FACE (USA)"
+            ],
+            "medicalCollege": "Chittagong Medical College",
+            "bmdcNumber": "A-78901",
+            "workingHospital": "Evercare Hospital Chattogram",
+            "workingHospitalId": "hosp_004",
+            "totalPatients": 11000,
+            "avgConsultationMinutes": 20,
+            "services": [
+                "Diabetes Care",
+                "Thyroid Disorder",
+                "Obesity Management"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English",
+                "Chittagonian"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_108",
+            "userId": "usr_doc_108",
+            "fullName": "Dr. Saima Rahman",
+            "phoneNumber": "+8801733889900",
+            "gender": "Female",
+            "dateOfBirth": "1980-01-10",
+            "department": "Psychiatry",
+            "licenseNumber": "BD-PSY-108",
+            "consultationFee": 1500.0,
+            "followUpFee": 1200.0,
+            "followUpDays": 30,
+            "isOnline": false,
+            "rating": 4.7,
+            "reviewCount": 340,
+            "about": "Consultant Psychiatrist specializing in CBT and mood disorders.",
+            "experience": "16 Years",
+            "degrees": [
+                "MBBS",
+                "FCPS (Psychiatry)"
+            ],
+            "medicalCollege": "Dhaka Medical College",
+            "bmdcNumber": "A-89012",
+            "workingHospital": "Square Hospital Ltd.",
+            "workingHospitalId": "hosp_001",
+            "totalPatients": 4200,
+            "avgConsultationMinutes": 45,
+            "services": [
+                "Depression Counseling",
+                "CBT",
+                "Anxiety Management"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_109",
+            "userId": "usr_doc_109",
+            "fullName": "Dr. Kazi Ariful Islam",
+            "phoneNumber": "+8801933990011",
+            "gender": "Male",
+            "dateOfBirth": "1976-12-05",
+            "department": "Gastroenterology",
+            "licenseNumber": "BD-GAS-109",
+            "consultationFee": 1200.0,
+            "followUpFee": 800.0,
+            "followUpDays": 14,
+            "isOnline": true,
+            "rating": 4.5,
+            "reviewCount": 275,
+            "about": "Hepatologist and Gastroenterologist with advanced endoscopy skills.",
+            "experience": "19 Years",
+            "degrees": [
+                "MBBS",
+                "MD (Gastroenterology)"
+            ],
+            "medicalCollege": "Sher-e-Bangla Medical College",
+            "bmdcNumber": "A-90123",
+            "workingHospital": "Labaid Specialized Hospital",
+            "workingHospitalId": "hosp_003",
+            "totalPatients": 5600,
+            "avgConsultationMinutes": 15,
+            "services": [
+                "Endoscopy",
+                "Colonoscopy",
+                "Liver Disease Treatment"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        },
+        {
+            "id": "doc_110",
+            "userId": "usr_doc_110",
+            "fullName": "Dr. Tanjila Yasmin",
+            "phoneNumber": "+8801533001122",
+            "gender": "Female",
+            "dateOfBirth": "1984-05-19",
+            "department": "Ophthalmology",
+            "licenseNumber": "BD-OPH-110",
+            "consultationFee": 1000.0,
+            "followUpFee": 700.0,
+            "followUpDays": 7,
+            "isOnline": true,
+            "rating": 4.8,
+            "reviewCount": 450,
+            "about": "Eye specialist and Phaco surgeon.",
+            "experience": "13 Years",
+            "degrees": [
+                "MBBS",
+                "DO",
+                "FCPS (Ophthalmology)"
+            ],
+            "medicalCollege": "Sylhet MAG Osmani Medical College",
+            "bmdcNumber": "A-01234",
+            "workingHospital": "Evercare Hospital Chattogram",
+            "workingHospitalId": "hosp_004",
+            "totalPatients": 6700,
+            "avgConsultationMinutes": 15,
+            "services": [
+                "Cataract Surgery",
+                "Lasik",
+                "Glaucoma Screening"
+            ],
+            "languagesSpoken": [
+                "Bengali",
+                "English"
+            ],
+            "experienceList": [],
+            "image": null
+        }
+    ],
+    "transcripts": [
+        {
+            "id": "cons_101",
+            "patientId": "usr_pat_1",
+            "doctorId": "doc_101",
+            "content": "Patient presented with mild chest pain after running. Doctor reviewed ECG. Doctor: 'Your ECG looks completely normal. The pain is likely musculoskeletal from the running. However, because you are over 40, I want you to start taking a low-dose aspirin 75mg daily just for heart protection. Also, avoid heavy meals before your runs. If the pain gets sharp or radiates to your left arm, go to the emergency room immediately.'"
+        },
+        {
+            "id": "cons_102",
+            "patientId": "usr_pat_1",
+            "doctorId": "doc_102",
+            "content": "Patient is in her second trimester of pregnancy. Doctor reviewed ultrasound. Doctor: 'The baby is growing perfectly. Amniotic fluid levels are normal. Your blood pressure is slightly elevated today at 130/85. I don't want to prescribe blood pressure medication yet. Reduce salt in your diet immediately. I am prescribing Iron supplements and Calcium. Take Iron in the morning and Calcium at night. Do not take them together.'"
+        },
+        {
+            "id": "cons_103",
+            "patientId": "usr_pat_1",
+            "doctorId": "doc_103",
+            "content": "Patient complains of frequent severe headaches with aura. Doctor: 'Based on your symptoms, these are classic migraines. They are triggered by stress and lack of sleep. I am prescribing Sumatriptan 50mg to take at the FIRST SIGN of a headache. Do not wait until it gets severe. Also, you need to maintain a strict sleep schedule of 8 hours a night. Avoid caffeine after 2 PM.'"
+        }
+    ]
+}

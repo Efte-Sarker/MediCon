@@ -8,9 +8,11 @@ The goal of MediCon is to provide comprehensive digital healthcare management th
 
 - **AI-Powered Symptom Triage**: Helps patients quickly assess their symptoms and recommends appropriate action (home care vs. urgent care).
 - **Telemedicine & Consultations**: Supports booking remote or in-person doctor appointments, featuring built-in video-call infrastructure and dynamic queues.
+- **Doctor Q&A Network**: A private question-and-answer platform where patients submit health queries that are routed to qualified doctors by department.
 - **Intelligent Prescriptions & Medicine Interactions**: Digital prescription management with an automated drug-interaction checker that flags potential conflicts between medications.
 - **Emergency SOS Protocols**: A dedicated one-tap emergency system providing immediate access to critical protocols, nearby hospitals, and localized emergency contacts.
 - **Health Records & Vitals Tracking**: Comprehensive dashboard for monitoring patient vitals and securely storing digital medical reports.
+- **Doctor Role Portal**: A dedicated role-switched experience for doctors including schedule management, patient records, consultation sessions, and prescription writing.
 - **Bilingual Support**: Fully localized in English and Bengali for wider accessibility.
 
 ## Tech Stack

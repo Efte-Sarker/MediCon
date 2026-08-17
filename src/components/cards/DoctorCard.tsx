@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   doctorName: {
     fontFamily: FontFamily.bold,
-    fontWeight: '600',
+    
     fontSize: 13,
     color: Colors.textPrimary,
     marginBottom: Spacing.xs,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontFamily: FontFamily.medium,
-    fontWeight: '600',
+    
     fontSize: FontSize.xs,
     color: Colors.primary,
   },
@@ -350,7 +350,7 @@ const styles = StyleSheet.create({
   },
   historyName: {
     fontFamily: FontFamily.semiBold,
-    fontWeight: '600',
+    
     fontSize: 13,
     color: Colors.textPrimary,
   },
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
   },
   onlineName: {
     fontFamily: FontFamily.semiBold,
-    fontWeight: '600',
+    
     fontSize: 12,
     color: Colors.textPrimary,
   },
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
   },
   onlinePrice: {
     fontFamily: FontFamily.bold,
-    fontWeight: '600',
+    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },

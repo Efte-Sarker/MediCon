@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   name: {
     flex: 1,
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },

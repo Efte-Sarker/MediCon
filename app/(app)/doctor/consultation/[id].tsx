@@ -532,7 +532,7 @@ const styles = StyleSheet.create({
   },
   bannerName: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
   },
@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   },
   cardInnerTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
     marginBottom: Spacing.sm,

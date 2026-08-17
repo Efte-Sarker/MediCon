@@ -976,13 +976,13 @@ const styles = StyleSheet.create({
   },
   paymentTotalLabel: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
   },
   paymentTotalValue: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.lg,
     color: '#000000',
   },
@@ -1032,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   mobileMethodTextSelected: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
   },
   cardPaymentInfo: {
     flexDirection: 'row',

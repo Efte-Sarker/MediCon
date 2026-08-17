@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   periodTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.primary,
   },
@@ -533,7 +533,7 @@ const styles = StyleSheet.create({
   },
   medName: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
   },

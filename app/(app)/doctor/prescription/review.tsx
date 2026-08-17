@@ -143,7 +143,7 @@ export default function ReviewPrescriptionScreen(): React.JSX.Element {
                   <Text style={styles.medName}>{test.name}</Text>
                   {test.reason ? (
                     <Text style={styles.testReason}>
-                      <Text style={{ fontFamily: FontFamily.bold, fontWeight: 'bold' }}>Reason:</Text> {test.reason}
+                      <Text style={{ fontFamily: FontFamily.bold,  }}>Reason:</Text> {test.reason}
                     </Text>
                   ) : null}
                 </View>

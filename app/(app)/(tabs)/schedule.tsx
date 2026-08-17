@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
   },
   headerLeft: {
     flex: 1,
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
@@ -521,7 +521,7 @@ const styles = StyleSheet.create({
   },
   slotTimeText: {
     fontFamily: FontFamily.regular,
-    fontWeight: 'normal',
+    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },

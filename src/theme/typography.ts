@@ -1,9 +1,9 @@
 export const FontFamily = {
-  regular: undefined,
-  medium: undefined,
-  semiBold: undefined,
-  bold: undefined,
-  extraBold: undefined,
+  regular: 'Figtree_400Regular',
+  medium: 'Figtree_500Medium',
+  semiBold: 'Figtree_600SemiBold',
+  bold: 'Figtree_700Bold',
+  extraBold: 'Figtree_800ExtraBold',
 };
 
 export const FontSize = {

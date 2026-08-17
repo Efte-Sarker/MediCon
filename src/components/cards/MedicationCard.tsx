@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   medicineName: {
     fontFamily: FontFamily.bold,
-    fontWeight: '700',
+    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },

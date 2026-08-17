@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
     fontSize: FontSize.xxl,
     color: Colors.primary,
   },
@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
   },
   sosText: {
     fontFamily: FontFamily.bold,
-    fontWeight: '700',
+    
     fontSize: 15, // Decreased font size by 5px
     color: Colors.surface,
     marginBottom: 2,

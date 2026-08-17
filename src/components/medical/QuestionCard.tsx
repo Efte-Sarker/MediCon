@@ -82,17 +82,19 @@ export const QuestionCard = ({
               </View>
             )}
           </View>
-          <TouchableOpacity
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            onPress={handleMenuPress}
-          >
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={20}
-              color={Colors.textSecondary}
-              style={{ opacity: 0.5 }}
-            />
-          </TouchableOpacity>
+          {isOwner && (
+            <TouchableOpacity
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              onPress={handleMenuPress}
+            >
+              <MaterialCommunityIcons
+                name="dots-horizontal"
+                size={20}
+                color={Colors.textSecondary}
+                style={{ opacity: 0.5 }}
+              />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Row 2: Question Content */}

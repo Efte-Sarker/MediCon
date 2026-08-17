@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 export interface MedicineExplainerResult {
   className: string;
   forms: string[];
@@ -19,68 +20,76 @@ export interface InteractionConflict {
   explanation: string;
 }
 
+const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
+const API_BASE_URL = `http://${localhost}:8000`;
+
 export const medicineAiService = {
   getMedicineExplainer: async (medicineName: string): Promise<MedicineExplainerResult> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          className: 'Mock Medicine Class',
-          forms: ['Tablet', 'Capsule', 'Liquid'],
-          sideEffects: ['Nausea', 'Dizziness', 'Headache'],
-          dietaryConflicts: ['Avoid grapefruit juice', 'Take with food'],
-          summary: `This is a mock AI summary for ${medicineName}. It is typically used to manage symptoms related to this mock condition. Always consult your doctor before changing your dosage.`,
-        });
-      }, 600);
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/explain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medicineName }),
+      });
+      if (!response.ok) throw new Error('Failed to explain medicine');
+      return await response.json();
+    } catch (error) {
+      console.warn('Error fetching medicine explainer:', error);
+      // Fallback
+      return {
+        className: 'Unknown',
+        forms: [],
+        sideEffects: [],
+        dietaryConflicts: [],
+        summary: 'Error fetching AI explanation. Please check your connection.',
+      };
+    }
   },
 
   compareMedicines: async (medA: string, medB: string): Promise<ComparisonResult> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          similarities: [
-            'Both are used to treat similar conditions.',
-            'Both are available in oral tablet forms.',
-          ],
-          differences: [
-            `${medA} acts faster but has a shorter duration.`,
-            `${medB} is extended-release and taken once daily.`,
-          ],
-          rationale: `AI Rationale: While ${medA} and ${medB} belong to the same general family, they have different pharmacokinetic profiles. ${medA} is preferred for acute relief, whereas ${medB} is better for long-term maintenance. Do not substitute one for the other without medical advice.`,
-        });
-      }, 700);
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/compare`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medA, medB }),
+      });
+      if (!response.ok) throw new Error('Failed to compare medicines');
+      return await response.json();
+    } catch (error) {
+      console.warn('Error fetching medicine comparison:', error);
+      // Fallback
+      return {
+        similarities: [],
+        differences: [],
+        rationale: 'Error comparing medicines. Please check your connection.',
+      };
+    }
   },
 
   checkInteractions: async (
     newMedicine: string,
     existingMedicines: { id: string; name: string }[],
   ): Promise<InteractionConflict[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Generate mock conflicts for existing medicines
-        const conflicts = existingMedicines.map((med, index) => {
-          let severity: 'SAFE' | 'MINOR' | 'SEVERE' = 'SAFE';
-          let explanation = 'No known significant interactions.';
-
-          // Deterministic mock logic based on index
-          if (index % 3 === 1) {
-            severity = 'MINOR';
-            explanation = `Taking ${newMedicine} with ${med.name} may slightly decrease absorption. Consider taking them 2 hours apart.`;
-          } else if (index % 3 === 2) {
-            severity = 'SEVERE';
-            explanation = `DANGER: Combining ${newMedicine} with ${med.name} can lead to severe cardiovascular risks. Consult your doctor immediately!`;
-          }
-
-          return {
-            existingMedicineId: med.id,
-            existingMedicineName: med.name,
-            severity,
-            explanation,
-          };
-        });
-        resolve(conflicts);
-      }, 800);
-    });
+    if (existingMedicines.length === 0) return [];
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/v1/medicines/interactions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newMedicine, existingMedicines }),
+      });
+      if (!response.ok) throw new Error('Failed to check interactions');
+      const data = await response.json();
+      return data.conflicts;
+    } catch (error) {
+      console.warn('Error fetching drug interactions:', error);
+      // Fallback
+      return existingMedicines.map(m => ({
+        existingMedicineId: m.id,
+        existingMedicineName: m.name,
+        severity: 'SAFE',
+        explanation: 'Error checking interactions. Please check your connection.'
+      }));
+    }
   },
 };

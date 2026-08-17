@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
   },
   headerLeft: {
     flex: 1,
@@ -378,7 +378,7 @@ const styles = StyleSheet.create({
   },
   overviewTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   },
   overviewValue: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.xl,
     color: Colors.textPrimary,
   },
@@ -481,7 +481,7 @@ const styles = StyleSheet.create({
   },
   cardPatientName: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     marginBottom: 2,

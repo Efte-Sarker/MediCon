@@ -69,18 +69,22 @@ export default function ReportsScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 0.8,
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.9,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
+        const files = result.assets.map(asset => ({
+          uri: asset.uri,
+          type: 'image',
+          name: asset.fileName || `page-${Date.now()}.jpg`,
+        }));
+        
         router.push({
           pathname: '/(app)/report/upload',
           params: {
-            uri: result.assets[0].uri,
-            type: 'image',
-            name: result.assets[0].fileName || `image-${Date.now()}.jpg`,
+            files: JSON.stringify(files),
           },
         });
       }
@@ -107,12 +111,16 @@ export default function ReportsScreen() {
           return;
         }
 
+        const files = [{
+          uri: file.uri,
+          type: 'pdf',
+          name: file.name,
+        }];
+
         router.push({
           pathname: '/(app)/report/upload',
           params: {
-            uri: file.uri,
-            type: 'pdf',
-            name: file.name,
+            files: JSON.stringify(files),
           },
         });
       }

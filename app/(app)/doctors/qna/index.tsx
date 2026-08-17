@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   headerTitleBold: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
   },
   centerContainer: {
     flex: 1,
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
   },
   sheetQuestionText: {
     fontFamily: FontFamily.semiBold,
-    fontWeight: '600',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     lineHeight: FontSize.base * 1.5,

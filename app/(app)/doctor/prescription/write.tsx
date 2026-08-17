@@ -787,7 +787,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     color: Colors.primary,
   },
   section: {
@@ -846,7 +846,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.sm,
     color: Colors.primary,
   },

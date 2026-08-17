@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
     fontSize: FontSize.xxl,
     color: Colors.primary,
   },
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   },
   detailCardTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
   },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontFamily: FontFamily.regular,
-    fontWeight: 'normal', // Changed to normal per user request
+     // Changed to normal per user request
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
     textAlign: 'center',

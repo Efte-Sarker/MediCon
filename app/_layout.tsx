@@ -4,6 +4,15 @@ import { StatusBar } from 'expo-status-bar';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../src/services/queryClient';
 import { useOnboardingStore, useAuthStore } from '../src/store';
+import {
+  useFonts,
+  Figtree_400Regular,
+  Figtree_500Medium,
+  Figtree_600SemiBold,
+  Figtree_700Bold,
+  Figtree_800ExtraBold,
+  Figtree_900Black,
+} from '@expo-google-fonts/figtree';
 import '../src/i18n';
 
 export default function RootLayout() {
@@ -11,6 +20,15 @@ export default function RootLayout() {
   const router = useRouter();
   const hasSeenOnboarding = useOnboardingStore((s) => s.hasSeenOnboarding);
   const token = useAuthStore((s) => s.token);
+
+  const [fontsLoaded] = useFonts({
+    Figtree_400Regular,
+    Figtree_500Medium,
+    Figtree_600SemiBold,
+    Figtree_700Bold,
+    Figtree_800ExtraBold,
+    Figtree_900Black,
+  });
 
   useEffect(() => {
     if (!segments.length) return;
@@ -46,6 +64,10 @@ export default function RootLayout() {
       router.replace('/(auth)/login');
     }
   }, [segments, hasSeenOnboarding, token, router]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

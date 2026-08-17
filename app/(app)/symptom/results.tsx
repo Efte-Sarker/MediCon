@@ -251,6 +251,7 @@ const styles = StyleSheet.create({
   },
   gridItemContainer: {
     flex: 1,
+    maxWidth: '50%', // Ensures single items don't stretch to full width
     paddingHorizontal: Spacing.sm / 2, // Horizontal spacing for 2 columns
     paddingBottom: Spacing.md, // Vertical spacing
   },

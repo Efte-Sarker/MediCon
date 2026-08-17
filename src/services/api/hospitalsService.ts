@@ -1,71 +1,48 @@
+import Constants from 'expo-constants';
 import { Hospital } from '../../types/medical.types';
-import { MOCK_DOCTORS, Doctor } from './doctorsService';
+import { Doctor } from './doctorsService';
+import { maleDoctorPlaceholders, femaleDoctorPlaceholders } from '../../constants/images';
 
-// Fake delay to simulate network
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const MOCK_HOSPITALS: Hospital[] = [
-  {
-    id: 'hosp_1',
-    name: 'City General Hospital',
-    address: '123 Health Ave, Medical District',
-    latitude: 40.7128,
-    longitude: -74.006,
-    contactNumber: '+1 555-0100',
-    emergencyNumber: '+1 555-0911',
-    hasEmergencyRoom: true,
-    distanceKm: 1.2,
-    isOpen24x7: true,
-    imageUrl:
-      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&q=80&w=800',
-  },
-  {
-    id: 'hosp_2',
-    name: 'Oakridge Specialty Clinic',
-    address: '456 Wellness Blvd, Northside',
-    latitude: 40.72,
-    longitude: -73.995,
-    contactNumber: '+1 555-0200',
-    hasEmergencyRoom: false,
-    distanceKm: 3.5,
-    isOpen24x7: false,
-    imageUrl:
-      'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&q=80&w=800',
-  },
-  {
-    id: 'hosp_3',
-    name: 'Metro Care Center & Advanced Medical Research Institute',
-    address: '789 Central St, Downtown',
-    latitude: 40.715,
-    longitude: -74.01,
-    contactNumber: '+1 555-0300',
-    emergencyNumber: '+1 555-0912',
-    hasEmergencyRoom: true,
-    distanceKm: 5.0,
-    isOpen24x7: true,
-    imageUrl:
-      'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&q=80&w=800',
-  },
-];
+const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
+const API_BASE_URL = `http://${localhost}:8000/api/v1`;
 
 export const hospitalsService = {
   async getNearbyHospitals(lat?: number, lng?: number): Promise<Hospital[]> {
-    await delay(800);
-    // In a real app, we'd sort by distance from lat/lng
-    return [...MOCK_HOSPITALS];
+    let url = `${API_BASE_URL}/hospitals/nearby`;
+    if (lat !== undefined && lng !== undefined) {
+      url += `?lat=${lat}&lng=${lng}`;
+    }
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch nearby hospitals');
+    return response.json();
+  },
+
+  async searchHospitals(query: string): Promise<Hospital[]> {
+    const response = await fetch(`${API_BASE_URL}/hospitals/search?query=${encodeURIComponent(query)}`);
+    if (!response.ok) throw new Error('Failed to search hospitals');
+    return response.json();
   },
 
   async getHospitalDetails(id: string): Promise<{ hospital: Hospital; doctors: Doctor[] }> {
-    await delay(600);
-    const hospital = MOCK_HOSPITALS.find((h) => h.id === id);
-    if (!hospital) {
-      throw new Error('Hospital not found');
-    }
+    // 1. Fetch Hospital
+    const hospRes = await fetch(`${API_BASE_URL}/hospitals/${id}`);
+    if (!hospRes.ok) throw new Error('Hospital not found');
+    const hospital = await hospRes.json();
 
-    // Mock affiliated doctors
-    // In a real scenario, this would filter doctors by hospitalId
-    // We'll just return a subset of doctors to simulate it
-    const doctors = MOCK_DOCTORS.slice(0, 3);
+    // 2. Fetch Doctors working at this hospital (The new discovery workflow)
+    const docsRes = await fetch(`${API_BASE_URL}/doctors/by-hospital/${id}`);
+    let doctors: Doctor[] = [];
+    if (docsRes.ok) {
+      const rawDocs = await docsRes.json();
+      doctors = rawDocs.map((doc: any, index: number) => {
+        const isFemale = doc.gender?.toLowerCase() === 'female';
+        const placeholders = isFemale ? femaleDoctorPlaceholders : maleDoctorPlaceholders;
+        return {
+          ...doc,
+          image: placeholders[index % placeholders.length],
+        };
+      });
+    }
 
     return { hospital, doctors };
   },

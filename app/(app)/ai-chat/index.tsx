@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   cardName: {
     fontFamily: FontFamily.bold,
-    fontWeight: '600',
+    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
     marginBottom: 4,
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     fontFamily: FontFamily.medium,
-    fontWeight: '600',
+    
     fontSize: FontSize.xs,
     color: Colors.primary,
   },

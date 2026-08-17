@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
   },
   medName: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },

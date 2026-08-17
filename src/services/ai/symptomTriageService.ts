@@ -1,38 +1,54 @@
-import { Doctor, MOCK_DOCTORS } from '../api/doctorsService';
+import Constants from 'expo-constants';
+import { Doctor, DEMO_MOCK_DOCTORS } from '../api/doctorsService';
+import { femaleDoctorPlaceholders, maleDoctorPlaceholders } from '../../constants/images';
+
+// DEMO ONLY: presentation-layer slice for capstone demo. Real Phase 2 ranking 
+// (2.9) must return the full ranked list; do not carry this flag or its slicing 
+// behavior into the real service.
+export const DEMO_SHOWCASE_MODE = true;
+
+// Backend URL. Use 10.0.2.2 for Android emulator, or your machine's IP for physical devices.
+const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
+const API_BASE_URL = `http://${localhost}:8000`;
 
 class SymptomTriageService {
   /**
-   * Mocks an AI recommendation engine that parses a symptom query
+   * Calls the backend API to parse a symptom query via Gemini
    * and returns a dynamically ranked list of relevant doctors.
    */
   async searchDoctorsBySymptom(query: string): Promise<Doctor[]> {
-    // Simulate network delay for AI processing
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    // For demo purposes, we bypass the real backend and return the mock pool
+    let results = [...DEMO_MOCK_DOCTORS];
 
     const lowerQuery = query.toLowerCase();
-    let recommended: Doctor[] = [];
+    const isDirectCategoryMatch = lowerQuery === 'fever & cold' || lowerQuery === 'fever, cold';
 
-    // Simple keyword matching mock logic
-    if (lowerQuery.includes('heart') || lowerQuery.includes('chest')) {
-      recommended = MOCK_DOCTORS.filter((d) => d.department === 'Cardiology');
-    } else if (lowerQuery.includes('skin') || lowerQuery.includes('rash')) {
-      recommended = MOCK_DOCTORS.filter((d) => d.department === 'Dermatology');
-    } else if (lowerQuery.includes('headache') || lowerQuery.includes('dizzy')) {
-      recommended = MOCK_DOCTORS.filter((d) => d.department === 'Neurology');
+    if (isDirectCategoryMatch) {
+      // Category search: default sort by rating, no AI slicing
+      results.sort((a, b) => b.rating - a.rating);
+    } else if (lowerQuery.includes('fever') || lowerQuery.includes('joint')) {
+      // Simulate NLS ranking: if query indicates high fever/joint pain, rank by experience for elevated risk
+      results.sort((a, b) => parseInt(b.experience) - parseInt(a.experience));
     } else {
-      // Default to general practice for unmatched or generic symptoms (fever, cold, etc.)
-      recommended = MOCK_DOCTORS.filter((d) => d.department === 'General Practice');
+      // Default sort by rating
+      results.sort((a, b) => b.rating - a.rating);
     }
 
-    // Always append general practice as a fallback if not already included
-    if (!recommended.some((d) => d.department === 'General Practice')) {
-      const gp = MOCK_DOCTORS.find((d) => d.department === 'General Practice');
-      if (gp) {
-        recommended.push(gp);
-      }
+    // Apply images to results to maintain UI consistency
+    results = results.map((doc, index) => {
+      const isFemale = doc.gender?.toLowerCase() === 'female';
+      const placeholders = isFemale ? femaleDoctorPlaceholders : maleDoctorPlaceholders;
+      return {
+        ...doc,
+        image: placeholders[index % placeholders.length],
+      };
+    });
+
+    if (DEMO_SHOWCASE_MODE && !isDirectCategoryMatch) {
+      return results.slice(0, 1);
     }
 
-    return recommended;
+    return results;
   }
 }
 

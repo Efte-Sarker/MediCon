@@ -91,7 +91,7 @@ const DoctorQuestionCard = ({
         {/* Row 1: Patient Name & Time + Menu */}
         <View style={styles.cardHeader}>
           <View style={styles.cardHeaderLeft}>
-            <Text style={styles.cardPatientName}>{patientName}</Text>
+            <Text style={[styles.cardPatientName, { fontFamily: FontFamily.bold, }]}>{patientName}</Text>
             <Text style={styles.cardTimestamp}>{getTimeAgo(question.createdAt)}</Text>
           </View>
           <TouchableOpacity
@@ -123,20 +123,15 @@ const DoctorQuestionCard = ({
           )}
         </View>
 
-        {/* Row 3: Reply Button (if unanswered) or Answered Status */}
-        <View style={styles.cardFooter}>
-          {!isAnswered ? (
+        {/* Row 3: Reply Button (if unanswered) */}
+        {!isAnswered && (
+          <View style={styles.cardFooter}>
             <TouchableOpacity style={styles.replyButton} onPress={onReply}>
               <MaterialCommunityIcons name="reply-outline" size={16} color={Colors.primary} />
               <Text style={styles.replyButtonText}>Reply</Text>
             </TouchableOpacity>
-          ) : (
-            <View style={styles.answeredChip}>
-              <MaterialCommunityIcons name="check-circle" size={14} color={Colors.success} />
-              <Text style={styles.answeredChipText}>Answered</Text>
-            </View>
-          )}
-        </View>
+          </View>
+        )}
       </View>
 
       {/* Menu Modal */}
@@ -172,7 +167,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const userId = useAuthStore((s) => s.userId) || 'doctor-1';
+  const userId = useAuthStore((s) => s.userId) || 'doc_101';
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('unanswered');
   const [isOnline, setIsOnline] = useState(false);
@@ -190,6 +185,25 @@ export default function QnaInboxScreen(): React.JSX.Element {
   const [questionExpanded, setQuestionExpanded] = useState(false);
   const sheetAnim = useRef(new Animated.Value(0)).current;
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const toastAnim = useRef(new Animated.Value(0)).current;
+
+  const showToastMessage = () => {
+    setShowToast(true);
+    Animated.timing(toastAnim, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setTimeout(() => {
+        Animated.timing(toastAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => setShowToast(false));
+      }, 1500);
+    });
+  };
 
   useEffect(() => {
     const showSub = Keyboard.addListener(
@@ -212,7 +226,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
       setLoading(true);
       setError(null);
       let doc = await doctorsService.getDoctorDetails(userId);
-      if (!doc) doc = await doctorsService.getDoctorDetails('doc-1');
+      if (!doc) doc = await doctorsService.getDoctorDetails('doc_101');
 
       if (doc) {
         const data = await qnaService.getDoctorInbox(doc.department);
@@ -308,7 +322,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
       setSubmitting(true);
       if (isEditing && editingAnswerId) {
         let doc = await doctorsService.getDoctorDetails(userId);
-        if (!doc) doc = await doctorsService.getDoctorDetails('doc-1');
+        if (!doc) doc = await doctorsService.getDoctorDetails('doc_101');
         const updatedAnswer = await qnaService.updateAnswer(
           activeQuestion.id,
           editingAnswerId,
@@ -342,6 +356,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
         );
       }
       closeReplySheet();
+      showToastMessage();
     } catch (err) {
       const e = createAppError('NETWORK_ERROR', String(err));
       alert(e.message);
@@ -355,9 +370,18 @@ export default function QnaInboxScreen(): React.JSX.Element {
     outputRange: [SHEET_MAX_HEIGHT, 0],
   });
 
-  const currentList = questions.filter((q) =>
-    activeTab === 'unanswered' ? q.answers.length === 0 : q.answers.length > 0
-  );
+  const currentList = questions
+    .filter((q) =>
+      activeTab === 'unanswered' ? q.answers.length === 0 : q.answers.length > 0
+    )
+    .sort((a, b) => {
+      if (activeTab === 'answered') {
+        const aTime = new Date(a.answers[0]?.createdAt || a.createdAt).getTime();
+        const bTime = new Date(b.answers[0]?.createdAt || b.createdAt).getTime();
+        return bTime - aTime;
+      }
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   // ── Render Helpers ──────────────────────────────────────────────────────────
   const renderHeader = () => (
@@ -396,18 +420,20 @@ export default function QnaInboxScreen(): React.JSX.Element {
     </View>
   );
 
-  const renderTabs = () => (
-    <View style={styles.tabBar}>
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'unanswered' && styles.tabActive]}
-        onPress={() => setActiveTab('unanswered')}
-        activeOpacity={1}
-        accessibilityRole="tab"
-      >
-        <Text style={[styles.tabText, activeTab === 'unanswered' && styles.tabTextActive]}>
-          Patient Questions
-        </Text>
-      </TouchableOpacity>
+  const renderTabs = () => {
+    const unansweredCount = questions.filter(q => q.answers.length === 0).length;
+    return (
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'unanswered' && styles.tabActive]}
+          onPress={() => setActiveTab('unanswered')}
+          activeOpacity={1}
+          accessibilityRole="tab"
+        >
+          <Text style={[styles.tabText, activeTab === 'unanswered' && styles.tabTextActive]}>
+            Patient Questions ({unansweredCount})
+          </Text>
+        </TouchableOpacity>
 
       <TouchableOpacity
         style={[styles.tab, activeTab === 'answered' && styles.tabActive]}
@@ -420,7 +446,8 @@ export default function QnaInboxScreen(): React.JSX.Element {
         </Text>
       </TouchableOpacity>
     </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -570,6 +597,16 @@ export default function QnaInboxScreen(): React.JSX.Element {
           </Animated.View>
         </KeyboardAvoidingView>
       </Modal>
+
+      {/* Confirmation Toast */}
+      {showToast && (
+        <Animated.View style={[styles.toastContainer, { opacity: toastAnim, bottom: Spacing.xxl }]}>
+          <View style={styles.toastIconWrapper}>
+            <MaterialCommunityIcons name="check" size={20} color={Colors.primary} />
+          </View>
+          <Text style={styles.toastText}>Reply sent successfully!</Text>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
@@ -594,7 +631,7 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
   },
   headerLeft: {
     flex: 1,
@@ -680,7 +717,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     color: Colors.primary,
   },
 
@@ -761,16 +798,18 @@ const styles = StyleSheet.create({
   answerContainer: {
     marginTop: Spacing.sm,
     backgroundColor: Colors.surface,
-    padding: Spacing.sm,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
-    borderWidth: 1,
-    borderColor: Colors.tertiary,
+    borderWidth: 1.5,
+    borderColor: Colors.primary,
   },
   answerLabel: {
     fontFamily: FontFamily.bold,
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-    marginBottom: 2,
+    
+    fontSize: FontSize.base,
+    color: Colors.primary,
+    marginBottom: 4,
   },
   answerText: {
     fontFamily: FontFamily.regular,
@@ -892,7 +931,7 @@ const styles = StyleSheet.create({
   },
   sheetPatientNameTop: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
     marginBottom: 4,
@@ -970,6 +1009,33 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
   submitBtnText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.surface,
+  },
+  toastContainer: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    gap: Spacing.sm,
+    shadowColor: '#cbd5e1',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 15,
+    zIndex: 1000,
+  },
+  toastIconWrapper: {
+    backgroundColor: Colors.surface,
+    padding: 6,
+    borderRadius: BorderRadius.full,
+  },
+  toastText: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.base,
     color: Colors.surface,

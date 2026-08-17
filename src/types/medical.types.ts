@@ -78,6 +78,8 @@ export interface Biomarker {
   value: number | string;
   unit: string;
   referenceRange: string;
+  minRange?: number | null;
+  maxRange?: number | null;
   isFlagged: boolean;
   category?: string;
   testGroup?: string;
@@ -92,7 +94,8 @@ export interface Report {
   date: string; // ISO 8601
   laboratory?: string;
   imageUrl?: string;
-  fileUri?: string; // For newly uploaded documents/PDFs
+  fileUri?: string; // Single file URI (legacy)
+  fileUris?: string[]; // Multiple file URIs for multi-page uploads
   fileType?: 'image' | 'multi_image' | 'pdf'; // Discriminates thumbnail rendering strategy
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   thumbnails?: any[]; // Local require() image sources for the card thumbnail grid

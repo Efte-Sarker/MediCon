@@ -1,3 +1,4 @@
+import Constants from 'expo-constants';
 import { Report } from '../../types/medical.types';
 import {
   reportSingleImage,
@@ -438,52 +439,72 @@ export const reportsService = {
     });
   },
 
-  uploadReport: async (fileUri: string, type: string, fileName: string): Promise<Report> => {
-    // Simulate a long OCR / AI parsing process
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newReport: Report = {
-          id: `rep-mock-${Date.now()}`,
-          patientId: 'pat-1',
-          title: `Scanned ${fileName}`,
-          type: type.includes('pdf') ? 'DOCUMENT' : 'IMAGE_SCAN',
-          date: new Date().toISOString(),
-          laboratory: 'Unknown',
-          fileUri,
-          aiSummary:
-            'The uploaded document has been analyzed. We detected a standard metabolic panel. Glucose levels appear slightly above the fasting range, but other electrolytes are balanced. This is an AI generated summary; please consult a doctor.',
-          biomarkers: [
-            {
-              id: 'b-new-1',
-              name: 'Fasting Glucose',
-              value: 105,
-              unit: 'mg/dL',
-              referenceRange: '70 - 99',
-              isFlagged: true,
-            },
-            {
-              id: 'b-new-2',
-              name: 'Sodium',
-              value: 140,
-              unit: 'mEq/L',
-              referenceRange: '135 - 145',
-              isFlagged: false,
-            },
-            {
-              id: 'b-new-3',
-              name: 'Potassium',
-              value: 4.2,
-              unit: 'mEq/L',
-              referenceRange: '3.6 - 5.2',
-              isFlagged: false,
-            },
-          ],
-        };
-        MOCK_REPORTS.unshift(newReport); // Add to mock memory so it shows in list
-        resolve(newReport);
-      }, 2500); // 2.5 seconds delay to simulate real parsing
-    });
+  uploadReport: async (files: { uri: string; type: string; name: string }[]): Promise<Report> => {
+    try {
+      // React Native New Architecture has broken FormData file support.
+      // Instead: read each file as a blob → convert to base64 → send as JSON.
+      const filesPayload = await Promise.all(
+        files.map(async (file) => {
+          const mimeType = file.type.includes('pdf') ? 'application/pdf' : 'image/jpeg';
+          // Fetch the local file URI as a blob, then read as base64
+          const response = await fetch(file.uri);
+          const blob = await response.blob();
+          const base64: string = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const result = reader.result as string;
+              // Strip the data URL prefix "data:...;base64,"
+              resolve(result.split(',')[1] ?? '');
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          return { data: base64, mimeType, name: file.name };
+        })
+      );
+
+      const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
+      const response = await fetch(`http://${localhost}:8000/api/v1/reports/analyze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ files: filesPayload }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Server error ${response.status}: ${errText}`);
+      }
+
+      const result = await response.json();
+
+      const isPdf = files.length === 1 && files[0].type === 'pdf';
+      const fileType = isPdf ? 'pdf' : files.length > 1 ? 'multi_image' : 'image';
+
+      const newReport: Report = {
+        id: `rep-${Date.now()}`,
+        patientId: 'pat-1',
+        title: result.reportTitle || (isPdf ? 'PDF Report' : 'Lab Report'),
+        type: isPdf ? 'DOCUMENT' : 'IMAGE_SCAN',
+        date: new Date().toISOString(),
+        laboratory: result.labName || 'AI Interpretation',
+        fileUris: files.map((f) => f.uri),
+        fileUri: files[0]?.uri,
+        fileType,
+        aiSummary: result.aiSummary,
+        biomarkers: result.biomarkers,
+      };
+
+      MOCK_REPORTS.unshift(newReport);
+      return newReport;
+    } catch (error) {
+      console.warn('Error calling report analysis API:', error);
+      throw error;
+    }
   },
+
 
   updateReport: async (id: string, data: Partial<Report>): Promise<Report> => {
     return new Promise((resolve, reject) => {

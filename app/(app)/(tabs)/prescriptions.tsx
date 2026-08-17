@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   },
   headerTitleBold: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
   },
 
   // ── Tab bar ──────────────────────────────────────────────────────────────────
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     color: Colors.primary,
   },
 

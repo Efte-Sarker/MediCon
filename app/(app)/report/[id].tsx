@@ -6,6 +6,11 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   ScrollView,
+  Modal,
+  Image,
+  Linking,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -17,6 +22,8 @@ import { Report } from '../../../src/types/medical.types';
 import { BiomarkerRow } from '../../../src/components/medical/BiomarkerRow';
 import { useTranslation } from 'react-i18next';
 
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+
 export default function ReportDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,6 +32,8 @@ export default function ReportDetailScreen() {
 
   type ActiveTab = 'analysis' | 'results';
   const [activeTab, setActiveTab] = useState<ActiveTab>('analysis');
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerPage, setViewerPage] = useState(0);
 
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
@@ -256,19 +265,83 @@ export default function ReportDetailScreen() {
       </ScrollView>
 
       {/* Show Original fixed button at bottom */}
-      <View style={[styles.bottomFixedContainer, { paddingBottom: Spacing.base + insets.bottom }]}>
-        <TouchableOpacity
-          style={styles.showOriginalFullBtn}
-          activeOpacity={0.8}
-          accessibilityRole="button"
-          accessibilityLabel="View original document"
-        >
-          <MaterialCommunityIcons name="file-eye-outline" size={18} color={Colors.surface} />
-          <Text style={styles.showOriginalFullBtnText}>
-            {t('[id].view_original_document') || 'View Original Document'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {(report.fileUris?.length || report.fileUri) && (
+        <View style={[styles.bottomFixedContainer, { paddingBottom: Spacing.base + insets.bottom }]}>
+          <TouchableOpacity
+            style={styles.showOriginalFullBtn}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="View original document"
+            onPress={() => {
+              const isPdf = report.fileType === 'pdf';
+              const uri = report.fileUri;
+              if (isPdf && uri) {
+                Linking.openURL(uri).catch(() => {
+                  // fallback: open with Android intent
+                  Linking.openURL(`content://${uri}`);
+                });
+              } else {
+                setViewerPage(0);
+                setViewerVisible(true);
+              }
+            }}
+          >
+            <MaterialCommunityIcons name="file-eye-outline" size={18} color={Colors.surface} />
+            <Text style={styles.showOriginalFullBtnText}>
+              {t('[id].view_original_document') || 'View Original Document'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Full-screen Image Viewer Modal */}
+      <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
+        <View style={styles.viewerOverlay}>
+          <View style={styles.viewerHeader}>
+            <Text style={styles.viewerPageCount}>
+              {(report.fileUris?.length ?? 1) > 1
+                ? `Page ${viewerPage + 1} of ${report.fileUris?.length}`
+                : 'Original Document'}
+            </Text>
+            <TouchableOpacity onPress={() => setViewerVisible(false)} style={styles.viewerCloseBtn}>
+              <MaterialCommunityIcons name="close" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={report.fileUris && report.fileUris.length > 0 ? report.fileUris : [report.fileUri!]}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(_, i) => String(i)}
+            onMomentumScrollEnd={(e) => {
+              const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+              setViewerPage(page);
+            }}
+            renderItem={({ item }) => (
+              <View style={styles.viewerPage}>
+                <Image
+                  source={{ uri: item }}
+                  style={styles.viewerImage}
+                  resizeMode="contain"
+                />
+              </View>
+            )}
+          />
+          {(report.fileUris?.length ?? 1) > 1 && (
+            <View style={styles.viewerDots}>
+              {(report.fileUris ?? [report.fileUri!]).map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.viewerDot,
+                    i === viewerPage && styles.viewerDotActive,
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -453,7 +526,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.lg,
     color: Colors.primary,
     textAlign: 'center',
@@ -492,7 +565,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     color: Colors.primary,
   },
 
@@ -501,7 +574,7 @@ const styles = StyleSheet.create({
   },
   testGroupTitle: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     marginBottom: Spacing.sm,
@@ -530,5 +603,60 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: FontSize.sm * 1.5,
+  },
+
+  // Full-screen image viewer
+  viewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.96)',
+  },
+  viewerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.base,
+    paddingTop: 56,
+    paddingBottom: Spacing.base,
+  },
+  viewerPageCount: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: '#fff',
+  },
+  viewerCloseBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewerPage: {
+    width: SCREEN_WIDTH,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.sm,
+  },
+  viewerImage: {
+    width: SCREEN_WIDTH - Spacing.base * 2,
+    height: SCREEN_HEIGHT * 0.72,
+    borderRadius: BorderRadius.md,
+  },
+  viewerDots: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 6,
+    paddingBottom: 40,
+  },
+  viewerDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255,255,255,0.35)',
+  },
+  viewerDotActive: {
+    backgroundColor: '#fff',
+    width: 18,
   },
 });

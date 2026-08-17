@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    fontWeight: '900',
+    
   },
   searchContainer: {
     paddingTop: Spacing.md,

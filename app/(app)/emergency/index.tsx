@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: FontFamily.bold,
-    fontWeight: 'bold',
+    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
     marginBottom: 4,

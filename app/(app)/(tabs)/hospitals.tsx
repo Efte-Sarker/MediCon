@@ -19,7 +19,7 @@ import { HospitalCard } from '../../../src/components/cards/HospitalCard';
 import { SymptomSearchBar } from '../../../src/components/forms/SymptomSearchBar';
 import { useTranslation } from 'react-i18next';
 
-const USE_MOCK_MAP = true; // Temporary flag for Phase 1 without a real API key
+const USE_MOCK_MAP = false; // Flag for Phase 1 without a real API key
 
 export default function HospitalsScreen() {
   const { t } = useTranslation();
