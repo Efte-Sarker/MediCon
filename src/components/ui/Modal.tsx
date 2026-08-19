@@ -15,11 +15,12 @@ export interface ModalProps {
   visible: boolean;
   onClose: () => void;
   title?: string;
+  hideCloseButton?: boolean;
   children: React.ReactNode;
 }
 
 // 3. COMPONENT
-export const Modal = ({ visible, onClose, title, children }: ModalProps): React.JSX.Element => {
+export const Modal = ({ visible, onClose, title, hideCloseButton, children }: ModalProps): React.JSX.Element => {
   return (
     <RNModal
       visible={visible}
@@ -39,14 +40,16 @@ export const Modal = ({ visible, onClose, title, children }: ModalProps): React.
               {title && (
                 <View style={styles.header}>
                   <Text style={styles.title}>{title}</Text>
-                  <TouchableOpacity
-                    onPress={onClose}
-                    hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
-                    accessibilityRole="button"
-                    accessibilityLabel="Close"
-                  >
-                    <Text style={styles.closeButton}>✕</Text>
-                  </TouchableOpacity>
+                  {!hideCloseButton && (
+                    <TouchableOpacity
+                      onPress={onClose}
+                      hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+                      accessibilityRole="button"
+                      accessibilityLabel="Close"
+                    >
+                      <Text style={styles.closeButton}>✕</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               )}
               {children}

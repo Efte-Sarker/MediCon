@@ -266,7 +266,9 @@ export default function ReportDetailScreen() {
 
       {/* Show Original fixed button at bottom */}
       {(report.fileUris?.length || report.fileUri) && (
-        <View style={[styles.bottomFixedContainer, { paddingBottom: Spacing.base + insets.bottom }]}>
+        <View
+          style={[styles.bottomFixedContainer, { paddingBottom: Spacing.base + insets.bottom }]}
+        >
           <TouchableOpacity
             style={styles.showOriginalFullBtn}
             activeOpacity={0.8}
@@ -295,7 +297,12 @@ export default function ReportDetailScreen() {
       )}
 
       {/* Full-screen Image Viewer Modal */}
-      <Modal visible={viewerVisible} transparent animationType="fade" onRequestClose={() => setViewerVisible(false)}>
+      <Modal
+        visible={viewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setViewerVisible(false)}
+      >
         <View style={styles.viewerOverlay}>
           <View style={styles.viewerHeader}>
             <Text style={styles.viewerPageCount}>
@@ -308,7 +315,9 @@ export default function ReportDetailScreen() {
             </TouchableOpacity>
           </View>
           <FlatList
-            data={report.fileUris && report.fileUris.length > 0 ? report.fileUris : [report.fileUri!]}
+            data={
+              report.fileUris && report.fileUris.length > 0 ? report.fileUris : [report.fileUri!]
+            }
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
@@ -319,11 +328,7 @@ export default function ReportDetailScreen() {
             }}
             renderItem={({ item }) => (
               <View style={styles.viewerPage}>
-                <Image
-                  source={{ uri: item }}
-                  style={styles.viewerImage}
-                  resizeMode="contain"
-                />
+                <Image source={{ uri: item }} style={styles.viewerImage} resizeMode="contain" />
               </View>
             )}
           />
@@ -332,10 +337,7 @@ export default function ReportDetailScreen() {
               {(report.fileUris ?? [report.fileUri!]).map((_, i) => (
                 <View
                   key={i}
-                  style={[
-                    styles.viewerDot,
-                    i === viewerPage && styles.viewerDotActive,
-                  ]}
+                  style={[styles.viewerDot, i === viewerPage && styles.viewerDotActive]}
                 />
               ))}
             </View>
@@ -526,7 +528,7 @@ const styles = StyleSheet.create({
   },
   categoryTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.lg,
     color: Colors.primary,
     textAlign: 'center',
@@ -565,7 +567,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    
+
     color: Colors.primary,
   },
 
@@ -574,7 +576,7 @@ const styles = StyleSheet.create({
   },
   testGroupTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     marginBottom: Spacing.sm,

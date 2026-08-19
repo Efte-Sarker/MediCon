@@ -38,9 +38,28 @@ export interface Prescription {
   patientId: string;
   doctorId?: string; // Optional if uploaded manually
   doctorName?: string; // Display name for the issuing doctor
+  doctorDegrees?: string; // e.g. "MBBS, FCPS (Medicine), MD"
+  doctorSpecialty?: string; // Primary specialty label (legacy, kept for compat)
+  doctorSpecialties?: string[]; // Full list of specialties
+  workingHospital?: string; // Current working hospital
+  bmdcRegNo?: string; // BMDC Registration Number
+  clinicName?: string;
+  clinicAddress?: string;
+  clinicContact?: string;
+  patientName?: string;
+  patientAge?: number; // years
+  patientAgeMonths?: number; // months portion
+  patientAgeDays?: number; // days portion
+  patientGender?: string;
+  patientWeight?: number;
+  diagnosis?: string; // legacy single string
+  diagnosisList?: string[]; // Structured list of diagnoses
+  recommendedTests?: string[]; // Lab tests recommended by doctor
+  advice?: string; // Separate advice field
   issuedAt: string; // ISO 8601
   medicines: PrescriptionMedicine[];
   notes?: string;
+  followUpDate?: string;
   imageUrl?: string; // URL to the original prescription image/document
   source?: 'DOCTOR' | 'UPLOADED'; // Discriminates between doctor-issued and user-uploaded
 }

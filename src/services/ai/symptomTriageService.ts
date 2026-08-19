@@ -2,8 +2,8 @@ import Constants from 'expo-constants';
 import { Doctor, DEMO_MOCK_DOCTORS } from '../api/doctorsService';
 import { femaleDoctorPlaceholders, maleDoctorPlaceholders } from '../../constants/images';
 
-// DEMO ONLY: presentation-layer slice for capstone demo. Real Phase 2 ranking 
-// (2.9) must return the full ranked list; do not carry this flag or its slicing 
+// DEMO ONLY: presentation-layer slice for capstone demo. Real Phase 2 ranking
+// (2.9) must return the full ranked list; do not carry this flag or its slicing
 // behavior into the real service.
 export const DEMO_SHOWCASE_MODE = true;
 

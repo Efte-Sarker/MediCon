@@ -13,7 +13,7 @@ HOSPITALS = [
         "emergencyNumber": "+8801713141447",
         "hasEmergencyRoom": True,
         "isOpen24x7": True,
-        "imageUrl": "https://example.com/square.jpg"
+        "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Square_hospital_01.jpg"
     },
     {
         "id": "hosp_002",
@@ -25,7 +25,7 @@ HOSPITALS = [
         "emergencyNumber": "+880255037242",
         "hasEmergencyRoom": True,
         "isOpen24x7": True,
-        "imageUrl": "https://example.com/evercare.jpg"
+        "imageUrl": "https://images.unsplash.com/photo-1587351021759-3e566d6af7cc?q=80&w=800&auto=format&fit=crop"
     },
     {
         "id": "hosp_003",
@@ -37,7 +37,7 @@ HOSPITALS = [
         "emergencyNumber": "+8801713333333",
         "hasEmergencyRoom": True,
         "isOpen24x7": True,
-        "imageUrl": "https://example.com/labaid.jpg"
+        "imageUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop"
     },
     {
         "id": "hosp_004",
@@ -49,7 +49,7 @@ HOSPITALS = [
         "emergencyNumber": "+8801321155211",
         "hasEmergencyRoom": True,
         "isOpen24x7": True,
-        "imageUrl": "https://example.com/evercare_ctg.jpg"
+        "imageUrl": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=800&auto=format&fit=crop"
     }
 ]
 

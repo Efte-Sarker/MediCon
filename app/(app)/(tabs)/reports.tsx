@@ -75,12 +75,12 @@ export default function ReportsScreen() {
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const files = result.assets.map(asset => ({
+        const files = result.assets.map((asset) => ({
           uri: asset.uri,
           type: 'image',
           name: asset.fileName || `page-${Date.now()}.jpg`,
         }));
-        
+
         router.push({
           pathname: '/(app)/report/upload',
           params: {
@@ -111,11 +111,13 @@ export default function ReportsScreen() {
           return;
         }
 
-        const files = [{
-          uri: file.uri,
-          type: 'pdf',
-          name: file.name,
-        }];
+        const files = [
+          {
+            uri: file.uri,
+            type: 'pdf',
+            name: file.name,
+          },
+        ];
 
         router.push({
           pathname: '/(app)/report/upload',
@@ -268,7 +270,10 @@ export default function ReportsScreen() {
         />
         <Text style={styles.emptyTitle}>{t('reports.no_reports_yet', 'No Reports Yet')}</Text>
         <Text style={styles.emptySubtitle}>
-          {t('reports.upload_or_scan_your_lab_report', 'Upload or scan your lab reports and medical documents to get AI-powered interpretations and track your health metrics.')}
+          {t(
+            'reports.upload_or_scan_your_lab_report',
+            'Upload or scan your lab reports and medical documents to get AI-powered interpretations and track your health metrics.',
+          )}
         </Text>
         <TouchableOpacity
           style={styles.uploadBtn}

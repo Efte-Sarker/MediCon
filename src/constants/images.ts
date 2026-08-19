@@ -5,21 +5,11 @@ export const doctorPlaceholder3 = require('../assets/images/doctors/doctorPlaceh
 export const doctorPlaceholder4 = require('../assets/images/doctors/doctorPlaceholder4.png');
 export const doctorPlaceholder5 = require('../assets/images/doctors/doctorPlaceholder5.png');
 
-export const maleDoctorPlaceholders = [
-  doctorPlaceholder1,
-  doctorPlaceholder2,
-  doctorPlaceholder5,
-];
+export const maleDoctorPlaceholders = [doctorPlaceholder1, doctorPlaceholder2, doctorPlaceholder5];
 
-export const femaleDoctorPlaceholders = [
-  doctorPlaceholder3,
-  doctorPlaceholder4,
-];
+export const femaleDoctorPlaceholders = [doctorPlaceholder3, doctorPlaceholder4];
 
-export const doctorPlaceholders = [
-  ...maleDoctorPlaceholders,
-  ...femaleDoctorPlaceholders,
-];
+export const doctorPlaceholders = [...maleDoctorPlaceholders, ...femaleDoctorPlaceholders];
 
 // Report thumbnails — local static assets
 export const reportSingleImage = require('../assets/reports/singleImage/d5d8aaed-2034-4198-b479-017d649e280b.jpg');

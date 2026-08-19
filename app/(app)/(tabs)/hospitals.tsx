@@ -80,7 +80,10 @@ export default function HospitalsScreen() {
           {t('hospitals.location_unavailable', 'Location Unavailable')}
         </Text>
         <Text style={styles.errorSubtitle}>
-          {t('hospitals.we_need_access_to_your_locatio', 'We need access to your location to find nearby hospitals.')}
+          {t(
+            'hospitals.we_need_access_to_your_locatio',
+            'We need access to your location to find nearby hospitals.',
+          )}
         </Text>
         <TouchableOpacity
           style={styles.retryButton}

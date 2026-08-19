@@ -35,7 +35,6 @@ export const DoctorDashboard = (): React.JSX.Element => {
           <Text style={styles.greeting}>MediCon</Text>
         </View>
         <View style={styles.headerActions}>
-          
           <View style={styles.toggleWrapper}>
             <Text style={styles.onlineLabel}>{t('doctordashboard.online', 'Online')}</Text>
             <TouchableOpacity
@@ -57,7 +56,11 @@ export const DoctorDashboard = (): React.JSX.Element => {
             accessibilityLabel="Settings"
             accessibilityRole="button"
           >
-            <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+            <MaterialCommunityIcons
+              name="account-outline"
+              size={27.6}
+              color={Colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -70,7 +73,7 @@ export const DoctorDashboard = (): React.JSX.Element => {
             <Text style={styles.profileName}>{fullName}</Text>
             <View style={styles.profileSpacing} />
             <Text style={styles.profileBmdc}>{bmdcRegistration}</Text>
-            
+
             <TouchableOpacity style={styles.switchRoleButton} onPress={handleSwitchRole}>
               <Text style={styles.switchRoleText}>
                 {t('doctordashboard.switch_to_patient', 'Switch to your Patient Profile')}
@@ -137,7 +140,11 @@ export const DoctorDashboard = (): React.JSX.Element => {
             {/* Payments Overview */}
             <View style={styles.detailCardHeader}>
               <View style={styles.iconSquare}>
-                <MaterialCommunityIcons name="credit-card-outline" size={24} color={Colors.primary} />
+                <MaterialCommunityIcons
+                  name="credit-card-outline"
+                  size={24}
+                  color={Colors.primary}
+                />
               </View>
               <Text style={styles.detailCardTitle}>
                 {t('doctordashboard.payments_overview', 'Payments Overview')}
@@ -193,7 +200,7 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontFamily: FontFamily.extraBold,
-    
+
     fontSize: FontSize.xxl,
     color: Colors.primary,
   },
@@ -248,7 +255,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.base,
     paddingBottom: Layout.tabBarHeight + Spacing.sm,
   },
-  
+
   // --- Profile Card ---
   profileCard: {
     flexDirection: 'row',
@@ -329,7 +336,7 @@ const styles = StyleSheet.create({
   },
   detailCardTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.textPrimary,
   },
@@ -360,7 +367,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontFamily: FontFamily.regular,
-     // Changed to normal per user request
+    // Changed to normal per user request
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
     textAlign: 'center',

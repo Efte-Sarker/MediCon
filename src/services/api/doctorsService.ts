@@ -1,6 +1,10 @@
 import Constants from 'expo-constants';
 import { DoctorProfile } from '../../types/medical.types';
-import { doctorPlaceholders, maleDoctorPlaceholders, femaleDoctorPlaceholders } from '../../constants/images';
+import {
+  doctorPlaceholders,
+  maleDoctorPlaceholders,
+  femaleDoctorPlaceholders,
+} from '../../constants/images';
 
 export interface DoctorExperienceEntry {
   id: string;
@@ -230,7 +234,7 @@ export const doctorsService = {
 
   getConsultationHistory: async (): Promise<ConsultationHistoryItem[]> => {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    
+
     // We keep this mock since consultation backend isn't fully set up for the current user
     const baseHistory: ConsultationHistoryItem[] = [
       {

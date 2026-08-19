@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   instruction: {
-    fontFamily: FontFamily.bold,
+    fontFamily: FontFamily.regular,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
     lineHeight: FontSize.lg * 1.5,

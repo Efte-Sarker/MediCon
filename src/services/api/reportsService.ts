@@ -460,7 +460,7 @@ export const reportsService = {
             reader.readAsDataURL(blob);
           });
           return { data: base64, mimeType, name: file.name };
-        })
+        }),
       );
 
       const localhost = Constants.expoConfig?.hostUri?.split(':')[0] || 'localhost';
@@ -468,7 +468,7 @@ export const reportsService = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify({ files: filesPayload }),
       });
@@ -504,7 +504,6 @@ export const reportsService = {
       throw error;
     }
   },
-
 
   updateReport: async (id: string, data: Partial<Report>): Promise<Report> => {
     return new Promise((resolve, reject) => {

@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     marginBottom: 2,

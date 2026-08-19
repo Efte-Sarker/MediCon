@@ -107,9 +107,18 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   React.useEffect(() => {
-    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setIsKeyboardVisible(true));
-    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setIsKeyboardVisible(false));
-    return () => { showSub.remove(); hideSub.remove(); };
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setIsKeyboardVisible(true),
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setIsKeyboardVisible(false),
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
   }, []);
 
   // Programmatically focus on modal open
@@ -216,7 +225,7 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
         medicines.map((m) => ({
           ...m,
           frequencyPattern: `${m.freqMorning ? 1 : 0}+${m.freqAfternoon ? 1 : 0}+${m.freqNight ? 1 : 0}`,
-        }))
+        })),
       ),
       tests: JSON.stringify(tests),
       notes,
@@ -304,7 +313,13 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
               </View>
 
               {medicines.map((medicine, index) => (
-                <View key={medicine.id} style={[styles.card, index === medicines.length - 1 && { marginBottom: Spacing.lg }]}>
+                <View
+                  key={medicine.id}
+                  style={[
+                    styles.card,
+                    index === medicines.length - 1 && { marginBottom: Spacing.lg },
+                  ]}
+                >
                   <View style={styles.cardHeader}>
                     <View style={styles.cardTitleBadge}>
                       <Text style={styles.cardTitle}>Medicine #{index + 1}</Text>
@@ -354,7 +369,9 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                       <Text style={styles.subLabel}>Time of Day</Text>
                       <TouchableOpacity
                         style={styles.checkboxRow}
-                        onPress={() => updateMedicine(medicine.id, 'freqMorning', !medicine.freqMorning)}
+                        onPress={() =>
+                          updateMedicine(medicine.id, 'freqMorning', !medicine.freqMorning)
+                        }
                       >
                         <MaterialCommunityIcons
                           name={medicine.freqMorning ? 'checkbox-marked' : 'checkbox-blank-outline'}
@@ -370,7 +387,9 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                         }
                       >
                         <MaterialCommunityIcons
-                          name={medicine.freqAfternoon ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                          name={
+                            medicine.freqAfternoon ? 'checkbox-marked' : 'checkbox-blank-outline'
+                          }
                           size={20}
                           color={medicine.freqAfternoon ? Colors.primary : Colors.textTertiary}
                         />
@@ -378,7 +397,9 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                       </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.checkboxRow}
-                        onPress={() => updateMedicine(medicine.id, 'freqNight', !medicine.freqNight)}
+                        onPress={() =>
+                          updateMedicine(medicine.id, 'freqNight', !medicine.freqNight)
+                        }
                       >
                         <MaterialCommunityIcons
                           name={medicine.freqNight ? 'checkbox-marked' : 'checkbox-blank-outline'}
@@ -398,9 +419,13 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                           onPress={() => updateMedicine(medicine.id, 'interval', interval)}
                         >
                           <MaterialCommunityIcons
-                            name={medicine.interval === interval ? 'radiobox-marked' : 'radiobox-blank'}
+                            name={
+                              medicine.interval === interval ? 'radiobox-marked' : 'radiobox-blank'
+                            }
                             size={20}
-                            color={medicine.interval === interval ? Colors.primary : Colors.textTertiary}
+                            color={
+                              medicine.interval === interval ? Colors.primary : Colors.textTertiary
+                            }
                           />
                           <Text style={styles.checkboxLabel}>{interval}</Text>
                         </TouchableOpacity>
@@ -417,7 +442,10 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                       return (
                         <TouchableOpacity
                           key={inst}
-                          style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]}
+                          style={[
+                            styles.chip,
+                            selected ? styles.chipSelected : styles.chipUnselected,
+                          ]}
                           onPress={() => updateMedicine(medicine.id, 'instructions', inst)}
                         >
                           <Text
@@ -442,7 +470,10 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                       return (
                         <TouchableOpacity
                           key={dur}
-                          style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]}
+                          style={[
+                            styles.chip,
+                            selected ? styles.chipSelected : styles.chipUnselected,
+                          ]}
                           onPress={() => updateMedicine(medicine.id, 'duration', dur)}
                         >
                           <Text
@@ -480,9 +511,12 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
                 </View>
               ) : (
                 tests.map((test, index) => (
-                  <View 
-                    key={test.id} 
-                    style={[styles.card, index === tests.length - 1 && { marginBottom: Spacing.lg }]}
+                  <View
+                    key={test.id}
+                    style={[
+                      styles.card,
+                      index === tests.length - 1 && { marginBottom: Spacing.lg },
+                    ]}
                   >
                     <View style={styles.cardHeader}>
                       <View style={styles.cardTitleBadge}>
@@ -509,8 +543,15 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
 
                     <Text style={[styles.fieldLabel, { marginTop: Spacing.md }]}>Reason</Text>
                     <View style={[styles.textInput, styles.reasonInput, { padding: 0 }]}>
-                      <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, padding: Spacing.md }}>
-                        <TouchableOpacity onPress={() => setActiveTestId(test.id)} activeOpacity={0.8} style={{ flex: 1 }}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        contentContainerStyle={{ flexGrow: 1, padding: Spacing.md }}
+                      >
+                        <TouchableOpacity
+                          onPress={() => setActiveTestId(test.id)}
+                          activeOpacity={0.8}
+                          style={{ flex: 1 }}
+                        >
                           <Text style={test.reason ? styles.inputText : styles.placeholderText}>
                             {test.reason || 'e.g. To check for anemia'}
                           </Text>
@@ -532,8 +573,15 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
               <Text style={styles.sectionTitle}>Additional Notes</Text>
             </View>
             <View style={[styles.textInput, styles.textInputMultiline, { padding: 0 }]}>
-              <ScrollView nestedScrollEnabled contentContainerStyle={{ flexGrow: 1, padding: Spacing.md }}>
-                <TouchableOpacity onPress={() => setIsNotesModalVisible(true)} activeOpacity={0.8} style={{ flex: 1 }}>
+              <ScrollView
+                nestedScrollEnabled
+                contentContainerStyle={{ flexGrow: 1, padding: Spacing.md }}
+              >
+                <TouchableOpacity
+                  onPress={() => setIsNotesModalVisible(true)}
+                  activeOpacity={0.8}
+                  style={{ flex: 1 }}
+                >
                   <Text style={notes ? styles.inputText : styles.placeholderText}>
                     {notes || 'e.g. Monitor blood pressure daily. Return in 4 weeks.'}
                   </Text>
@@ -553,7 +601,7 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
         onRequestClose={() => setActiveTestId(null)}
       >
         {/* KeyboardAvoidingView as root ensures the entire modal content shifts up */}
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
           style={styles.modalRoot}
         >
@@ -562,53 +610,63 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
             <View style={StyleSheet.absoluteFill} />
           </TouchableWithoutFeedback>
 
-          {activeTestId && (() => {
-            const test = tests.find(t => t.id === activeTestId);
-            const index = tests.findIndex(t => t.id === activeTestId);
-            if (!test) return null;
-            return (
-              <View style={[
-                styles.modalCardContainer,
-                { paddingBottom: isKeyboardVisible ? Spacing.base : insets.bottom + Spacing.base },
-              ]}>
-                <View style={[styles.card, { marginBottom: 0 }]}>
-                  <View style={styles.cardHeader}>
-                    <View style={styles.cardTitleBadge}>
-                      <Text style={styles.cardTitle}>Test #{index + 1}</Text>
+          {activeTestId &&
+            (() => {
+              const test = tests.find((t) => t.id === activeTestId);
+              const index = tests.findIndex((t) => t.id === activeTestId);
+              if (!test) return null;
+              return (
+                <View
+                  style={[
+                    styles.modalCardContainer,
+                    {
+                      paddingBottom: isKeyboardVisible
+                        ? Spacing.base
+                        : insets.bottom + Spacing.base,
+                    },
+                  ]}
+                >
+                  <View style={[styles.card, { marginBottom: 0 }]}>
+                    <View style={styles.cardHeader}>
+                      <View style={styles.cardTitleBadge}>
+                        <Text style={styles.cardTitle}>Test #{index + 1}</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => setActiveTestId(null)}
+                        style={styles.removeButton}
+                      >
+                        <MaterialCommunityIcons name="check" size={18} color={Colors.primary} />
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity onPress={() => setActiveTestId(null)} style={styles.removeButton}>
-                      <MaterialCommunityIcons name="check" size={18} color={Colors.primary} />
-                    </TouchableOpacity>
+
+                    <Text style={styles.fieldLabel}>
+                      Test Name <Text style={styles.required}>*</Text>
+                    </Text>
+                    <TextInput
+                      ref={testNameRef}
+                      style={styles.textInput}
+                      placeholder="e.g. Complete Blood Count (CBC)"
+                      placeholderTextColor={Colors.textTertiary}
+                      value={test.name}
+                      onChangeText={(v) => updateTest(test.id, 'name', v)}
+                      returnKeyType="next"
+                    />
+
+                    <Text style={[styles.fieldLabel, { marginTop: Spacing.md }]}>Reason</Text>
+                    <TextInput
+                      style={[styles.textInput, styles.reasonInput]}
+                      placeholder="e.g. To check for anemia"
+                      placeholderTextColor={Colors.textTertiary}
+                      value={test.reason}
+                      onChangeText={(v) => updateTest(test.id, 'reason', v)}
+                      multiline
+                      numberOfLines={3}
+                      scrollEnabled={true}
+                    />
                   </View>
-
-                  <Text style={styles.fieldLabel}>
-                    Test Name <Text style={styles.required}>*</Text>
-                  </Text>
-                  <TextInput
-                    ref={testNameRef}
-                    style={styles.textInput}
-                    placeholder="e.g. Complete Blood Count (CBC)"
-                    placeholderTextColor={Colors.textTertiary}
-                    value={test.name}
-                    onChangeText={(v) => updateTest(test.id, 'name', v)}
-                    returnKeyType="next"
-                  />
-
-                  <Text style={[styles.fieldLabel, { marginTop: Spacing.md }]}>Reason</Text>
-                  <TextInput
-                    style={[styles.textInput, styles.reasonInput]}
-                    placeholder="e.g. To check for anemia"
-                    placeholderTextColor={Colors.textTertiary}
-                    value={test.reason}
-                    onChangeText={(v) => updateTest(test.id, 'reason', v)}
-                    multiline
-                    numberOfLines={3}
-                    scrollEnabled={true}
-                  />
                 </View>
-              </View>
-            );
-          })()}
+              );
+            })()}
         </KeyboardAvoidingView>
       </Modal>
 
@@ -620,7 +678,7 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
         statusBarTranslucent
         onRequestClose={() => setIsNotesModalVisible(false)}
       >
-        <KeyboardAvoidingView 
+        <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
           style={styles.modalRoot}
         >
@@ -628,16 +686,21 @@ export default function WritePrescriptionScreen(): React.JSX.Element {
             <View style={StyleSheet.absoluteFill} />
           </TouchableWithoutFeedback>
 
-          <View style={[
-            styles.modalCardContainer,
-            { paddingBottom: isKeyboardVisible ? Spacing.base : insets.bottom + Spacing.base },
-          ]}>
+          <View
+            style={[
+              styles.modalCardContainer,
+              { paddingBottom: isKeyboardVisible ? Spacing.base : insets.bottom + Spacing.base },
+            ]}
+          >
             <View style={[styles.card, { marginBottom: 0 }]}>
               <View style={[styles.cardHeader, { marginBottom: Spacing.base }]}>
                 <View style={styles.cardTitleBadge}>
                   <Text style={styles.cardTitle}>Additional Notes</Text>
                 </View>
-                <TouchableOpacity onPress={() => setIsNotesModalVisible(false)} style={styles.removeButton}>
+                <TouchableOpacity
+                  onPress={() => setIsNotesModalVisible(false)}
+                  style={styles.removeButton}
+                >
                   <MaterialCommunityIcons name="check" size={18} color={Colors.primary} />
                 </TouchableOpacity>
               </View>
@@ -787,7 +850,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    
+
     color: Colors.primary,
   },
   section: {
@@ -846,7 +909,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.sm,
     color: Colors.primary,
   },

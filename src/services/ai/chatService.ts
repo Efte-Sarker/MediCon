@@ -20,7 +20,7 @@ class ChatService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify({ query, consultationId }),
       });
@@ -33,7 +33,8 @@ class ChatService {
       fullResponse = data.response;
     } catch (error) {
       console.warn('Error calling chat API:', error);
-      fullResponse = 'I apologize, but I am unable to connect to the server right now. Please check your connection and try again.';
+      fullResponse =
+        'I apologize, but I am unable to connect to the server right now. Please check your connection and try again.';
     }
 
     // Split the response to visually stream it word-by-word in the UI

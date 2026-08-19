@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
   },
   unit: {

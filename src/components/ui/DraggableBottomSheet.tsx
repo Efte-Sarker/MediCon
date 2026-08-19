@@ -11,7 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../theme';
 
 interface DraggableBottomSheetProps {
@@ -78,7 +78,6 @@ export function DraggableBottomSheet({
         <Animated.View
           style={[
             styles.modalSheet,
-            { paddingBottom: insets.bottom || Spacing.md },
             height ? { height: height as any } : undefined,
             {
               transform: [
@@ -93,24 +92,26 @@ export function DraggableBottomSheet({
             },
           ]}
         >
-          {/* Drag Handle */}
-          <View style={styles.dragArea} {...handlePanResponder.panHandlers}>
-            <View style={styles.sheetHandle} />
-          </View>
-
-          {/* Header */}
-          {title ? (
-            <View style={styles.sheetHeader}>
-              <View style={styles.sheetHeaderLeft}>
-                <Text style={styles.sheetTitle}>{title}</Text>
-              </View>
+          <SafeAreaView edges={['bottom']} style={height ? { flex: 1 } : undefined}>
+            {/* Drag Handle */}
+            <View style={styles.dragArea} {...handlePanResponder.panHandlers}>
+              <View style={styles.sheetHandle} />
             </View>
-          ) : null}
 
-          {/* Content */}
-          <View style={[styles.contentContainer, height ? { flex: 1 } : undefined]}>
-            {children}
-          </View>
+            {/* Header */}
+            {title ? (
+              <View style={styles.sheetHeader}>
+                <View style={styles.sheetHeaderLeft}>
+                  <Text style={styles.sheetTitle}>{title}</Text>
+                </View>
+              </View>
+            ) : null}
+
+            {/* Content */}
+            <View style={[styles.contentContainer, height ? { flex: 1 } : undefined]}>
+              {children}
+            </View>
+          </SafeAreaView>
         </Animated.View>
       </KeyboardAvoidingView>
     </Modal>
@@ -163,5 +164,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     flexShrink: 1,
+    paddingBottom: Spacing.md,
   },
 });

@@ -591,7 +591,7 @@ const styles = StyleSheet.create({
   },
   feeValue: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     textAlign: 'center',
@@ -635,7 +635,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    
+
     color: Colors.primary,
   },
 

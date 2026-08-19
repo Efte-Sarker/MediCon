@@ -10,7 +10,7 @@
             "emergencyNumber": "+8801713141447",
             "hasEmergencyRoom": true,
             "isOpen24x7": true,
-            "imageUrl": "https://example.com/square.jpg"
+            "imageUrl": "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=800&auto=format&fit=crop"
         },
         {
             "id": "hosp_002",
@@ -22,7 +22,7 @@
             "emergencyNumber": "+880255037242",
             "hasEmergencyRoom": true,
             "isOpen24x7": true,
-            "imageUrl": "https://example.com/evercare.jpg"
+            "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e3/Apollo_Hospital_Dhaka_2014.jpg"
         },
         {
             "id": "hosp_003",
@@ -34,7 +34,7 @@
             "emergencyNumber": "+8801713333333",
             "hasEmergencyRoom": true,
             "isOpen24x7": true,
-            "imageUrl": "https://example.com/labaid.jpg"
+            "imageUrl": "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop"
         },
         {
             "id": "hosp_004",
@@ -46,7 +46,7 @@
             "emergencyNumber": "+8801321155211",
             "hasEmergencyRoom": true,
             "isOpen24x7": true,
-            "imageUrl": "https://example.com/evercare_ctg.jpg"
+            "imageUrl": "https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=800&auto=format&fit=crop"
         }
     ],
     "doctors": [

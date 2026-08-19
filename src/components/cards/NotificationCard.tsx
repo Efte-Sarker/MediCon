@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   },
   textUnread: {
     color: Colors.textPrimary,
-    
+
     fontFamily: FontFamily.semiBold,
   },
   textRead: {

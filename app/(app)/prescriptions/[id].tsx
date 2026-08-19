@@ -13,6 +13,9 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  TextInput,
+  KeyboardAvoidingView,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,6 +23,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { Colors, Spacing, FontFamily, FontSize, Layout, BorderRadius } from '../../../src/theme';
+import { DraggableBottomSheet } from '../../../src/components/ui/DraggableBottomSheet';
+import { DoctorPrescriptionDocument } from '../../../src/components/medical/DoctorPrescriptionDocument';
 import { prescriptionsService } from '../../../src/services/api/prescriptionsService';
 import { createAppError, AppError } from '../../../src/utils/errors';
 import { ErrorState } from '../../../src/components/ui/ErrorState';
@@ -43,6 +48,7 @@ interface MedicineDetailCardProps {
   issuedAt: string;
   onSetReminder: (medId: string) => void;
   reminderTime?: Date;
+  isLast?: boolean;
 }
 
 const MedicineDetailCard = ({
@@ -50,6 +56,7 @@ const MedicineDetailCard = ({
   issuedAt,
   onSetReminder,
   reminderTime,
+  isLast,
 }: MedicineDetailCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const toggleExpanded = () => {
@@ -64,14 +71,15 @@ const MedicineDetailCard = ({
     med.instructions,
   );
 
-  const startDate = new Date(issuedAt);
-  const endDate = new Date(issuedAt);
+  const isManual = med.id.startsWith('med-manual');
+  const startDate = isManual ? new Date() : new Date(issuedAt);
+  const endDate = isManual ? new Date() : new Date(issuedAt);
   endDate.setDate(endDate.getDate() + med.durationDays - 1);
   const formatOpt: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
   const durationText = `${med.durationDays} days (${startDate.toLocaleDateString('en-US', formatOpt)} - ${endDate.toLocaleDateString('en-US', formatOpt)})`;
 
   return (
-    <View style={styles.medicineCard}>
+    <View style={[styles.medicineCard, isLast && { marginBottom: 0 }]}>
       {/* Medicine name & dosage */}
       <View style={styles.medHeader}>
         <View style={styles.medTitles}>
@@ -88,11 +96,12 @@ const MedicineDetailCard = ({
 
       {/* Duration / Dosage pattern */}
       <View style={styles.durationDosageRow}>
-        <View style={styles.ddItem}>
+        <View style={[styles.ddItem, { flex: 2 }]}>
           <Text style={styles.ddLabel}>Duration</Text>
           <Text style={styles.ddValue}>{durationText}</Text>
         </View>
-        <View style={styles.ddItem}>
+        <View style={styles.ddDivider} />
+        <View style={[styles.ddItem, { flex: 1 }]}>
           <Text style={styles.ddLabel}>Schedule</Text>
           <Text style={styles.ddValue}>{med.dosagePattern || '1+1+1'}</Text>
         </View>
@@ -149,6 +158,20 @@ export default function PrescriptionDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AppError | null>(null);
 
+  // Manual Medicine Entry state
+  const [showAddMedicine, setShowAddMedicine] = useState(false);
+  const [newMedName, setNewMedName] = useState('');
+  const [newMedDosage, setNewMedDosage] = useState('');
+  const [newMedDuration, setNewMedDuration] = useState('');
+  const [newMedSchedule, setNewMedSchedule] = useState('');
+  const [newMedInstructions, setNewMedInstructions] = useState('');
+  const [isAddingMed, setIsAddingMed] = useState(false);
+  const [validationError, setValidationError] = useState('');
+
+  const DURATION_OPTIONS = ['7 Days', '14 Days', '21 Days', '30 Days'];
+  const SCHEDULE_OPTIONS = ['1+0+1', '1+1+1', '1+0+0', '0+0+1'];
+  const INSTRUCTION_OPTIONS = ['Before Meals', 'After Meals'];
+
   // Time-picker state
   const [showPicker, setShowPicker] = useState(false);
   const [selectedMedId, setSelectedMedId] = useState<string | null>(null);
@@ -156,6 +179,7 @@ export default function PrescriptionDetailsScreen() {
 
   // "Show Original" modal
   const [showOriginalVisible, setShowOriginalVisible] = useState(false);
+  const [showDownloadSheet, setShowDownloadSheet] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -229,6 +253,53 @@ export default function PrescriptionDetailsScreen() {
     setShowPicker(true);
   };
 
+  const handleAddMedicine = async () => {
+    if (
+      !newMedName.trim() ||
+      !newMedDosage.trim() ||
+      !newMedDuration ||
+      !newMedSchedule ||
+      !newMedInstructions
+    ) {
+      setValidationError('Please fill out all fields.');
+      return;
+    }
+    setValidationError('');
+    setIsAddingMed(true);
+    try {
+      const timesPerDay = newMedSchedule.split('+').reduce((sum, v) => sum + parseInt(v, 10), 0);
+      const newMedData = {
+        name: newMedName.trim(),
+        dosage: `${newMedDosage.trim()}mg`,
+        durationDays: parseInt(newMedDuration.split(' ')[0], 10) || 7,
+        dosagePattern: newMedSchedule,
+        instructions: newMedInstructions,
+        timesPerDay,
+        frequency: `${timesPerDay} times daily`,
+      };
+
+      const addedMed = await prescriptionsService.addMedicineToPrescription(
+        id as string,
+        newMedData,
+      );
+
+      const updatedRx = await prescriptionsService.getPrescriptionDetails(id as string);
+      setPrescription(updatedRx);
+
+      // Reset form
+      setShowAddMedicine(false);
+      setNewMedName('');
+      setNewMedDosage('');
+      setNewMedDuration('');
+      setNewMedSchedule('');
+      setNewMedInstructions('');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to add medicine.');
+    } finally {
+      setIsAddingMed(false);
+    }
+  };
+
   // ── Loading / Error states ──────────────────────────────────────────────────
 
   if (loading || !prescription) {
@@ -274,16 +345,42 @@ export default function PrescriptionDetailsScreen() {
       minute: '2-digit',
     });
 
-  const hasOriginal = Boolean(prescription.imageUrl);
+  const hasOriginal = isDoctor || Boolean(prescription.imageUrl);
+
+  const handleDownload = () => {
+    setShowDownloadSheet(true);
+  };
+
+  const performDownload = async (format: 'pdf' | 'image') => {
+    try {
+      setLoading(true);
+
+      let host = 'localhost:8081';
+
+      const Constants = require('expo-constants').default;
+      if (Constants?.expoConfig?.hostUri) {
+        host = Constants.expoConfig.hostUri;
+      }
+
+      const url = `http://${host}/api/prescription/${prescription.id}?format=${format}`;
+      await Linking.openURL(url);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to download prescription.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Header */}
       <View
         style={{
-          backgroundColor: Colors.surface,
+          backgroundColor: '#fff',
           paddingTop: insets.top,
-          marginBottom: Spacing.lg,
+          marginBottom: Spacing.base,
+          borderBottomWidth: 1,
+          borderBottomColor: Colors.tertiary,
         }}
       >
         <View style={styles.header}>
@@ -296,6 +393,7 @@ export default function PrescriptionDetailsScreen() {
             <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Prescription Details</Text>
+          <View style={{ width: 44 }} />
         </View>
       </View>
 
@@ -326,25 +424,52 @@ export default function PrescriptionDetailsScreen() {
         </View>
 
         {/* Medicines section */}
-        <Text style={styles.sectionTitle}>Medicines ({prescription.medicines.length})</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Medicines ({prescription.medicines.length})</Text>
+          {!isDoctor && (
+            <TouchableOpacity style={styles.addButton} onPress={() => setShowAddMedicine(true)}>
+              <MaterialCommunityIcons name="plus" size={16} color={Colors.primary} />
+              <Text style={styles.addButtonText}>Add Medicine</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-        {prescription.medicines.map((med) => (
-          <MedicineDetailCard
-            key={med.id}
-            med={med}
-            issuedAt={prescription.issuedAt}
-            onSetReminder={onOpenTimePicker}
-            reminderTime={reminderTimes[med.id]}
-          />
-        ))}
+        {prescription.medicines.length === 0 && !isDoctor ? (
+          <View style={styles.emptyMedicines}>
+            <MaterialCommunityIcons name="pill" size={32} color={Colors.textTertiary} />
+            <Text style={styles.emptyMedicinesText}>No medicines added yet.</Text>
+            <Text style={styles.emptyMedicinesSubtext}>
+              Manually add medicines from your uploaded prescription to track them.
+            </Text>
+          </View>
+        ) : (
+          prescription.medicines.map((med, index) => (
+            <MedicineDetailCard
+              key={med.id}
+              med={med}
+              issuedAt={prescription.issuedAt}
+              onSetReminder={onOpenTimePicker}
+              reminderTime={reminderTimes[med.id]}
+              isLast={index === prescription.medicines.length - 1}
+            />
+          ))
+        )}
       </ScrollView>
 
       {/* Show Original fixed button at bottom */}
       {hasOriginal && (
-        <View style={[styles.bottomFixedContainer, { bottom: Spacing.base + insets.bottom }]}>
+        <View
+          style={[styles.bottomFixedContainer, { paddingBottom: Spacing.base + insets.bottom }]}
+        >
           <TouchableOpacity
             style={styles.showOriginalFullBtn}
-            onPress={() => setShowOriginalVisible(true)}
+            onPress={async () => {
+              if (prescription?.imageUrl?.toLowerCase().endsWith('.pdf')) {
+                await Linking.openURL(prescription.imageUrl);
+              } else {
+                setShowOriginalVisible(true);
+              }
+            }}
             activeOpacity={0.8}
             accessibilityRole="button"
             accessibilityLabel="Show prescription document"
@@ -378,7 +503,7 @@ export default function PrescriptionDetailsScreen() {
         onRequestClose={() => setShowOriginalVisible(false)}
         statusBarTranslucent
       >
-        <SafeAreaView style={styles.originalModal} edges={['top']}>
+        <SafeAreaView style={styles.originalModal} edges={['top', 'bottom']}>
           <View style={styles.originalHeader}>
             <TouchableOpacity
               style={styles.backButtonModal}
@@ -389,10 +514,24 @@ export default function PrescriptionDetailsScreen() {
               <MaterialCommunityIcons name="close" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Prescription</Text>
-            <View style={{ width: 40 }} />
+            <TouchableOpacity
+              style={styles.modalDownloadButton}
+              onPress={handleDownload}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons
+                name="download-outline"
+                size={18}
+                color={Colors.primary}
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.modalDownloadText}>Download</Text>
+            </TouchableOpacity>
           </View>
 
-          {prescription.imageUrl ? (
+          {isDoctor ? (
+            <DoctorPrescriptionDocument prescription={prescription} />
+          ) : prescription.imageUrl ? (
             <ScrollView
               contentContainerStyle={styles.originalImageContainer}
               maximumZoomScale={3}
@@ -418,11 +557,198 @@ export default function PrescriptionDetailsScreen() {
           )}
         </SafeAreaView>
       </Modal>
+
+      {/* Add Medication Modal */}
+      <Modal
+        visible={showAddMedicine}
+        transparent={false}
+        animationType="slide"
+        onRequestClose={() => setShowAddMedicine(false)}
+        statusBarTranslucent
+      >
+        <SafeAreaView style={styles.originalModal} edges={['top', 'bottom']}>
+          <View style={styles.originalHeader}>
+            <TouchableOpacity
+              style={styles.backButtonModal}
+              onPress={() => setShowAddMedicine(false)}
+              accessibilityRole="button"
+            >
+              <MaterialCommunityIcons name="close" size={24} color={Colors.textPrimary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Add Medicine</Text>
+            <View style={{ width: 40 }} />
+          </View>
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          >
+            <ScrollView
+              contentContainerStyle={styles.formContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              {validationError ? (
+                <Text style={styles.validationError}>{validationError}</Text>
+              ) : null}
+
+              <View style={styles.row}>
+                <View style={{ flex: 2 }}>
+                  <Text style={styles.fieldLabel}>
+                    Name <Text style={styles.required}>*</Text>
+                  </Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="e.g. Paracetamol"
+                    placeholderTextColor={Colors.textTertiary}
+                    value={newMedName}
+                    onChangeText={setNewMedName}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fieldLabel}>
+                    Dosage <Text style={styles.required}>*</Text>
+                  </Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="e.g. 500"
+                    placeholderTextColor={Colors.textTertiary}
+                    value={newMedDosage}
+                    onChangeText={setNewMedDosage}
+                    keyboardType="numeric"
+                  />
+                </View>
+              </View>
+
+              <Text style={[styles.fieldLabel, { marginTop: Spacing.md }]}>
+                Schedule <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.chipRow}>
+                {SCHEDULE_OPTIONS.map((sched) => {
+                  const selected = newMedSchedule === sched;
+                  return (
+                    <TouchableOpacity
+                      key={sched}
+                      style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]}
+                      onPress={() => setNewMedSchedule(sched)}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          selected ? styles.chipTextSelected : styles.chipTextUnselected,
+                        ]}
+                      >
+                        {sched}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={[styles.fieldLabel, { marginTop: Spacing.md }]}>
+                Instructions <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.chipRow}>
+                {INSTRUCTION_OPTIONS.map((inst) => {
+                  const selected = newMedInstructions === inst;
+                  return (
+                    <TouchableOpacity
+                      key={inst}
+                      style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]}
+                      onPress={() => setNewMedInstructions(inst)}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          selected ? styles.chipTextSelected : styles.chipTextUnselected,
+                        ]}
+                      >
+                        {inst}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <Text style={[styles.fieldLabel, { marginTop: Spacing.md }]}>
+                Duration <Text style={styles.required}>*</Text>
+              </Text>
+              <View style={styles.chipRow}>
+                {DURATION_OPTIONS.map((dur) => {
+                  const selected = newMedDuration === dur;
+                  return (
+                    <TouchableOpacity
+                      key={dur}
+                      style={[styles.chip, selected ? styles.chipSelected : styles.chipUnselected]}
+                      onPress={() => setNewMedDuration(dur)}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          selected ? styles.chipTextSelected : styles.chipTextUnselected,
+                        ]}
+                      >
+                        {dur}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <TouchableOpacity
+                style={[styles.submitButton, isAddingMed && styles.submitButtonDisabled]}
+                onPress={handleAddMedicine}
+                disabled={isAddingMed}
+              >
+                {isAddingMed ? (
+                  <ActivityIndicator color={Colors.surface} size="small" />
+                ) : (
+                  <Text style={styles.submitButtonText}>Save Medicine</Text>
+                )}
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Download Options Bottom Sheet */}
+      <DraggableBottomSheet
+        visible={showDownloadSheet}
+        onClose={() => setShowDownloadSheet(false)}
+        title="Download Prescription"
+      >
+        <View style={styles.downloadOptions}>
+          <TouchableOpacity
+            style={styles.downloadOptionBtn}
+            onPress={() => {
+              setShowDownloadSheet(false);
+              performDownload('pdf');
+            }}
+          >
+            <MaterialCommunityIcons name="file-pdf-box" size={24} color={Colors.primary} />
+            <View style={styles.downloadOptionText}>
+              <Text style={styles.downloadOptionTitle}>Download as PDF</Text>
+              <Text style={styles.downloadOptionDesc}>Best for printing and sharing</Text>
+            </View>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.downloadOptionBtn}
+            onPress={() => {
+              setShowDownloadSheet(false);
+              performDownload('image');
+            }}
+          >
+            <MaterialCommunityIcons name="image-outline" size={24} color={Colors.primary} />
+            <View style={styles.downloadOptionText}>
+              <Text style={styles.downloadOptionTitle}>Download as Image</Text>
+              <Text style={styles.downloadOptionDesc}>Save to your gallery</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </DraggableBottomSheet>
     </View>
   );
 }
 
-// 4. STYLES
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -459,11 +785,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: -Spacing.xs,
   },
+  downloadButton: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   headerTitle: {
     flex: 1,
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
+  },
+  modalDownloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.tertiary,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: BorderRadius.md,
+  },
+  modalDownloadText: {
+    fontFamily: FontFamily.bold,
+    fontSize: 12,
+    color: Colors.primary,
   },
 
   // Scroll
@@ -511,12 +856,17 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
   },
 
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.md,
+  },
   // Section title
   sectionTitle: {
     fontFamily: FontFamily.bold,
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
-    marginBottom: Spacing.md,
   },
 
   // Medicine card
@@ -546,7 +896,7 @@ const styles = StyleSheet.create({
   },
   medName: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
@@ -592,6 +942,11 @@ const styles = StyleSheet.create({
   ddItem: {
     flex: 1,
     alignItems: 'center',
+  },
+  ddDivider: {
+    width: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    marginVertical: Spacing.xs,
   },
   ddLabel: {
     fontFamily: FontFamily.medium,
@@ -653,9 +1008,14 @@ const styles = StyleSheet.create({
   // Fixed Bottom Button
   bottomFixedContainer: {
     position: 'absolute',
-    bottom: Spacing.lg,
-    left: Spacing.base,
-    right: Spacing.base,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Colors.surface,
+    paddingHorizontal: Spacing.base,
+    paddingTop: Spacing.base,
+    borderTopWidth: 1,
+    borderTopColor: Colors.tertiary,
   },
   showOriginalFullBtn: {
     flexDirection: 'row',
@@ -677,14 +1037,17 @@ const styles = StyleSheet.create({
   // "Show Original" modal
   originalModal: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#fff',
   },
   originalHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.base,
-    paddingVertical: Spacing.sm,
-    backgroundColor: Colors.background,
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.sm,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.tertiary,
   },
   originalImageContainer: {
     flex: 1,
@@ -706,5 +1069,156 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // Add Medication Form Styles
+  formContainer: {
+    padding: Spacing.lg,
+    paddingBottom: 100,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  fieldLabel: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
+  required: {
+    color: Colors.danger,
+  },
+  textInput: {
+    backgroundColor: Colors.surface,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    height: 46,
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: Spacing.sm,
+  },
+  chip: {
+    flex: 1,
+    minWidth: 70,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipSelected: {
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
+  },
+  chipUnselected: {
+    backgroundColor: Colors.surface,
+    borderColor: Colors.tertiary,
+  },
+  chipText: {
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.xs,
+  },
+  chipTextSelected: {
+    color: Colors.surface,
+  },
+  chipTextUnselected: {
+    color: Colors.textSecondary,
+  },
+  submitButton: {
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.base,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    marginTop: Spacing.xxl,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
+  },
+  submitButtonText: {
+    color: Colors.surface,
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+  },
+  validationError: {
+    color: Colors.danger,
+    fontFamily: FontFamily.medium,
+    fontSize: FontSize.sm,
+    marginBottom: Spacing.md,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: Colors.primary + '10',
+    borderWidth: 1,
+    borderColor: Colors.primary,
+  },
+  addButtonText: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: FontSize.sm,
+    color: Colors.primary,
+  },
+  emptyMedicines: {
+    alignItems: 'center',
+    padding: Spacing.xl,
+    backgroundColor: Colors.surface,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+    borderStyle: 'dashed',
+    marginTop: Spacing.sm,
+  },
+  emptyMedicinesText: {
+    fontFamily: FontFamily.bold,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    marginTop: Spacing.sm,
+  },
+  emptyMedicinesSubtext: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    marginTop: Spacing.xs,
+  },
+  downloadOptions: {
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    gap: Spacing.md,
+  },
+  downloadOptionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: Spacing.md,
+    backgroundColor: Colors.tertiaryLight,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.tertiary,
+  },
+  downloadOptionText: {
+    marginLeft: Spacing.md,
+  },
+  downloadOptionTitle: {
+    fontFamily: FontFamily.semiBold,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+  },
+  downloadOptionDesc: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginTop: 4,
   },
 });

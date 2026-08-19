@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.xl,
     color: Colors.textPrimary,
     marginBottom: Spacing.base,

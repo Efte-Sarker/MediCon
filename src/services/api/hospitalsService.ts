@@ -14,20 +14,61 @@ export const hospitalsService = {
     }
     const response = await fetch(url);
     if (!response.ok) throw new Error('Failed to fetch nearby hospitals');
-    return response.json();
+    const hospitals = await response.json();
+    
+    // Map hospital IDs to real images
+    const realImages: Record<string, string> = {
+      'hosp_001': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Square_hospital_01.jpg',
+      'hosp_002': 'https://images.unsplash.com/photo-1587351021759-3e566d6af7cc?q=80&w=800&auto=format&fit=crop',
+      'hosp_003': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop',
+      'hosp_004': 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=800&auto=format&fit=crop',
+    };
+
+    return hospitals.map((h: any) => ({
+      ...h,
+      imageUrl: realImages[h.id] || h.imageUrl,
+    }));
   },
 
   async searchHospitals(query: string): Promise<Hospital[]> {
-    const response = await fetch(`${API_BASE_URL}/hospitals/search?query=${encodeURIComponent(query)}`);
+    const response = await fetch(
+      `${API_BASE_URL}/hospitals/search?query=${encodeURIComponent(query)}`,
+    );
     if (!response.ok) throw new Error('Failed to search hospitals');
-    return response.json();
+    const hospitals = await response.json();
+    
+    // Map hospital IDs to real images
+    const realImages: Record<string, string> = {
+      'hosp_001': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Square_hospital_01.jpg',
+      'hosp_002': 'https://images.unsplash.com/photo-1587351021759-3e566d6af7cc?q=80&w=800&auto=format&fit=crop',
+      'hosp_003': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop',
+      'hosp_004': 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=800&auto=format&fit=crop',
+    };
+
+    return hospitals.map((h: any) => ({
+      ...h,
+      imageUrl: realImages[h.id] || h.imageUrl,
+    }));
   },
 
   async getHospitalDetails(id: string): Promise<{ hospital: Hospital; doctors: Doctor[] }> {
     // 1. Fetch Hospital
     const hospRes = await fetch(`${API_BASE_URL}/hospitals/${id}`);
     if (!hospRes.ok) throw new Error('Hospital not found');
-    const hospital = await hospRes.json();
+    let hospital = await hospRes.json();
+    
+    const realImages: Record<string, string> = {
+      'hosp_001': 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Square_hospital_01.jpg',
+      'hosp_002': 'https://images.unsplash.com/photo-1587351021759-3e566d6af7cc?q=80&w=800&auto=format&fit=crop',
+      'hosp_003': 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=800&auto=format&fit=crop',
+      'hosp_004': 'https://images.unsplash.com/photo-1538108149393-fbbd81895907?q=80&w=800&auto=format&fit=crop',
+    };
+    
+    if (realImages[hospital.id]) {
+      hospital.imageUrl = realImages[hospital.id];
+    } else if (!hospital.imageUrl || hospital.imageUrl.includes('example.com')) {
+      hospital.imageUrl = `https://placehold.co/600x400/40566d/F4FAFC.png?text=${encodeURIComponent(hospital.name)}`;
+    }
 
     // 2. Fetch Doctors working at this hospital (The new discovery workflow)
     const docsRes = await fetch(`${API_BASE_URL}/doctors/by-hospital/${id}`);

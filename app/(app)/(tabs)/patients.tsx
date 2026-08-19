@@ -155,7 +155,11 @@ export default function PatientsScreen(): React.JSX.Element {
             accessibilityLabel="Settings"
             accessibilityRole="button"
           >
-            <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+            <MaterialCommunityIcons
+              name="account-outline"
+              size={27.6}
+              color={Colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -194,12 +198,14 @@ export default function PatientsScreen(): React.JSX.Element {
             {/* Column 2: Follow-up */}
             <View style={styles.overviewColumn}>
               <View style={styles.iconSquare}>
-                <MaterialCommunityIcons name="account-arrow-right" size={22} color={Colors.primary} />
+                <MaterialCommunityIcons
+                  name="account-arrow-right"
+                  size={22}
+                  color={Colors.primary}
+                />
               </View>
               <View style={styles.overviewColText}>
-                <Text style={styles.overviewLabel}>
-                  {t('patients.follow_up', 'Follow-up')}
-                </Text>
+                <Text style={styles.overviewLabel}>{t('patients.follow_up', 'Follow-up')}</Text>
                 <Text style={styles.overviewValue}>{totalFollowUp}</Text>
               </View>
             </View>
@@ -241,10 +247,11 @@ export default function PatientsScreen(): React.JSX.Element {
                       {item.name}
                     </Text>
                     <Text style={styles.cardPatientDetails}>
-                      {item.age} yrs • {item.gender === 'M' ? 'Male' : item.gender === 'F' ? 'Female' : 'Other'}
+                      {item.age} yrs •{' '}
+                      {item.gender === 'M' ? 'Male' : item.gender === 'F' ? 'Female' : 'Other'}
                     </Text>
                   </View>
-                  
+
                   <View
                     style={[
                       styles.visitBadge,
@@ -301,7 +308,6 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    
   },
   headerLeft: {
     flex: 1,
@@ -378,7 +384,7 @@ const styles = StyleSheet.create({
   },
   overviewTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
@@ -433,7 +439,7 @@ const styles = StyleSheet.create({
   },
   overviewValue: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.xl,
     color: Colors.textPrimary,
   },
@@ -481,7 +487,7 @@ const styles = StyleSheet.create({
   },
   cardPatientName: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     marginBottom: 2,

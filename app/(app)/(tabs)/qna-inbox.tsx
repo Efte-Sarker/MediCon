@@ -91,7 +91,9 @@ const DoctorQuestionCard = ({
         {/* Row 1: Patient Name & Time + Menu */}
         <View style={styles.cardHeader}>
           <View style={styles.cardHeaderLeft}>
-            <Text style={[styles.cardPatientName, { fontFamily: FontFamily.bold, }]}>{patientName}</Text>
+            <Text style={[styles.cardPatientName, { fontFamily: FontFamily.bold }]}>
+              {patientName}
+            </Text>
             <Text style={styles.cardTimestamp}>{getTimeAgo(question.createdAt)}</Text>
           </View>
           <TouchableOpacity
@@ -135,14 +137,23 @@ const DoctorQuestionCard = ({
       </View>
 
       {/* Menu Modal */}
-      <Modal visible={menuVisible} transparent animationType="fade" onRequestClose={() => setMenuVisible(false)}>
+      <Modal
+        visible={menuVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setMenuVisible(false)}
+      >
         <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
           <View style={styles.menuOverlay}>
             <View style={[styles.menuContainer, { top: menuCoords.y, left: menuCoords.x }]}>
               {isAnswered && (
                 <>
                   <TouchableOpacity style={styles.menuItem} onPress={() => handleAction(onEdit)}>
-                    <MaterialCommunityIcons name="pencil-outline" size={20} color={Colors.textPrimary} />
+                    <MaterialCommunityIcons
+                      name="pencil-outline"
+                      size={20}
+                      color={Colors.textPrimary}
+                    />
                     <Text style={styles.menuItemText}>Edit</Text>
                   </TouchableOpacity>
                   <View style={styles.menuDivider} />
@@ -179,10 +190,11 @@ export default function QnaInboxScreen(): React.JSX.Element {
   const [activeQuestion, setActiveQuestion] = useState<Question | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editingAnswerId, setEditingAnswerId] = useState<string | null>(null);
-  
+
   const [replyText, setReplyText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [questionExpanded, setQuestionExpanded] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
   const sheetAnim = useRef(new Animated.Value(0)).current;
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -208,11 +220,11 @@ export default function QnaInboxScreen(): React.JSX.Element {
   useEffect(() => {
     const showSub = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
-      () => setKeyboardVisible(true)
+      () => setKeyboardVisible(true),
     );
     const hideSub = Keyboard.addListener(
       Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
-      () => setKeyboardVisible(false)
+      () => setKeyboardVisible(false),
     );
     return () => {
       showSub.remove();
@@ -232,9 +244,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
         const data = await qnaService.getDoctorInbox(doc.department);
         const filteredData = data.map((q) => ({
           ...q,
-          answers: q.answers.filter(
-            (a) => a.doctorId === userId || a.doctorId === doc!.fullName,
-          ),
+          answers: q.answers.filter((a) => a.doctorId === userId || a.doctorId === doc!.fullName),
         }));
         setQuestions(filteredData);
       } else {
@@ -269,7 +279,8 @@ export default function QnaInboxScreen(): React.JSX.Element {
     setActiveQuestion(question);
     setReplyText('');
     setQuestionExpanded(false);
-    
+    setShowReadMore(false);
+
     Animated.spring(sheetAnim, {
       toValue: 1,
       useNativeDriver: true,
@@ -287,7 +298,8 @@ export default function QnaInboxScreen(): React.JSX.Element {
     setActiveQuestion(question);
     setReplyText(answer.content);
     setQuestionExpanded(false);
-    
+    setShowReadMore(false);
+
     Animated.spring(sheetAnim, {
       toValue: 1,
       useNativeDriver: true,
@@ -327,14 +339,14 @@ export default function QnaInboxScreen(): React.JSX.Element {
           activeQuestion.id,
           editingAnswerId,
           doc ? doc.fullName : userId, // qnaService answers use doctor name often in mock data
-          replyText.trim()
+          replyText.trim(),
         );
         setQuestions((prev) =>
           prev.map((q) => {
             if (q.id === activeQuestion.id) {
               return {
                 ...q,
-                answers: q.answers.map(a => a.id === updatedAnswer.id ? updatedAnswer : a)
+                answers: q.answers.map((a) => (a.id === updatedAnswer.id ? updatedAnswer : a)),
               };
             }
             return q;
@@ -371,9 +383,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
   });
 
   const currentList = questions
-    .filter((q) =>
-      activeTab === 'unanswered' ? q.answers.length === 0 : q.answers.length > 0
-    )
+    .filter((q) => (activeTab === 'unanswered' ? q.answers.length === 0 : q.answers.length > 0))
     .sort((a, b) => {
       if (activeTab === 'answered') {
         const aTime = new Date(a.answers[0]?.createdAt || a.createdAt).getTime();
@@ -421,7 +431,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
   );
 
   const renderTabs = () => {
-    const unansweredCount = questions.filter(q => q.answers.length === 0).length;
+    const unansweredCount = questions.filter((q) => q.answers.length === 0).length;
     return (
       <View style={styles.tabBar}>
         <TouchableOpacity
@@ -435,17 +445,17 @@ export default function QnaInboxScreen(): React.JSX.Element {
           </Text>
         </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.tab, activeTab === 'answered' && styles.tabActive]}
-        onPress={() => setActiveTab('answered')}
-        activeOpacity={1}
-        accessibilityRole="tab"
-      >
-        <Text style={[styles.tabText, activeTab === 'answered' && styles.tabTextActive]}>
-          Answered
-        </Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === 'answered' && styles.tabActive]}
+          onPress={() => setActiveTab('answered')}
+          activeOpacity={1}
+          accessibilityRole="tab"
+        >
+          <Text style={[styles.tabText, activeTab === 'answered' && styles.tabTextActive]}>
+            Answered
+          </Text>
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -481,7 +491,10 @@ export default function QnaInboxScreen(): React.JSX.Element {
             </View>
           ) : (
             currentList.map((item, index) => (
-              <View key={item.id} style={index < currentList.length - 1 ? styles.questionGap : undefined}>
+              <View
+                key={item.id}
+                style={index < currentList.length - 1 ? styles.questionGap : undefined}
+              >
                 <DoctorQuestionCard
                   question={item}
                   isAnswered={activeTab === 'answered'}
@@ -516,7 +529,7 @@ export default function QnaInboxScreen(): React.JSX.Element {
               styles.sheet,
               {
                 maxHeight: SHEET_MAX_HEIGHT,
-                paddingBottom: isKeyboardVisible ? Spacing.base : (Spacing.base + insets.bottom),
+                paddingBottom: isKeyboardVisible ? Spacing.base : Spacing.base + insets.bottom,
                 transform: [{ translateY: sheetTranslateY }],
               },
             ]}
@@ -533,17 +546,29 @@ export default function QnaInboxScreen(): React.JSX.Element {
               {activeQuestion && (
                 <View style={styles.sheetQuestion}>
                   <Text style={styles.sheetPatientNameTop}>
-                    {activeQuestion.isAnonymous ? 'Anonymous' : getPatientName(activeQuestion.patientId)}
+                    {activeQuestion.isAnonymous
+                      ? 'Anonymous'
+                      : getPatientName(activeQuestion.patientId)}
                   </Text>
-                  
+
+                  {/* Hidden Text for precise line measurement */}
+                  <Text
+                    style={[styles.sheetQuestionText, { position: 'absolute', opacity: 0, zIndex: -1 }]}
+                    onTextLayout={(e) => {
+                      setShowReadMore(e.nativeEvent.lines.length > 3);
+                    }}
+                  >
+                    {activeQuestion.content}
+                  </Text>
+
                   <Text
                     style={styles.sheetQuestionText}
                     numberOfLines={questionExpanded ? undefined : 3}
                   >
                     {activeQuestion.content}
                   </Text>
-                  
-                  {!questionExpanded && activeQuestion.content.length > 100 && (
+
+                  {!questionExpanded && showReadMore && (
                     <TouchableOpacity onPress={handleExpandQuestion} style={styles.expandToggle}>
                       <Text style={styles.expandToggleText}>Read full question ▼</Text>
                     </TouchableOpacity>
@@ -588,8 +613,14 @@ export default function QnaInboxScreen(): React.JSX.Element {
                   <ActivityIndicator size="small" color={Colors.surface} />
                 ) : (
                   <>
-                    <MaterialCommunityIcons name={isEditing ? "check" : "send"} size={16} color={Colors.surface} />
-                    <Text style={styles.submitBtnText}>{isEditing ? 'Save Edits' : 'Submit Answer'}</Text>
+                    <MaterialCommunityIcons
+                      name={isEditing ? 'check' : 'send'}
+                      size={16}
+                      color={Colors.surface}
+                    />
+                    <Text style={styles.submitBtnText}>
+                      {isEditing ? 'Save Edits' : 'Submit Answer'}
+                    </Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -631,7 +662,6 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    
   },
   headerLeft: {
     flex: 1,
@@ -687,7 +717,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xxl,
     color: Colors.primary,
   },
-  
+
   // ── Tab Bar ─────────────────────────────────────────────────────────────────
   tabBar: {
     flexDirection: 'row',
@@ -717,7 +747,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    
+
     color: Colors.primary,
   },
 
@@ -806,7 +836,7 @@ const styles = StyleSheet.create({
   },
   answerLabel: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.primary,
     marginBottom: 4,
@@ -857,7 +887,7 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     color: Colors.success,
   },
-  
+
   // ── Menu Modal ─────────────────────────────────────────────────────────────
   menuOverlay: {
     flex: 1,
@@ -916,14 +946,14 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   sheetScrollArea: {
-    flexGrow: 0, 
+    flexGrow: 0,
   },
   sheetScrollContent: {
     paddingHorizontal: Spacing.base,
     paddingBottom: Spacing.md,
   },
   sheetQuestion: {
-    backgroundColor: Colors.primary + '0D', 
+    backgroundColor: Colors.primary + '0D',
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
@@ -931,7 +961,7 @@ const styles = StyleSheet.create({
   },
   sheetPatientNameTop: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.sm,
     color: Colors.textPrimary,
     marginBottom: 4,

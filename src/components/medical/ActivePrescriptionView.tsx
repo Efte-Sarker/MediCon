@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   },
   periodTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.base,
     color: Colors.primary,
   },
@@ -532,8 +532,7 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   medName: {
-    fontFamily: FontFamily.bold,
-    
+    fontFamily: FontFamily.regular,
     fontSize: FontSize.base,
     color: Colors.textPrimary,
   },
@@ -542,12 +541,12 @@ const styles = StyleSheet.create({
     paddingLeft: 2,
   },
   dosageBadgeText: {
-    fontFamily: FontFamily.bold,
+    fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: '#000000',
   },
   medInstructionsInline: {
-    fontFamily: FontFamily.bold,
+    fontFamily: FontFamily.regular,
     fontSize: FontSize.sm,
     color: '#000000',
     lineHeight: FontSize.sm * 1.5,

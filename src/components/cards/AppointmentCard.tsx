@@ -67,7 +67,14 @@ export const AppointmentCard = ({
       <View style={styles.body}>
         <View style={styles.iconContainer}>
           {appointment.imageUrl ? (
-            <Image source={{ uri: appointment.imageUrl }} style={styles.avatarImage} />
+            <Image
+              source={
+                typeof appointment.imageUrl === 'string'
+                  ? { uri: appointment.imageUrl }
+                  : appointment.imageUrl
+              }
+              style={styles.avatarImage}
+            />
           ) : (
             <MaterialCommunityIcons name="account-outline" size={24} color={Colors.primary} />
           )}
@@ -138,10 +145,9 @@ const styles = StyleSheet.create({
   },
   doctorName: {
     fontFamily: FontFamily.bold,
-    
     fontSize: FontSize.md,
     color: Colors.textPrimary,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   specialty: {
     fontFamily: FontFamily.regular,

@@ -30,6 +30,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
   },
   web: {
+    bundler: 'metro',
+    output: 'server',
     favicon: './assets/favicon.png',
   },
   updates: {
@@ -60,6 +62,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     'expo-image',
     'expo-secure-store',
     'expo-status-bar',
+    'expo-sharing',
   ],
   extra: {
     eas: {

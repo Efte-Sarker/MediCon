@@ -14,6 +14,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { FlashList } from '@shopify/flash-list';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
 
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '../../../src/theme';
 import { prescriptionsService } from '../../../src/services/api/prescriptionsService';
@@ -23,6 +24,8 @@ import { ActivePrescriptionView } from '../../../src/components/medical/ActivePr
 import { createAppError, AppError } from '../../../src/utils/errors';
 import { ErrorState } from '../../../src/components/ui/ErrorState';
 import { DraggableBottomSheet } from '../../../src/components/ui/DraggableBottomSheet';
+import { Modal } from '../../../src/components/ui/Modal';
+import { Button } from '../../../src/components/ui/Button';
 
 // 2. TYPES
 
@@ -55,6 +58,10 @@ export default function PrescriptionsScreen(): React.JSX.Element {
   const [quickViewVisible, setQuickViewVisible] = useState(false);
   const [activePrescription, setActivePrescription] = useState<Prescription | null>(null);
   const [quickViewLoading, setQuickViewLoading] = useState(false);
+
+  // ── Replace Modal ───────────────────────────────────────────────────────────
+  const [replaceModalVisible, setReplaceModalVisible] = useState(false);
+  const [pendingRxToSchedule, setPendingRxToSchedule] = useState<Prescription | null>(null);
 
   // ── Data loading ────────────────────────────────────────────────────────────
   const isMountedRef = useRef(true);
@@ -100,12 +107,7 @@ export default function PrescriptionsScreen(): React.JSX.Element {
 
   // ── Schedule / unschedule ───────────────────────────────────────────────────
 
-  const handleSchedule = async (rx: Prescription): Promise<void> => {
-    if (scheduledId === rx.id) {
-      // Explicit unschedule via button — handled by handleUnschedule
-      return;
-    }
-    const previousId = scheduledId;
+  const doSchedule = async (rx: Prescription): Promise<void> => {
     setSchedulingId(rx.id);
     try {
       await prescriptionsService.schedulePrescription(rx.id);
@@ -118,6 +120,20 @@ export default function PrescriptionsScreen(): React.JSX.Element {
       }
     } finally {
       if (isMountedRef.current) setSchedulingId(null);
+    }
+  };
+
+  const handleSchedule = async (rx: Prescription): Promise<void> => {
+    if (scheduledId === rx.id) {
+      // Explicit unschedule via button — handled by handleUnschedule
+      return;
+    }
+
+    if (scheduledId && scheduledId !== rx.id) {
+      setPendingRxToSchedule(rx);
+      setReplaceModalVisible(true);
+    } else {
+      doSchedule(rx);
     }
   };
 
@@ -135,6 +151,25 @@ export default function PrescriptionsScreen(): React.JSX.Element {
       }
     } finally {
       if (isMountedRef.current) setSchedulingId(null);
+    }
+  };
+
+  const handleUpload = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled) return;
+
+      const file = result.assets[0];
+      setLoading(true);
+      await prescriptionsService.uploadPrescription(file.uri);
+      await loadData();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to upload prescription.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -219,7 +254,7 @@ export default function PrescriptionsScreen(): React.JSX.Element {
       </Text>
       <TouchableOpacity
         style={styles.uploadBtn}
-        onPress={() => Alert.alert('Upload', 'Upload flow coming soon.')}
+        onPress={handleUpload}
         accessibilityRole="button"
         accessibilityLabel="Upload a prescription"
       >
@@ -400,7 +435,7 @@ export default function PrescriptionsScreen(): React.JSX.Element {
       {showUploadFab && (
         <TouchableOpacity
           style={styles.fab}
-          onPress={() => Alert.alert('Upload', 'Upload flow coming soon.')}
+          onPress={handleUpload}
           accessibilityRole="button"
           accessibilityLabel="Upload a new prescription"
         >
@@ -447,6 +482,42 @@ export default function PrescriptionsScreen(): React.JSX.Element {
           )}
         </View>
       </DraggableBottomSheet>
+
+      <Modal
+        visible={replaceModalVisible}
+        onClose={() => {
+          setReplaceModalVisible(false);
+          setPendingRxToSchedule(null);
+        }}
+        title="Replace Active Schedule?"
+        hideCloseButton={true}
+      >
+        <Text style={styles.modalText}>
+          You already have an active prescription schedule. Do you want to replace it with this one?
+          You cannot have more than one active schedule.
+        </Text>
+        <View style={styles.modalActions}>
+          <Button
+            label="Cancel"
+            variant="outline"
+            onPress={() => {
+              setReplaceModalVisible(false);
+              setPendingRxToSchedule(null);
+            }}
+          />
+          <Button
+            label="Replace"
+            variant="primary"
+            onPress={() => {
+              setReplaceModalVisible(false);
+              if (pendingRxToSchedule) {
+                doSchedule(pendingRxToSchedule);
+                setPendingRxToSchedule(null);
+              }
+            }}
+          />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -473,7 +544,6 @@ const styles = StyleSheet.create({
   },
   headerTitleBold: {
     fontFamily: FontFamily.extraBold,
-    
   },
 
   // ── Tab bar ──────────────────────────────────────────────────────────────────
@@ -508,7 +578,7 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     fontFamily: FontFamily.bold,
-    
+
     color: Colors.primary,
   },
 
@@ -619,6 +689,7 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bold,
     fontSize: FontSize.base,
     color: Colors.surface,
+    marginBottom: 2,
   },
   quickViewBtnTitleEmpty: {
     color: Colors.textPrimary,
@@ -718,5 +789,19 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // ── Modal Styles ────────────────────────────────────────────────────────────
+  modalText: {
+    fontFamily: FontFamily.regular,
+    fontSize: FontSize.base,
+    color: Colors.textSecondary,
+    lineHeight: FontSize.base * 1.5,
+    marginBottom: Spacing.xl,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.md,
   },
 });

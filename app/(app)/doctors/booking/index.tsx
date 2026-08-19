@@ -13,13 +13,15 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../../src/theme';
 import { appointmentsService, TimeSlot } from '../../../../src/services/api/appointmentsService';
 import { doctorsService, Doctor } from '../../../../src/services/api/doctorsService';
+import { usePatientStore } from '../../../../src/store/patientStore';
 import { useTranslation } from 'react-i18next';
 
 export default function BookingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, isReschedule } = useLocalSearchParams<{ id: string; isReschedule?: string }>();
   const insets = useSafeAreaInsets();
+  const { nextAppointment, setNextAppointment } = usePatientStore();
 
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
@@ -68,6 +70,30 @@ export default function BookingScreen() {
 
   const handleContinue = () => {
     if (!id || !selectedSlot) return;
+
+    if (isReschedule === 'true' && nextAppointment) {
+      const slotObj = slots.find((s) => s.id === selectedSlot);
+      if (slotObj) {
+        // Parse time like "10:00 AM" to create Date object
+        const [timeStr, modifier] = slotObj.time.split(' ');
+        let [hours, minutes] = timeStr.split(':');
+        let h = parseInt(hours, 10);
+        if (modifier === 'PM' && h !== 12) h += 12;
+        if (modifier === 'AM' && h === 12) h = 0;
+
+        const updatedDate = new Date(selectedDate);
+        updatedDate.setHours(h, parseInt(minutes, 10), 0, 0);
+
+        setNextAppointment({
+          ...nextAppointment,
+          dateTime: updatedDate.toISOString(),
+        });
+
+        router.back();
+      }
+      return;
+    }
+
     const dateString = selectedDate.toISOString().split('T')[0];
     router.push({
       pathname: '/(app)/doctors/booking/digest',

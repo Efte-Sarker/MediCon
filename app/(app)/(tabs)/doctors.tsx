@@ -197,9 +197,7 @@ export default function DoctorsScreen(): React.JSX.Element {
         {/* Online Doctors Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {t('doctors.online_doctors', 'Online Doctors')}
-            </Text>
+            <Text style={styles.sectionTitle}>{t('doctors.online_doctors', 'Online Doctors')}</Text>
             <TouchableOpacity
               onPress={() => router.push('/(app)/doctors/')}
               hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
@@ -267,7 +265,6 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    
   },
   searchContainer: {
     paddingTop: Spacing.md,

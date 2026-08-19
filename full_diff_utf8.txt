@@ -1,0 +1,1504 @@
+﻿diff --git a/app/(app)/(tabs)/_layout.tsx b/app/(app)/(tabs)/_layout.tsx
+index 4d17635..132861f 100644
+--- a/app/(app)/(tabs)/_layout.tsx
++++ b/app/(app)/(tabs)/_layout.tsx
+@@ -69,7 +69,6 @@ export default function TabsLayout() {
+       {/* Hidden from tab bar */}
+       <Tabs.Screen name="reports" options={{ href: null }} />
+       <Tabs.Screen name="hospitals" options={{ href: null }} />
+-      <Tabs.Screen name="ai-chat" options={{ href: null }} />
+     </Tabs>
+   );
+ }
+diff --git a/app/(app)/(tabs)/ai-chat.tsx b/app/(app)/(tabs)/ai-chat.tsx
+deleted file mode 100644
+index cfdd9d9..0000000
+--- a/app/(app)/(tabs)/ai-chat.tsx
++++ /dev/null
+@@ -1,131 +0,0 @@
+-import React, { useEffect, useState } from 'react';
+-import { View, StyleSheet, FlatList, ActivityIndicator, Text } from 'react-native';
+-import { SafeAreaView } from 'react-native-safe-area-context';
+-import { router } from 'expo-router';
+-import { Colors, Spacing, FontFamily, FontSize } from '../../../src/theme';
+-import {
+-  doctorsService,
+-  ConsultationHistoryItem,
+-  Doctor,
+-} from '../../../src/services/api/doctorsService';
+-import { DoctorCard } from '../../../src/components/cards/DoctorCard';
+-import { useTranslation } from 'react-i18next';
+-
+-type EnrichedConsultation = ConsultationHistoryItem & { doctorInfo?: Doctor | null };
+-
+-export default function AiChatHistoryScreen() {
+-  const { t } = useTranslation();
+-  const [history, setHistory] = useState<EnrichedConsultation[]>([]);
+-  const [loading, setLoading] = useState(true);
+-
+-  useEffect(() => {
+-    const fetchHistory = async () => {
+-      try {
+-        setLoading(true);
+-        const consultations = await doctorsService.getConsultationHistory();
+-        // Enrich with doctor details for the DoctorCard
+-        const enriched = await Promise.all(
+-          consultations.map(async (cons) => {
+-            const doctorInfo = await doctorsService.getDoctorDetails(cons.doctorId);
+-            return { ...cons, doctorInfo };
+-          }),
+-        );
+-
+-        setHistory(enriched);
+-        // Ignore err for now
+-      } finally {
+-        setLoading(false);
+-      }
+-    };
+-
+-    void fetchHistory();
+-  }, []);
+-
+-  const handleConsultationPress = (consultationId: string) => {
+-    router.push(`/(app)/ai-chat/${consultationId}`);
+-  };
+-
+-  return (
+-    <SafeAreaView style={styles.container} edges={['top']}>
+-      <View style={styles.header}>
+-        <Text style={styles.headerTitle}>
+-          {t('ai-chat.select_consultation') || 'Select Consultation'}
+-        </Text>
+-        <Text style={styles.headerSubtitle}>
+-          {t('ai-chat.choose_a_past_consultation_to_') ||
+-            'Choose a past consultation to ask the AI questions about your diagnosis and prescriptions.'}
+-        </Text>
+-      </View>
+-
+-      {loading ? (
+-        <View style={styles.centerContainer}>
+-          <ActivityIndicator size="large" color={Colors.primary} />
+-        </View>
+-      ) : (
+-        <FlatList
+-          data={history}
+-          keyExtractor={(item) => item.id}
+-          contentContainerStyle={styles.listContent}
+-          renderItem={({ item }) => (
+-            <View style={styles.cardWrapper}>
+-              <DoctorCard
+-                doctor={item.doctorInfo || null}
+-                onPress={() => handleConsultationPress(item.id)}
+-                hideSectionLabel
+-              />
+-            </View>
+-          )}
+-          ListEmptyComponent={
+-            <View style={styles.centerContainer}>
+-              <Text style={styles.emptyText}>
+-                {t('ai-chat.no_past_consultations_found') || 'No past consultations found.'}
+-              </Text>
+-            </View>
+-          }
+-        />
+-      )}
+-    </SafeAreaView>
+-  );
+-}
+-
+-const styles = StyleSheet.create({
+-  container: {
+-    flex: 1,
+-    backgroundColor: Colors.background,
+-  },
+-  header: {
+-    paddingHorizontal: Spacing.xl,
+-    paddingVertical: Spacing.lg,
+-    backgroundColor: Colors.background,
+-    borderBottomWidth: 1,
+-    borderBottomColor: Colors.tertiary,
+-  },
+-  headerTitle: {
+-    fontFamily: FontFamily.bold,
+-    fontSize: FontSize.lg,
+-    color: Colors.textPrimary,
+-    marginBottom: Spacing.xs,
+-  },
+-  headerSubtitle: {
+-    fontFamily: FontFamily.regular,
+-    fontSize: FontSize.md,
+-    color: Colors.textSecondary,
+-  },
+-  listContent: {
+-    padding: Spacing.md,
+-  },
+-  cardWrapper: {
+-    marginBottom: Spacing.md,
+-  },
+-  centerContainer: {
+-    flex: 1,
+-    alignItems: 'center',
+-    justifyContent: 'center',
+-  },
+-  emptyText: {
+-    fontFamily: FontFamily.medium,
+-    fontSize: FontSize.md,
+-    color: Colors.textSecondary,
+-    lineHeight: FontSize.md * 1.5,
+-  },
+-});
+diff --git a/app/(app)/(tabs)/doctors.tsx b/app/(app)/(tabs)/doctors.tsx
+index dc0f4e7..6ff8ffb 100644
+--- a/app/(app)/(tabs)/doctors.tsx
++++ b/app/(app)/(tabs)/doctors.tsx
+@@ -249,7 +249,7 @@ export default function DoctorsScreen(): React.JSX.Element {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -277,6 +277,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     paddingHorizontal: Spacing.base,
+     paddingBottom: Spacing.lg,
++
++    backgroundColor: Colors.background,
+   },
+   loader: {
+     marginVertical: Spacing.xl,
+diff --git a/app/(app)/(tabs)/hospitals.tsx b/app/(app)/(tabs)/hospitals.tsx
+index cecd949..396a915 100644
+--- a/app/(app)/(tabs)/hospitals.tsx
++++ b/app/(app)/(tabs)/hospitals.tsx
+@@ -8,6 +8,7 @@ import {
+   ImageBackground,
+ } from 'react-native';
+ import { useRouter } from 'expo-router';
++import { useSafeAreaInsets } from 'react-native-safe-area-context';
+ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+ import * as Location from 'expo-location';
+ import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
+@@ -22,6 +23,7 @@ const USE_MOCK_MAP = true; // Temporary flag for Phase 1 without a real API key
+ export default function HospitalsScreen() {
+   const { t } = useTranslation();
+   const router = useRouter();
++  const insets = useSafeAreaInsets();
+   const [locationStatus, setLocationStatus] = useState<Location.PermissionStatus | null>(null);
+   const [userLocation, setUserLocation] = useState<Location.LocationObject | null>(null);
+   const [hospitals, setHospitals] = useState<Hospital[]>([]);
+@@ -168,12 +170,22 @@ export default function HospitalsScreen() {
+     <View style={styles.container}>
+       {renderMap()}
+ 
++      <TouchableOpacity
++        style={[styles.backButton, { top: Math.max(insets.top, Spacing.base) + Spacing.sm }]}
++        onPress={() => router.back()}
++        accessibilityRole="button"
++        accessibilityLabel="Go back"
++      >
++        <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
++      </TouchableOpacity>
++
+       {/* Bottom Sheet Overlay for Selected Hospital */}
+       {selectedHospital && (
+         <View style={styles.bottomOverlay}>
+           <HospitalCard
+             hospital={selectedHospital}
+             onPress={() => handleHospitalPress(selectedHospital)}
++            onClose={() => setSelectedHospital(null)}
+           />
+         </View>
+       )}
+@@ -236,14 +248,6 @@ const styles = StyleSheet.create({
+   markerContainer: {
+     alignItems: 'center',
+     justifyContent: 'center',
+-    backgroundColor: Colors.surface,
+-    borderRadius: 24,
+-    padding: 2,
+-    shadowColor: '#000',
+-    shadowOffset: { width: 0, height: 2 },
+-    shadowOpacity: 0.15,
+-    shadowRadius: 4,
+-    elevation: 4,
+   },
+   mockMarker: {
+     position: 'absolute',
+@@ -254,4 +258,16 @@ const styles = StyleSheet.create({
+     left: Spacing.base,
+     right: Spacing.base,
+   },
++  backButton: {
++    position: 'absolute',
++    left: Spacing.base,
++    backgroundColor: Colors.surface,
++    padding: Spacing.sm,
++    borderRadius: 24,
++    shadowColor: '#000',
++    shadowOffset: { width: 0, height: 2 },
++    shadowOpacity: 0.15,
++    shadowRadius: 4,
++    elevation: 4,
++  },
+ });
+diff --git a/app/(app)/(tabs)/prescriptions.tsx b/app/(app)/(tabs)/prescriptions.tsx
+index 605be4a..c4f6332 100644
+--- a/app/(app)/(tabs)/prescriptions.tsx
++++ b/app/(app)/(tabs)/prescriptions.tsx
+@@ -519,7 +519,7 @@ export default function PrescriptionsScreen(): React.JSX.Element {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+ 
+   // ΓöÇΓöÇ Header ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+@@ -582,6 +582,8 @@ const styles = StyleSheet.create({
+   listContent: {
+     paddingHorizontal: Spacing.base,
+     paddingBottom: Layout.tabBarHeight + Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   cardWrapper: {
+     marginBottom: Spacing.sm,
+@@ -636,7 +638,7 @@ const styles = StyleSheet.create({
+     paddingLeft: Spacing.base,
+     paddingRight: Spacing.lg,
+     borderRadius: BorderRadius.lg,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     borderWidth: 2,
+     borderColor: Colors.primary,
+     alignItems: 'center',
+diff --git a/app/(app)/(tabs)/reports.tsx b/app/(app)/(tabs)/reports.tsx
+index 6c60eaf..bf85e33 100644
+--- a/app/(app)/(tabs)/reports.tsx
++++ b/app/(app)/(tabs)/reports.tsx
+@@ -124,12 +124,12 @@ export default function ReportsScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     paddingHorizontal: Spacing.xl,
+     paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   headerTitle: {
+     fontFamily: FontFamily.bold,
+@@ -138,11 +138,15 @@ const styles = StyleSheet.create({
+   },
+   listContainer: {
+     flex: 1,
++
++    backgroundColor: Colors.background,
+   },
+   listContent: {
+     paddingHorizontal: Spacing.xl,
+     paddingBottom: Layout.tabBarHeight + 100, // Make room for FAB and TabBar
+     paddingTop: Spacing.sm,
++
++    backgroundColor: Colors.background,
+   },
+   loadingContainer: {
+     flex: 1,
+diff --git a/app/(app)/ai-chat/[consultationId].tsx b/app/(app)/ai-chat/[consultationId].tsx
+index 2b6a88e..fab8353 100644
+--- a/app/(app)/ai-chat/[consultationId].tsx
++++ b/app/(app)/ai-chat/[consultationId].tsx
+@@ -1,4 +1,4 @@
+-import React, { useRef, useState } from 'react';
++import React, { useRef, useState, useEffect } from 'react';
+ import {
+   View,
+   StyleSheet,
+@@ -8,37 +8,82 @@ import {
+   Platform,
+   Animated,
+   Text,
++  Keyboard,
+ } from 'react-native';
+-import { SafeAreaView } from 'react-native-safe-area-context';
++import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+ import { FlashList } from '@shopify/flash-list';
+ import { MaterialCommunityIcons } from '@expo/vector-icons';
+ import { Colors, Spacing, FontFamily, FontSize, BorderRadius } from '../../../src/theme';
+-import { useLocalSearchParams } from 'expo-router';
++import { useLocalSearchParams, router } from 'expo-router';
+ import { useChatStore, ChatMessage } from '../../../src/store/chatStore';
+ import { ChatBubble } from '../../../src/components/medical/ChatBubble';
+ import { chatService } from '../../../src/services/ai/chatService';
+-import { AIDisclaimer } from '../../../src/components/medical/AIDisclaimer';
++import { doctorsService } from '../../../src/services/api/doctorsService';
+ import { useTranslation } from 'react-i18next';
+ 
+ export default function ConsultationChatScreen() {
+   const { t } = useTranslation();
+-  const { consultationId } = useLocalSearchParams<{ consultationId: string }>();
+-  const { conversations, addMessage, updateMessage, seedLongConversation } = useChatStore();
++  const { consultationId, doctorName: paramDoctorName } = useLocalSearchParams<{
++    consultationId: string;
++    doctorName?: string;
++  }>();
++  const { conversations, addMessage, updateMessage } = useChatStore();
+   const messages = conversations[consultationId] || [];
++  const insets = useSafeAreaInsets();
+ 
+   const [inputText, setInputText] = useState('');
+   const [isRecording, setIsRecording] = useState(false);
+   const [activeStreamingId, setActiveStreamingId] = useState<string | null>(null);
++  const [doctorName, setDoctorName] = useState(paramDoctorName || '');
++  const [inputHeight, setInputHeight] = useState(40);
++  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+ 
+   const flashListRef = useRef<any>(null);
+   const [pulseAnim] = useState(() => new Animated.Value(1));
+ 
++  useEffect(() => {
++    const showListener = Keyboard.addListener(
++      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
++      () => setKeyboardVisible(true),
++    );
++    const hideListener = Keyboard.addListener(
++      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
++      () => setKeyboardVisible(false),
++    );
++    return () => {
++      showListener.remove();
++      hideListener.remove();
++    };
++  }, []);
++
++  useEffect(() => {
++    let isMounted = true;
++    const fetchDoctor = async () => {
++      try {
++        const history = await doctorsService.getConsultationHistory();
++        const cons = history.find((c) => c.id === consultationId);
++        if (cons && isMounted) {
++          const doc = await doctorsService.getDoctorDetails(cons.doctorId);
++          if (doc && isMounted) setDoctorName(doc.fullName);
++        }
++      } catch (e) {
++        // ignore
++      }
++    };
++    void fetchDoctor();
++    return () => {
++      isMounted = false;
++    };
++  }, [consultationId]);
++
+   const handleSend = async (text: string) => {
+     if (!text.trim() || activeStreamingId) return;
+ 
+     // Add user message
+     addMessage(consultationId, text.trim(), 'user');
+     setInputText('');
++    setInputHeight(40); // Reset height on send
++
+     // Add empty AI message placeholder
+     const aiMessageId = addMessage(consultationId, '', 'ai');
+     setActiveStreamingId(aiMessageId);
+@@ -51,11 +96,9 @@ export default function ConsultationChatScreen() {
+       for await (const chunk of stream) {
+         currentResponse += chunk;
+         updateMessage(consultationId, aiMessageId, currentResponse);
+-        // Scroll to bottom during streaming occasionally or on every chunk if it's smooth
+       }
+     } catch (error) {
+       if (error instanceof Error && error.message === 'NETWORK_ERROR') {
+-        // Fallback offline message for Tier 3 DoD
+         updateMessage(
+           consultationId,
+           aiMessageId,
+@@ -95,7 +138,6 @@ export default function ConsultationChatScreen() {
+         ]),
+       ).start();
+ 
+-      // Mock setting some text after a delay if user doesn't stop it
+       setTimeout(() => {
+         setIsRecording(false);
+         pulseAnim.stopAnimation();
+@@ -105,79 +147,105 @@ export default function ConsultationChatScreen() {
+     }
+   };
+ 
++  const isMultiline = inputHeight > 45;
++
+   return (
+     <SafeAreaView style={styles.container} edges={['top']}>
+-      <View style={styles.header}>
+-        <Text style={styles.headerTitle}>
+-          {t('[consultationid].medicon_ai_assistant') || 'MediCon AI Assistant'}
+-        </Text>
+-        {__DEV__ && (
++      <KeyboardAvoidingView
++        style={{ flex: 1 }}
++        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
++      >
++        <View style={styles.header}>
+           <TouchableOpacity
+-            onPress={() => seedLongConversation(consultationId)}
+-            style={styles.seedButton}
++            style={styles.backButton}
++            onPress={() => router.back()}
++            accessibilityRole="button"
++            accessibilityLabel="Go back"
+           >
+-            <MaterialCommunityIcons name="database-plus" size={20} color={Colors.primary} />
++            <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.textPrimary} />
+           </TouchableOpacity>
+-        )}
+-      </View>
+-
+-      <AIDisclaimer />
+-
+-      <View style={styles.listContainer}>
+-        <FlashList<ChatMessage>
+-          ref={flashListRef}
+-          data={messages}
+-          keyExtractor={(item) => item.id}
+-          renderItem={({ item }) => (
+-            <ChatBubble message={item} isTyping={item.id === activeStreamingId} />
+-          )}
+-          contentContainerStyle={styles.listContent}
+-          onContentSizeChange={() => {
+-            if (messages.length > 0) {
+-              flashListRef.current?.scrollToEnd({ animated: true });
+-            }
+-          }}
+-          showsVerticalScrollIndicator={false}
+-        />
+-      </View>
++          <Text style={styles.headerTitle} numberOfLines={1}>
++            {doctorName}
++          </Text>
++          <View style={styles.headerRightPlaceholder} />
++        </View>
+ 
+-      <KeyboardAvoidingView
+-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+-      >
+-        <View style={styles.inputContainer}>
+-          <TouchableOpacity style={styles.micButton} onPress={handleMicPress} activeOpacity={0.7}>
+-            <Animated.View style={[styles.micIconContainer, { transform: [{ scale: pulseAnim }] }]}>
+-              <MaterialCommunityIcons
+-                name={isRecording ? 'stop-circle' : 'microphone'}
+-                size={24}
+-                color={isRecording ? Colors.danger : Colors.primary}
+-              />
+-            </Animated.View>
+-          </TouchableOpacity>
+-          <TextInput
+-            style={styles.textInput}
+-            placeholder={isRecording ? 'Listening...' : 'Type a health question...'}
+-            placeholderTextColor={isRecording ? Colors.primary : Colors.textTertiary}
+-            value={inputText}
+-            onChangeText={setInputText}
+-            multiline
+-            maxLength={500}
++        <View style={styles.listContainer}>
++          <FlashList<ChatMessage>
++            ref={flashListRef}
++            data={messages}
++            keyExtractor={(item) => item.id}
++            renderItem={({ item }) => (
++              <ChatBubble message={item} isTyping={item.id === activeStreamingId} />
++            )}
++            contentContainerStyle={styles.listContent}
++            onContentSizeChange={() => {
++              if (messages.length > 0) {
++                flashListRef.current?.scrollToEnd({ animated: true });
++              }
++            }}
++            showsVerticalScrollIndicator={false}
++            keyboardShouldPersistTaps="handled"
+           />
+-          <TouchableOpacity
+-            style={[
+-              styles.sendButton,
+-              (!inputText.trim() || activeStreamingId) && styles.sendButtonDisabled,
+-            ]}
+-            onPress={() => handleSend(inputText)}
+-            disabled={!inputText.trim() || !!activeStreamingId}
+-          >
+-            <MaterialCommunityIcons
+-              name="send"
+-              size={20}
+-              color={!inputText.trim() || activeStreamingId ? Colors.textTertiary : Colors.surface}
++        </View>
++
++        <View
++          style={[
++            styles.inputOuterContainer,
++            { paddingBottom: isKeyboardVisible ? Spacing.md : insets.bottom + Spacing.md },
++          ]}
++        >
++          <View style={styles.inputInnerContainer}>
++            <TextInput
++              style={[
++                styles.textInput,
++                {
++                  paddingRight: isMultiline ? Spacing.sm + 6 : 90,
++                  paddingBottom: isMultiline ? 48 : Platform.OS === 'ios' ? 18 : 14,
++                },
++              ]}
++              placeholder={isRecording ? 'Listening...' : 'What do you want to know?'}
++              placeholderTextColor={isRecording ? Colors.primary : Colors.textTertiary}
++              value={inputText}
++              onChangeText={setInputText}
++              multiline
++              maxLength={500}
++              onContentSizeChange={(e) => setInputHeight(e.nativeEvent.contentSize.height)}
+             />
+-          </TouchableOpacity>
++            <View style={styles.actionRow}>
++              <TouchableOpacity
++                style={styles.micButton}
++                onPress={handleMicPress}
++                activeOpacity={0.7}
++              >
++                <Animated.View
++                  style={[styles.micIconContainer, { transform: [{ scale: pulseAnim }] }]}
++                >
++                  <MaterialCommunityIcons
++                    name={isRecording ? 'stop-circle' : 'microphone-outline'}
++                    size={24}
++                    color={isRecording ? Colors.danger : Colors.textSecondary}
++                  />
++                </Animated.View>
++              </TouchableOpacity>
++              <TouchableOpacity
++                style={[
++                  styles.sendButton,
++                  (!inputText.trim() || activeStreamingId) && styles.sendButtonDisabled,
++                ]}
++                onPress={() => handleSend(inputText)}
++                disabled={!inputText.trim() || !!activeStreamingId}
++              >
++                <MaterialCommunityIcons
++                  name="arrow-up"
++                  size={20}
++                  color={
++                    !inputText.trim() || activeStreamingId ? Colors.textTertiary : Colors.surface
++                  }
++                />
++              </TouchableOpacity>
++            </View>
++          </View>
+         </View>
+       </KeyboardAvoidingView>
+     </SafeAreaView>
+@@ -187,75 +255,86 @@ export default function ConsultationChatScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+     alignItems: 'center',
+-    justifyContent: 'space-between',
+-    paddingHorizontal: Spacing.xl,
+-    paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
+-    borderBottomWidth: 1,
+-    borderBottomColor: Colors.tertiary,
++    paddingRight: Spacing.base,
++    paddingLeft: 5,
++    paddingVertical: Spacing.sm,
++    backgroundColor: Colors.surface,
++    gap: Spacing.xs,
++  },
++  backButton: {
++    width: 44,
++    height: 44,
++    alignItems: 'center',
++    justifyContent: 'center',
+   },
+   headerTitle: {
++    flex: 1,
+     fontFamily: FontFamily.bold,
+     fontSize: FontSize.lg,
+     color: Colors.textPrimary,
+   },
+-  seedButton: {
+-    padding: Spacing.xs,
++  headerRightPlaceholder: {
++    width: 44,
+   },
+   listContainer: {
+     flex: 1,
++    backgroundColor: Colors.background,
+   },
+   listContent: {
+     paddingHorizontal: Spacing.md,
+-    paddingVertical: Spacing.lg,
++    paddingBottom: Spacing.lg,
+   },
+-  inputContainer: {
+-    flexDirection: 'row',
+-    alignItems: 'flex-end',
+-    padding: Spacing.md,
+-    backgroundColor: Colors.surface,
+-    borderTopWidth: 1,
+-    borderTopColor: Colors.tertiary,
+-  },
+-  micButton: {
+-    padding: Spacing.xs,
+-    marginRight: Spacing.sm,
+-    marginBottom: Spacing.xs,
+-  },
+-  micIconContainer: {
++  inputOuterContainer: {
++    paddingHorizontal: Spacing.md,
++    paddingTop: Spacing.md,
+     backgroundColor: Colors.background,
+-    padding: Spacing.xs,
+-    borderRadius: BorderRadius.full,
++  },
++  inputInnerContainer: {
++    backgroundColor: Colors.surface,
++    borderRadius: BorderRadius.lg,
++    borderWidth: 1,
++    borderColor: Colors.tertiary,
++    minHeight: 56,
++    justifyContent: 'center',
+   },
+   textInput: {
+-    flex: 1,
+-    minHeight: 40,
++    width: '100%',
++    minHeight: 56,
+     maxHeight: 120,
+-    backgroundColor: Colors.background,
+-    borderRadius: BorderRadius.md,
+-    paddingHorizontal: Spacing.md,
+-    paddingTop: Spacing.sm,
+-    paddingBottom: Spacing.sm,
++    paddingLeft: Spacing.sm + 7,
++    paddingTop: Platform.OS === 'ios' ? 18 : 14,
+     fontFamily: FontFamily.regular,
+     fontSize: FontSize.md,
+     color: Colors.textPrimary,
+-    borderWidth: 1,
+-    borderColor: Colors.tertiary,
++    textAlignVertical: 'top',
++  },
++  actionRow: {
++    position: 'absolute',
++    right: Spacing.sm + 6,
++    bottom: 12,
++    flexDirection: 'row',
++    alignItems: 'center',
++  },
++  micButton: {
++    padding: Spacing.xs,
++    marginRight: 4,
++  },
++  micIconContainer: {
++    alignItems: 'center',
++    justifyContent: 'center',
+   },
+   sendButton: {
+-    width: 40,
+-    height: 40,
+-    borderRadius: 20,
++    width: 32,
++    height: 32,
++    borderRadius: 16,
+     backgroundColor: Colors.primary,
+     alignItems: 'center',
+     justifyContent: 'center',
+-    marginLeft: Spacing.sm,
+-    marginBottom: 4,
+   },
+   sendButtonDisabled: {
+     backgroundColor: Colors.tertiary,
+diff --git a/app/(app)/doctors/[id].tsx b/app/(app)/doctors/[id].tsx
+index 739cf79..887a031 100644
+--- a/app/(app)/doctors/[id].tsx
++++ b/app/(app)/doctors/[id].tsx
+@@ -432,7 +432,7 @@ function ExperienceCard({ entry }: ExperienceCardProps): React.JSX.Element {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+ 
+   // ΓöÇΓöÇ App Bar ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ
+@@ -444,7 +444,7 @@ const styles = StyleSheet.create({
+     paddingRight: 5,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -474,6 +474,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     flexGrow: 1,
+     paddingHorizontal: Spacing.base,
++
++    backgroundColor: Colors.background,
+   },
+   centerContainer: {
+     flex: 1,
+diff --git a/app/(app)/doctors/booking/digest.tsx b/app/(app)/doctors/booking/digest.tsx
+index f2339bf..3022376 100644
+--- a/app/(app)/doctors/booking/digest.tsx
++++ b/app/(app)/doctors/booking/digest.tsx
+@@ -727,7 +727,7 @@ export default function BookingDigestScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -735,7 +735,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -759,6 +759,8 @@ const styles = StyleSheet.create({
+     paddingHorizontal: Spacing.md,
+     paddingBottom: 100, // Enough to clear the floating button
+     paddingTop: 0,
++
++    backgroundColor: Colors.background,
+   },
+   card: {
+     backgroundColor: Colors.surface,
+diff --git a/app/(app)/doctors/booking/index.tsx b/app/(app)/doctors/booking/index.tsx
+index 4df6737..0aefa56 100644
+--- a/app/(app)/doctors/booking/index.tsx
++++ b/app/(app)/doctors/booking/index.tsx
+@@ -244,7 +244,7 @@ export default function BookingScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -281,6 +281,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     paddingHorizontal: Spacing.lg,
+     paddingTop: Spacing.md,
++
++    backgroundColor: Colors.background,
+   },
+   section: {
+     marginBottom: Spacing.xl,
+diff --git a/app/(app)/doctors/departments.tsx b/app/(app)/doctors/departments.tsx
+index 9d90531..6cfde66 100644
+--- a/app/(app)/doctors/departments.tsx
++++ b/app/(app)/doctors/departments.tsx
+@@ -110,7 +110,7 @@ export default function DepartmentsScreen(): React.JSX.Element {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -135,9 +135,13 @@ const styles = StyleSheet.create({
+   },
+   listContainer: {
+     flex: 1,
++
++    backgroundColor: Colors.background,
+   },
+   listContent: {
+     padding: Spacing.md,
++
++    backgroundColor: Colors.background,
+   },
+   centerContainer: {
+     flex: 1,
+diff --git a/app/(app)/doctors/history.tsx b/app/(app)/doctors/history.tsx
+index 43357f3..6d9dc97 100644
+--- a/app/(app)/doctors/history.tsx
++++ b/app/(app)/doctors/history.tsx
+@@ -107,7 +107,7 @@ export default function ConsultationHistoryScreen(): React.JSX.Element {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -134,6 +134,8 @@ const styles = StyleSheet.create({
+     paddingHorizontal: Spacing.md,
+     paddingBottom: Spacing.md,
+     paddingTop: 0,
++
++    backgroundColor: Colors.background,
+   },
+   cardWrapper: {
+     marginBottom: Spacing.md,
+diff --git a/app/(app)/doctors/index.tsx b/app/(app)/doctors/index.tsx
+index 8535610..4266fff 100644
+--- a/app/(app)/doctors/index.tsx
++++ b/app/(app)/doctors/index.tsx
+@@ -96,7 +96,7 @@ export default function DoctorsListScreen(): React.JSX.Element {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -123,6 +123,8 @@ const styles = StyleSheet.create({
+     paddingHorizontal: Spacing.md,
+     paddingBottom: Spacing.md,
+     paddingTop: 0,
++
++    backgroundColor: Colors.background,
+   },
+   gridItemContainer: {
+     flex: 1,
+diff --git a/app/(app)/doctors/qna/ask.tsx b/app/(app)/doctors/qna/ask.tsx
+index 43ffbdf..5382fff 100644
+--- a/app/(app)/doctors/qna/ask.tsx
++++ b/app/(app)/doctors/qna/ask.tsx
+@@ -198,7 +198,7 @@ export default function AskQuestionScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -223,6 +223,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     paddingHorizontal: Spacing.base,
+     paddingBottom: Spacing.xxl * 5, // enough space for the fixed bottom text and button
++
++    backgroundColor: Colors.background,
+   },
+   section: {
+     marginTop: Spacing.xl,
+diff --git a/app/(app)/doctors/qna/index.tsx b/app/(app)/doctors/qna/index.tsx
+index 7865026..2da35bb 100644
+--- a/app/(app)/doctors/qna/index.tsx
++++ b/app/(app)/doctors/qna/index.tsx
+@@ -245,7 +245,7 @@ function DoctorInboxScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
+     paddingHorizontal: Spacing.base,
+     paddingVertical: Spacing.sm,
+     marginBottom: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   backButton: {
+     padding: Spacing.xs,
+@@ -287,11 +287,15 @@ const styles = StyleSheet.create({
+   },
+   listContainer: {
+     flex: 1,
++
++    backgroundColor: Colors.background,
+   },
+   listContent: {
+     paddingHorizontal: Spacing.base,
+     paddingBottom: Spacing.xxl * 4, // More padding to account for fixed bottom button
+     flexGrow: 1, // ensure the empty state can be centered vertically
++
++    backgroundColor: Colors.background,
+   },
+   emptyContainer: {
+     flex: 1,
+diff --git a/app/(app)/emergency/[protocol].tsx b/app/(app)/emergency/[protocol].tsx
+index 8e9410f..5aa1269 100644
+--- a/app/(app)/emergency/[protocol].tsx
++++ b/app/(app)/emergency/[protocol].tsx
+@@ -105,7 +105,7 @@ export default function EmergencyProtocolScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -128,6 +128,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     padding: Spacing.base,
+     paddingBottom: Layout.tabBarHeight + Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   description: {
+     fontFamily: FontFamily.medium,
+diff --git a/app/(app)/emergency/index.tsx b/app/(app)/emergency/index.tsx
+index 6177238..e896cfd 100644
+--- a/app/(app)/emergency/index.tsx
++++ b/app/(app)/emergency/index.tsx
+@@ -87,7 +87,7 @@ export default function EmergencyTriageScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     padding: Spacing.xl,
+@@ -108,6 +108,8 @@ const styles = StyleSheet.create({
+     padding: Spacing.base,
+     paddingBottom: Layout.tabBarHeight + Spacing.xl,
+     gap: Spacing.md,
++
++    backgroundColor: Colors.background,
+   },
+   card: {
+     flexDirection: 'row',
+diff --git a/app/(app)/medicine/compare.tsx b/app/(app)/medicine/compare.tsx
+index e475937..46fd4be 100644
+--- a/app/(app)/medicine/compare.tsx
++++ b/app/(app)/medicine/compare.tsx
+@@ -96,14 +96,14 @@ export default function CompareScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.xl,
+     paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   backButton: {
+     marginRight: Spacing.md,
+@@ -116,6 +116,8 @@ const styles = StyleSheet.create({
+   },
+   scrollContent: {
+     padding: Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   inputSection: {
+     marginBottom: Spacing.xl,
+diff --git a/app/(app)/medicine/explainer.tsx b/app/(app)/medicine/explainer.tsx
+index a2c001d..06778f3 100644
+--- a/app/(app)/medicine/explainer.tsx
++++ b/app/(app)/medicine/explainer.tsx
+@@ -141,14 +141,14 @@ export default function ExplainerScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.xl,
+     paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   backButton: {
+     marginRight: Spacing.md,
+@@ -161,6 +161,8 @@ const styles = StyleSheet.create({
+   },
+   scrollContent: {
+     padding: Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   searchSection: {
+     marginBottom: Spacing.xl,
+diff --git a/app/(app)/medicine/index.tsx b/app/(app)/medicine/index.tsx
+index f18976c..c9c661d 100644
+--- a/app/(app)/medicine/index.tsx
++++ b/app/(app)/medicine/index.tsx
+@@ -92,14 +92,14 @@ export default function MedicineHubScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.xl,
+     paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   backButton: {
+     marginRight: Spacing.md,
+@@ -112,6 +112,8 @@ const styles = StyleSheet.create({
+   },
+   scrollContent: {
+     padding: Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   description: {
+     fontFamily: FontFamily.medium,
+diff --git a/app/(app)/medicine/interaction-checker.tsx b/app/(app)/medicine/interaction-checker.tsx
+index 0090b0f..ccc07b4 100644
+--- a/app/(app)/medicine/interaction-checker.tsx
++++ b/app/(app)/medicine/interaction-checker.tsx
+@@ -137,14 +137,14 @@ export default function InteractionCheckerScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.xl,
+     paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   backButton: {
+     marginRight: Spacing.md,
+@@ -157,6 +157,8 @@ const styles = StyleSheet.create({
+   },
+   scrollContent: {
+     padding: Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   infoBox: {
+     flexDirection: 'row',
+diff --git a/app/(app)/notifications.tsx b/app/(app)/notifications.tsx
+index 1694b82..b4e864e 100644
+--- a/app/(app)/notifications.tsx
++++ b/app/(app)/notifications.tsx
+@@ -113,7 +113,7 @@ export default function NotificationsScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -144,10 +144,14 @@ const styles = StyleSheet.create({
+   },
+   listContainer: {
+     flex: 1,
++
++    backgroundColor: Colors.background,
+   },
+   listContent: {
+     padding: Spacing.xl,
+     paddingBottom: Spacing.xxl * 3,
++
++    backgroundColor: Colors.background,
+   },
+   emptyText: {
+     fontFamily: FontFamily.medium,
+diff --git a/app/(app)/payment/card-details.tsx b/app/(app)/payment/card-details.tsx
+index 64e9562..402b31f 100644
+--- a/app/(app)/payment/card-details.tsx
++++ b/app/(app)/payment/card-details.tsx
+@@ -30,7 +30,7 @@ export default function CardDetailsScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -57,6 +57,8 @@ const styles = StyleSheet.create({
+     padding: Spacing.lg,
+     alignItems: 'center',
+     justifyContent: 'center',
++
++    backgroundColor: Colors.background,
+   },
+   placeholder: {
+     fontFamily: FontFamily.regular,
+diff --git a/app/(app)/pediatric/[protocol].tsx b/app/(app)/pediatric/[protocol].tsx
+index 1b157aa..68656cd 100644
+--- a/app/(app)/pediatric/[protocol].tsx
++++ b/app/(app)/pediatric/[protocol].tsx
+@@ -121,7 +121,7 @@ export default function PediatricProtocolScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+@@ -171,6 +171,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     padding: Spacing.base,
+     paddingBottom: Layout.tabBarHeight + Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   description: {
+     fontFamily: FontFamily.medium,
+diff --git a/app/(app)/pediatric/index.tsx b/app/(app)/pediatric/index.tsx
+index 2db9bd3..f18de07 100644
+--- a/app/(app)/pediatric/index.tsx
++++ b/app/(app)/pediatric/index.tsx
+@@ -91,7 +91,7 @@ export default function PediatricTriageScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     padding: Spacing.xl,
+@@ -117,6 +117,8 @@ const styles = StyleSheet.create({
+     padding: Spacing.base,
+     paddingBottom: Layout.tabBarHeight + Spacing.xl,
+     gap: Spacing.md,
++
++    backgroundColor: Colors.background,
+   },
+   card: {
+     flexDirection: 'row',
+diff --git a/app/(app)/prescriptions/[id].tsx b/app/(app)/prescriptions/[id].tsx
+index b6ca873..e826c37 100644
+--- a/app/(app)/prescriptions/[id].tsx
++++ b/app/(app)/prescriptions/[id].tsx
+@@ -418,7 +418,7 @@ export default function PrescriptionDetailsScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   loadingContainer: {
+     flex: 1,
+@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
+     paddingRight: Spacing.base,
+     paddingLeft: 5,
+     paddingVertical: Spacing.sm,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+     gap: Spacing.xs,
+   },
+   backButton: {
+@@ -461,6 +461,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     paddingHorizontal: Spacing.base,
+     paddingBottom: Layout.tabBarHeight + 80 + Spacing.xl, // Space for fixed button
++
++    backgroundColor: Colors.background,
+   },
+ 
+   // Meta card
+diff --git a/app/(app)/report/[id].tsx b/app/(app)/report/[id].tsx
+index a1e9439..7b30192 100644
+--- a/app/(app)/report/[id].tsx
++++ b/app/(app)/report/[id].tsx
+@@ -147,7 +147,7 @@ export default function ReportDetailScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   centerContainer: {
+     flex: 1,
+@@ -200,6 +200,8 @@ const styles = StyleSheet.create({
+   },
+   scrollContent: {
+     padding: Spacing.xl,
++
++    backgroundColor: Colors.background,
+   },
+   metadataCard: {
+     backgroundColor: Colors.surface,
+diff --git a/app/(app)/report/upload.tsx b/app/(app)/report/upload.tsx
+index b8139ee..c531675 100644
+--- a/app/(app)/report/upload.tsx
++++ b/app/(app)/report/upload.tsx
+@@ -238,7 +238,7 @@ export default function UploadReportScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   processingContainer: {
+     flex: 1,
+diff --git a/app/(app)/symptom/results.tsx b/app/(app)/symptom/results.tsx
+index 891eeb2..877d9ce 100644
+--- a/app/(app)/symptom/results.tsx
++++ b/app/(app)/symptom/results.tsx
+@@ -107,14 +107,14 @@ export default function SymptomResultsScreen() {
+ const styles = StyleSheet.create({
+   container: {
+     flex: 1,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   header: {
+     flexDirection: 'row',
+     alignItems: 'center',
+     paddingHorizontal: Spacing.xl,
+     paddingVertical: Spacing.md,
+-    backgroundColor: Colors.background,
++    backgroundColor: Colors.surface,
+   },
+   backButton: {
+     marginRight: Spacing.md,
+@@ -128,6 +128,8 @@ const styles = StyleSheet.create({
+   scrollContent: {
+     padding: Spacing.xl,
+     paddingBottom: Spacing.xxxl,
++
++    backgroundColor: Colors.background,
+   },
+   sectionTitle: {
+     fontFamily: FontFamily.bold,
+diff --git a/assets/images/map_placeholder.jpg b/assets/images/map_placeholder.jpg
+index c96bb07..a8fa9f5 100644
+Binary files a/assets/images/map_placeholder.jpg and b/assets/images/map_placeholder.jpg differ
+diff --git a/src/components/cards/HospitalCard.tsx b/src/components/cards/HospitalCard.tsx
+index 4793701..9371b0b 100644
+--- a/src/components/cards/HospitalCard.tsx
++++ b/src/components/cards/HospitalCard.tsx
+@@ -8,9 +8,14 @@ import { useTranslation } from 'react-i18next';
+ interface HospitalCardProps {
+   hospital: Hospital;
+   onPress: () => void;
++  onClose?: () => void;
+ }
+ 
+-export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JSX.Element => {
++export const HospitalCard = ({
++  hospital,
++  onPress,
++  onClose,
++}: HospitalCardProps): React.JSX.Element => {
+   const { t } = useTranslation();
+   return (
+     <TouchableOpacity
+@@ -28,6 +33,17 @@ export const HospitalCard = ({ hospital, onPress }: HospitalCardProps): React.JS
+             <MaterialCommunityIcons name="hospital-building" size={32} color={Colors.primary} />
+           </View>
+         )}
++
++        {onClose && (
++          <TouchableOpacity
++            style={styles.closeButton}
++            onPress={onClose}
++            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
++            activeOpacity={0.7}
++          >
++            <MaterialCommunityIcons name="close" size={14} color={Colors.surface} />
++          </TouchableOpacity>
++        )}
+       </View>
+ 
+       <View style={styles.content}>
+@@ -86,8 +102,6 @@ const styles = StyleSheet.create({
+     borderRadius: BorderRadius.lg,
+     flexDirection: 'row',
+     padding: Spacing.sm,
+-    marginBottom: Spacing.base,
+-    ...Shadows.sm,
+   },
+   imageContainer: {
+     width: 100,
+@@ -105,6 +119,14 @@ const styles = StyleSheet.create({
+     alignItems: 'center',
+     justifyContent: 'center',
+   },
++  closeButton: {
++    position: 'absolute',
++    top: 6,
++    left: 6,
++    backgroundColor: 'rgba(0, 0, 0, 0.4)',
++    borderRadius: 12,
++    padding: 4,
++  },
+   content: {
+     flex: 1,
+     justifyContent: 'space-between',
+diff --git a/src/components/dashboard/PatientDashboard.tsx b/src/components/dashboard/PatientDashboard.tsx
+index f51a288..b354cbf 100644
+--- a/src/components/dashboard/PatientDashboard.tsx
++++ b/src/components/dashboard/PatientDashboard.tsx
+@@ -100,7 +100,7 @@ export const PatientDashboard = (): React.JSX.Element => {
+           <QuickAction
+             icon="chat-processing-outline"
+             label={t('dashboard.aiChat') || 'AI Chat'}
+-            onPress={() => router.push('/(app)/(tabs)/ai-chat')}
++            onPress={() => router.push('/(app)/ai-chat')}
+           />
+         </View>
+ 
+diff --git a/src/constants/routes.ts b/src/constants/routes.ts
+index fb6286f..c8b50bc 100644
+--- a/src/constants/routes.ts
++++ b/src/constants/routes.ts
+@@ -9,7 +9,9 @@ export const Routes = {
+     DOCTORS: '/(app)/(tabs)/doctors',
+     HOSPITALS: '/(app)/(tabs)/hospitals',
+     REPORTS: '/(app)/(tabs)/reports',
+-    AI_CHAT: '/(app)/(tabs)/ai-chat',
++  },
++  AI_CHAT: {
++    HOME: '/(app)/ai-chat',
+   },
+   EMERGENCY: {
+     HOME: '/(app)/emergency',
+diff --git a/src/services/ai/chatService.ts b/src/services/ai/chatService.ts
+index 69b038f..395db7d 100644
+--- a/src/services/ai/chatService.ts
++++ b/src/services/ai/chatService.ts
+@@ -12,31 +12,8 @@ class ChatService {
+       throw new Error('NETWORK_ERROR');
+     }
+ 
+-    // Mock transcript knowledge base per consultationId
+-    const mockTranscripts: Record<string, string> = {
+-      'cons-1':
+-        'During consultation cons-1, Dr. Sarah Khan diagnosed you with acute pharyngitis (sore throat). She prescribed Azithromycin 500mg for 3 days and advised warm salt water gargles.',
+-      'cons-2':
+-        'During consultation cons-2, Dr. Ahmed Rahman noted your blood pressure was slightly elevated. He recommended a low-sodium diet and daily 30-minute walks, and scheduled a follow-up in one month.',
+-    };
+-
+-    const transcriptContext =
+-      mockTranscripts[consultationId] || 'No specific transcript found for this consultation.';
+-
+-    let fullResponse = `Based on your consultation: ${transcriptContext}`;
+-
+-    if (lowerQuery.includes('headache')) {
+-      fullResponse =
+-        'While the transcript does not explicitly mention headaches, if you are experiencing a severe new headache, please consult a doctor immediately.';
+-    } else if (lowerQuery.includes('fever')) {
+-      fullResponse = `A fever wasn't the primary focus of this transcript (${transcriptContext}). Drink plenty of fluids and rest.`;
+-    } else if (
+-      lowerQuery.includes('hello') ||
+-      lowerQuery.includes('hi') ||
+-      lowerQuery.includes('summarize')
+-    ) {
+-      fullResponse = `Hello! To summarize: ${transcriptContext} What else would you like to know?`;
+-    }
++    const fullResponse =
++      'Based on your consultation, the doctor advised you to take the prescribed medication twice daily after meals. They also recommended getting plenty of rest, staying hydrated, and avoiding strenuous activities for the next few days. If your symptoms do not improve within 48 hours, you should schedule a follow-up appointment. Do you have any specific questions about the prescribed medicines or these recommendations?';
+ 
+     const chunks = fullResponse.split(' ');
+ 
+diff --git a/src/store/chatStore.ts b/src/store/chatStore.ts
+index e5d82ce..07f1d78 100644
+--- a/src/store/chatStore.ts
++++ b/src/store/chatStore.ts
+@@ -86,7 +86,7 @@ export const useChatStore = create<ChatState>()(
+       },
+     }),
+     {
+-      name: 'medicon-chat-storage',
++      name: 'medicon-chat-storage-v2',
+       storage: createJSONStorage(() => mmkvStorage),
+     },
+   ),

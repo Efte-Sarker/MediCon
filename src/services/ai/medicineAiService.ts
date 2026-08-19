@@ -71,7 +71,7 @@ export const medicineAiService = {
     existingMedicines: { id: string; name: string }[],
   ): Promise<InteractionConflict[]> => {
     if (existingMedicines.length === 0) return [];
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/v1/medicines/interactions`, {
         method: 'POST',
@@ -84,11 +84,11 @@ export const medicineAiService = {
     } catch (error) {
       console.warn('Error fetching drug interactions:', error);
       // Fallback
-      return existingMedicines.map(m => ({
+      return existingMedicines.map((m) => ({
         existingMedicineId: m.id,
         existingMedicineName: m.name,
         severity: 'SAFE',
-        explanation: 'Error checking interactions. Please check your connection.'
+        explanation: 'Error checking interactions. Please check your connection.',
       }));
     }
   },

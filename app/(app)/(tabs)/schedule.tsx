@@ -1,14 +1,6 @@
 // 1. IMPORTS
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Switch, 
-  Alert 
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { CustomTimePickerModal } from '../../../src/components/medical/CustomTimePickerModal';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -82,7 +74,7 @@ export default function ScheduleScreen(): React.JSX.Element {
 
   const baseSlotsForDay = regularSchedule[selectedDateItem.index] || [];
   const rawExtraSlots = store.customSlots[selectedDateItem.fullDateStr] || [];
-  const extraSlots = rawExtraSlots.map(timeStr => {
+  const extraSlots = rawExtraSlots.map((timeStr) => {
     if (!timeStr.includes(' ')) {
       const [hStr, mStr] = timeStr.split(':');
       let h = parseInt(hStr, 10);
@@ -92,9 +84,10 @@ export default function ScheduleScreen(): React.JSX.Element {
     }
     return timeStr;
   });
-  
-  const slotsForDay = Array.from(new Set([...baseSlotsForDay, ...extraSlots]))
-    .sort((a, b) => getMinutesFromTime(a) - getMinutesFromTime(b));
+
+  const slotsForDay = Array.from(new Set([...baseSlotsForDay, ...extraSlots])).sort(
+    (a, b) => getMinutesFromTime(a) - getMinutesFromTime(b),
+  );
 
   const exceptionsForDate = scheduleExceptions[selectedDateItem.fullDateStr] || {};
   const bookingsForDate = bookings[selectedDateItem.fullDateStr] || {};
@@ -139,7 +132,11 @@ export default function ScheduleScreen(): React.JSX.Element {
             accessibilityLabel="Settings"
             accessibilityRole="button"
           >
-            <MaterialCommunityIcons name="account-outline" size={27.6} color={Colors.textSecondary} />
+            <MaterialCommunityIcons
+              name="account-outline"
+              size={27.6}
+              color={Colors.textSecondary}
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -207,9 +204,7 @@ export default function ScheduleScreen(): React.JSX.Element {
                 size={28}
                 color={Colors.textTertiary}
               />
-              <Text style={styles.emptyText}>
-                You have no slots scheduled for this day.
-              </Text>
+              <Text style={styles.emptyText}>You have no slots scheduled for this day.</Text>
             </View>
           ) : (
             <View style={styles.queueContainer}>
@@ -217,7 +212,7 @@ export default function ScheduleScreen(): React.JSX.Element {
                 const isExceptionDisabled = exceptionsForDate[timeStr] === false;
                 const currentBookings = bookingsForDate[timeStr] || 0;
                 const isFull = currentBookings >= capacity;
-                
+
                 let isPastSlot = false;
                 if (selectedIndex === 0) {
                   // Rule 1: Capacity Limit
@@ -226,13 +221,15 @@ export default function ScheduleScreen(): React.JSX.Element {
                   } else {
                     const avgConsultationMinutes = 18; // Mock doctor average
                     let bufferTime = 0;
-                    if (avgConsultationMinutes >= 10 && avgConsultationMinutes <= 14) bufferTime = 5;
-                    else if (avgConsultationMinutes >= 15 && avgConsultationMinutes <= 20) bufferTime = 10;
+                    if (avgConsultationMinutes >= 10 && avgConsultationMinutes <= 14)
+                      bufferTime = 5;
+                    else if (avgConsultationMinutes >= 15 && avgConsultationMinutes <= 20)
+                      bufferTime = 10;
                     else if (avgConsultationMinutes > 20) bufferTime = 14;
 
                     const nextSlotStr = slotsForDay[index + 1];
-                    const nextSlotMinutes = nextSlotStr 
-                      ? getMinutesFromTime(nextSlotStr) 
+                    const nextSlotMinutes = nextSlotStr
+                      ? getMinutesFromTime(nextSlotStr)
                       : getMinutesFromTime(timeStr) + 60; // Default 1 hour if last slot
 
                     // Rule 2 & 3: Next Slot Transition and Dynamic Buffer Time
@@ -243,32 +240,36 @@ export default function ScheduleScreen(): React.JSX.Element {
                     }
                   }
                 }
-                
-                // Active visually if not an exception AND not passed. 
+
+                // Active visually if not an exception AND not passed.
                 const isToggleOn = !isExceptionDisabled;
-                
+
                 return (
                   <View
                     key={timeStr}
                     style={[
-                      styles.slotCard, 
+                      styles.slotCard,
                       isExceptionDisabled && !isPastSlot && styles.slotCardException,
-                      isPastSlot && styles.slotCardPast
+                      isPastSlot && styles.slotCardPast,
                     ]}
                   >
                     <View style={styles.slotInfo}>
-                      <View style={[
-                        styles.iconCircle, 
-                        isPastSlot && styles.iconCirclePast,
-                        isExceptionDisabled && !isPastSlot && styles.iconCircleException
-                      ]}>
+                      <View
+                        style={[
+                          styles.iconCircle,
+                          isPastSlot && styles.iconCirclePast,
+                          isExceptionDisabled && !isPastSlot && styles.iconCircleException,
+                        ]}
+                      >
                         <MaterialCommunityIcons
                           name="clock-outline"
                           size={18}
                           color={
-                            isPastSlot ? Colors.textTertiary : 
-                            isExceptionDisabled ? Colors.textSecondary : 
-                            Colors.primary
+                            isPastSlot
+                              ? Colors.textTertiary
+                              : isExceptionDisabled
+                                ? Colors.textSecondary
+                                : Colors.primary
                           }
                         />
                       </View>
@@ -286,7 +287,12 @@ export default function ScheduleScreen(): React.JSX.Element {
                     <View style={styles.slotControls}>
                       <View style={styles.bookingStatus}>
                         <View style={[styles.bookingBadge, isPastSlot && styles.bookingBadgePast]}>
-                          <Text style={[styles.bookingCountText, isPastSlot && styles.bookingCountTextPast]}>
+                          <Text
+                            style={[
+                              styles.bookingCountText,
+                              isPastSlot && styles.bookingCountTextPast,
+                            ]}
+                          >
                             {currentBookings}/{capacity} booked
                           </Text>
                         </View>
@@ -322,15 +328,15 @@ export default function ScheduleScreen(): React.JSX.Element {
           const ampm = h >= 12 ? 'PM' : 'AM';
           h = h % 12 || 12;
           const formattedTime = `${h.toString().padStart(2, '0')}:${mStr} ${ampm}`;
-          
+
           if (slotsForDay.includes(formattedTime)) {
             Alert.alert(
               'Duplicate Slot',
-              'This time slot has already been added. Please choose a different time slot.'
+              'This time slot has already been added. Please choose a different time slot.',
             );
             return;
           }
-          
+
           store.addCustomSlot(selectedDateItem.fullDateStr, formattedTime);
           setAddSlotModalVisible(false);
         }}
@@ -359,7 +365,6 @@ const styles = StyleSheet.create({
   },
   titleBold: {
     fontFamily: FontFamily.extraBold,
-    
   },
   headerLeft: {
     flex: 1,
@@ -462,7 +467,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.lg,
     color: Colors.textPrimary,
   },
@@ -521,7 +526,7 @@ const styles = StyleSheet.create({
   },
   slotTimeText: {
     fontFamily: FontFamily.regular,
-    
+
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },

@@ -49,7 +49,10 @@ export default function UploadReportScreen() {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert('Permission Denied', 'You need to allow access to your photos to upload a report.');
+        Alert.alert(
+          'Permission Denied',
+          'You need to allow access to your photos to upload a report.',
+        );
         return;
       }
 
@@ -127,13 +130,19 @@ export default function UploadReportScreen() {
           </View>
           <Text style={styles.processingTitle}>Analyzing Report...</Text>
           <Text style={styles.processingSubtitle}>
-            Our AI is scanning {selectedFiles.length > 1 ? `all ${selectedFiles.length} pages` : 'the document'} and extracting clinical biomarkers.
+            Our AI is scanning{' '}
+            {selectedFiles.length > 1 ? `all ${selectedFiles.length} pages` : 'the document'} and
+            extracting clinical biomarkers.
             {'\n\n'}This may take 10–20 seconds.
           </Text>
           <View style={styles.processingSteps}>
             {['Reading document', 'Extracting biomarkers', 'Generating summary'].map((step, i) => (
               <View key={i} style={styles.processingStep}>
-                <MaterialCommunityIcons name="check-circle-outline" size={16} color={Colors.primary} />
+                <MaterialCommunityIcons
+                  name="check-circle-outline"
+                  size={16}
+                  color={Colors.primary}
+                />
                 <Text style={styles.processingStepText}>{step}</Text>
               </View>
             ))}
@@ -156,9 +165,11 @@ export default function UploadReportScreen() {
             </TouchableOpacity>
             <View style={styles.headerTextBlock}>
               <Text style={styles.headerTitle}>Review Document</Text>
-              <Text style={styles.headerSubtitle}>
-                {isPdf ? '1 PDF document' : `${selectedFiles.length} page${selectedFiles.length > 1 ? 's' : ''} selected`}
-              </Text>
+              {!isPdf && (
+                <Text style={styles.headerSubtitle}>
+                  {`${selectedFiles.length} page${selectedFiles.length > 1 ? 's' : ''} selected`}
+                </Text>
+              )}
             </View>
           </View>
         </View>
@@ -193,7 +204,11 @@ export default function UploadReportScreen() {
                   </View>
                 ))}
                 {/* Add more tile */}
-                <TouchableOpacity style={styles.addMoreTile} onPress={handlePickImages} activeOpacity={0.7}>
+                <TouchableOpacity
+                  style={styles.addMoreTile}
+                  onPress={handlePickImages}
+                  activeOpacity={0.7}
+                >
                   <MaterialCommunityIcons name="plus" size={28} color={Colors.primary} />
                   <Text style={styles.addMoreTileText}>Add page</Text>
                 </TouchableOpacity>
@@ -406,7 +421,12 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: Spacing.md,
   },
-  tipRow: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.sm, marginBottom: Spacing.sm },
+  tipRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
   tipDot: {
     width: 6,
     height: 6,
@@ -492,7 +512,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: Spacing.sm,
-    marginTop: Spacing.xl,
+    marginTop: Spacing.base,
     backgroundColor: Colors.tertiaryLight,
     borderRadius: BorderRadius.md,
     padding: Spacing.md,
@@ -516,7 +536,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: Colors.tertiary,
     borderStyle: 'dashed',
-    marginBottom: Spacing.lg,
+    marginBottom: 0,
   },
   pdfFileName: {
     fontFamily: FontFamily.bold,

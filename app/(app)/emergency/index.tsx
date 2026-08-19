@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Spacing, BorderRadius, FontFamily, FontSize, Layout } from '@theme';
@@ -102,6 +102,7 @@ export default function EmergencyTriageScreen() {
           accessibilityRole="button"
           accessibilityLabel="Call 911"
           activeOpacity={0.8}
+          onPress={() => Linking.openURL('tel:911')}
         >
           <MaterialCommunityIcons name="phone" color={Colors.surface} size={16} />
           <Text style={styles.call911Text}>{t('emergency.call_911') || 'Call 911'}</Text>
@@ -201,7 +202,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.md,
     color: Colors.textPrimary,
     marginBottom: 4,

@@ -8,9 +8,30 @@ const MOCK_DOCTOR_PRESCRIPTIONS: Prescription[] = [
     patientId: 'pat-1',
     doctorId: 'doc-1',
     doctorName: 'Dr. Rahim Uddin',
+    doctorDegrees: 'MBBS, MD (Medicine), MACP',
+    doctorSpecialty: 'MBBS, MD (Medicine)',
+    doctorSpecialties: ['Internal Medicine', 'Infectious Disease'],
+    workingHospital: 'Dhaka Medical College Hospital',
+    bmdcRegNo: 'A-28451',
+    clinicName: 'HealthPlus Care Clinic',
+    clinicAddress: '123 Health Ave, Dhaka',
+    clinicContact: '+880 1234-567890',
+    patientName: 'Arif Hossain',
+    patientAge: 35,
+    patientAgeMonths: 4,
+    patientAgeDays: 12,
+    patientGender: 'Male',
+    patientWeight: 72,
+    diagnosis: 'Acute Tonsillitis (Strep Throat)',
+    diagnosisList: ['Acute Tonsillitis (Strep Throat)', 'Mild Pharyngitis'],
+    recommendedTests: ['CBC (Complete Blood Count)', 'Throat Culture & Sensitivity'],
+    advice:
+      'Drink plenty of warm fluids and rest. Avoid cold beverages. Gargle with warm salt water twice daily.',
+    notes: 'Patient advised to drink plenty of warm fluids and rest. Avoid cold beverages.',
+    followUpDate: '2026-06-22',
     source: 'DOCTOR',
     issuedAt: '2026-06-15T08:30:00Z',
-    imageUrl: 'https://placehold.co/800x1000/F4FAFC/40566d?text=Prescription+Rx-001',
+    imageUrl: '',
     medicines: [
       {
         id: 'med-doc-1',
@@ -22,7 +43,7 @@ const MOCK_DOCTOR_PRESCRIPTIONS: Prescription[] = [
         dosageSchedule: { morning: '08:00', noon: '14:00', night: '20:00' },
         dosagePattern: '1+1+1',
         frequency: 'Three times daily',
-        instructions: 'Take in the morning, noon and night after meals.',
+        instructions: 'Take after meals.',
         explanation:
           'Amoxicillin is an antibiotic that fights bacterial infections by stopping bacteria from forming cell walls. Take every 8 hours after eating to avoid stomach upset. Complete the full 7-day course even if you start feeling better — stopping early can allow bacteria to survive and develop resistance.',
         aiDemystifierSummary:
@@ -37,10 +58,10 @@ const MOCK_DOCTOR_PRESCRIPTIONS: Prescription[] = [
         times: ['08:00', '20:00'],
         dosageSchedule: { morning: '08:00', night: '20:00' },
         dosagePattern: '1+0+1',
-        frequency: 'Twice daily, as needed',
-        instructions: 'Take in the morning and night after meals.',
+        frequency: 'Twice daily',
+        instructions: 'Take after meals.',
         explanation:
-          'Ibuprofen is an anti-inflammatory painkiller (NSAID). It reduces fever and relieves pain by blocking chemicals in the body that cause inflammation. Take it with a meal or snack to prevent stomach irritation. Do not exceed the prescribed dose or take it for longer than 3 days without consulting your doctor.',
+          'Ibuprofen is an anti-inflammatory painkiller (NSAID). It reduces fever and relieves pain by blocking chemicals in the body that cause inflammation. Take it with a meal or snack to prevent stomach irritation.',
         aiDemystifierSummary:
           'A nonsteroidal anti-inflammatory drug (NSAID) used to reduce fever and treat pain or inflammation.',
       },
@@ -51,9 +72,35 @@ const MOCK_DOCTOR_PRESCRIPTIONS: Prescription[] = [
     patientId: 'pat-1',
     doctorId: 'doc-2',
     doctorName: 'Dr. Nasrin Begum',
+    doctorDegrees: 'MBBS, FCPS (Cardiology), FACC',
+    doctorSpecialty: 'MBBS, FCPS (Cardiology)',
+    doctorSpecialties: ['Cardiology', 'Interventional Cardiology'],
+    workingHospital: 'National Heart Foundation Hospital & Research Institute',
+    bmdcRegNo: 'A-35672',
+    clinicName: 'HeartCare Center',
+    clinicAddress: '456 Cardiac Way, Dhaka',
+    clinicContact: '+880 1987-654321',
+    patientName: 'Arif Hossain',
+    patientAge: 35,
+    patientAgeMonths: 4,
+    patientAgeDays: 12,
+    patientGender: 'Male',
+    patientWeight: 72,
+    diagnosis: 'Essential Hypertension',
+    diagnosisList: ['Essential Hypertension (Stage 1)', 'Dyslipidemia'],
+    recommendedTests: [
+      'ECG (Electrocardiogram)',
+      'Lipid Profile',
+      'Serum Creatinine',
+      'Echocardiogram',
+    ],
+    advice:
+      'Monitor blood pressure daily. Reduce salt intake to less than 5g/day. Brisk walking for 30 minutes daily. Avoid smoking and alcohol.',
+    notes: 'Monitor blood pressure daily. Reduce salt intake. Brisk walking for 30 mins daily.',
+    followUpDate: '2026-07-31',
     source: 'DOCTOR',
     issuedAt: '2026-07-01T10:00:00Z',
-    imageUrl: 'https://placehold.co/800x1000/F4FAFC/40566d?text=Prescription+Rx-002',
+    imageUrl: '',
     medicines: [
       {
         id: 'med-doc-3',
@@ -65,9 +112,9 @@ const MOCK_DOCTOR_PRESCRIPTIONS: Prescription[] = [
         dosageSchedule: { morning: '08:00' },
         dosagePattern: '1+0+0',
         frequency: 'Once daily',
-        instructions: 'Take in the morning after meals.',
+        instructions: 'Take in the morning before meals.',
         explanation:
-          'Lisinopril is an ACE inhibitor prescribed to manage high blood pressure (hypertension). It works by relaxing blood vessels so your heart does not have to work as hard. Take it at the same time every morning. Do not stop taking it without consulting Dr. Begum — sudden discontinuation can cause blood pressure to spike.',
+          'Lisinopril is an ACE inhibitor prescribed to manage high blood pressure (hypertension). It works by relaxing blood vessels so your heart does not have to work as hard.',
         aiDemystifierSummary:
           'An ACE inhibitor used to treat high blood pressure. It relaxes blood vessels so blood flows more smoothly.',
       },
@@ -83,7 +130,7 @@ const MOCK_DOCTOR_PRESCRIPTIONS: Prescription[] = [
         frequency: 'Once daily',
         instructions: 'Take in the morning after meals.',
         explanation:
-          'Amlodipine is a calcium channel blocker that helps lower blood pressure and reduce chest pain. It works by relaxing blood vessels so blood can flow more easily. It is safe to take with Lisinopril as prescribed — both medicines complement each other for blood pressure control.',
+          'Amlodipine is a calcium channel blocker that helps lower blood pressure and reduce chest pain. It works by relaxing blood vessels so blood can flow more easily.',
         aiDemystifierSummary:
           'A calcium channel blocker that lowers blood pressure by relaxing blood vessels.',
       },
@@ -167,6 +214,22 @@ export const prescriptionsService = {
   getUploadedPrescriptions: async (): Promise<Prescription[]> =>
     new Promise((resolve) => setTimeout(() => resolve([...MOCK_UPLOADED_PRESCRIPTIONS]), 600)),
 
+  uploadPrescription: async (uri: string): Promise<Prescription> =>
+    new Promise((resolve) => {
+      setTimeout(() => {
+        const newRx: Prescription = {
+          id: `rx-upload-${Date.now()}`,
+          patientId: 'pat-1',
+          source: 'UPLOADED',
+          issuedAt: new Date().toISOString(),
+          imageUrl: uri,
+          medicines: [],
+        };
+        MOCK_UPLOADED_PRESCRIPTIONS.unshift(newRx);
+        resolve(newRx);
+      }, 500);
+    }),
+
   /** Returns all prescriptions merged (doctor-issued + uploaded). */
   getPrescriptions: async (): Promise<Prescription[]> =>
     new Promise((resolve) =>
@@ -211,6 +274,63 @@ export const prescriptionsService = {
         _scheduledPrescriptionId = null;
         resolve();
       }, 300);
+    });
+  },
+
+  /** Adds a manually entered medicine to an existing prescription */
+  addMedicineToPrescription: async (
+    prescriptionId: string,
+    newMedicine: Omit<PrescriptionMedicine, 'id'>,
+  ): Promise<PrescriptionMedicine> => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const all = [...MOCK_DOCTOR_PRESCRIPTIONS, ...MOCK_UPLOADED_PRESCRIPTIONS];
+        const rx = all.find((r) => r.id === prescriptionId);
+        if (!rx) {
+          reject(new Error('Prescription not found'));
+          return;
+        }
+
+        const defaultSchedule = { morning: '08:00', noon: '14:00', night: '20:00' };
+        const times: string[] = [];
+        const dosageSchedule: any = {};
+        const parts = newMedicine.dosagePattern?.split('+') || [];
+
+        if (parts[0] && parts[0] !== '0') {
+          times.push(defaultSchedule.morning);
+          dosageSchedule.morning = defaultSchedule.morning;
+        }
+        if (parts[1] && parts[1] !== '0') {
+          times.push(defaultSchedule.noon);
+          dosageSchedule.noon = defaultSchedule.noon;
+        }
+        if (parts[2] && parts[2] !== '0') {
+          times.push(defaultSchedule.night);
+          dosageSchedule.night = defaultSchedule.night;
+        }
+
+        const medicine: PrescriptionMedicine = {
+          ...newMedicine,
+          id: `med-manual-${Date.now()}`,
+          times,
+          dosageSchedule,
+        };
+        rx.medicines.push(medicine);
+
+        // Generate adherence records for today so it appears in Next Medication
+        times.forEach((t, i) => {
+          MOCK_ADHERENCE.push({
+            id: `adh-manual-${Date.now()}-${i}`,
+            prescriptionId,
+            medicineId: medicine.id,
+            date: new Date().toISOString().split('T')[0],
+            status: 'PENDING',
+            scheduledTime: t,
+          });
+        });
+
+        resolve(medicine);
+      }, 400);
     });
   },
 

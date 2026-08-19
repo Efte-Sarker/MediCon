@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   periodLabel: {
     fontFamily: FontFamily.regular,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
   medicineName: {
     fontFamily: FontFamily.bold,
-    
+
     fontSize: FontSize.md,
     color: Colors.textPrimary,
   },
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: Spacing.xs,
-    marginBottom: 2,
+    marginBottom: 4,
   },
   dosageLimitBadge: {
     paddingTop: 2,

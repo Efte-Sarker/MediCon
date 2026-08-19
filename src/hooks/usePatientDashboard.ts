@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { prescriptionsService } from '../services/api/prescriptionsService';
 import { getMealTiming } from '../utils/prescriptionFormatters';
+import { usePatientStore } from '../store/patientStore';
 
 // 2. TYPES
 export interface DashboardAppointment {
@@ -10,7 +11,7 @@ export interface DashboardAppointment {
   specialty: string;
   dateTime: string;
   format: 'video' | 'in-person';
-  imageUrl?: string;
+  imageUrl?: string | any;
 }
 
 export interface DashboardDoctor {
@@ -30,6 +31,7 @@ export interface DashboardMedicationItem {
 }
 
 export interface DashboardMedication {
+  prescriptionId: string;
   periodName: 'Morning' | 'Noon' | 'Night';
   scheduledTime: string;
   status: 'upcoming' | 'taken' | 'missed';
@@ -50,14 +52,12 @@ export interface PatientDashboardData {
 export const usePatientDashboard = (): PatientDashboardData => {
   const [nextMedicine, setNextMedicine] = useState<DashboardMedication | null>(null);
 
-  const nextAppointment: DashboardAppointment = {
-    id: 'appt-001',
-    doctorName: 'Dr. Sarah Khan',
-    specialty: 'General Medicine',
-    dateTime: '2026-07-05T10:30:00',
-    format: 'video',
-    imageUrl: 'https://i.pravatar.cc/150?img=32',
-  };
+  const { nextAppointment } = usePatientStore();
+
+  // Set the image if it is missing (initial state)
+  if (nextAppointment && !nextAppointment.imageUrl) {
+    nextAppointment.imageUrl = require('../assets/images/doctors/doctorPlaceholder1.png');
+  }
 
   const recentDoctor: DashboardDoctor = {
     id: 'doc-001',
@@ -157,6 +157,7 @@ export const usePatientDashboard = (): PatientDashboardData => {
           };
 
           setNextMedicine({
+            prescriptionId: rx.id,
             periodName: selectedPeriod.name,
             scheduledTime: format12Hour(selectedPeriod.time),
             status: 'upcoming',
